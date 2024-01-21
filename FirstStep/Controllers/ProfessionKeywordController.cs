@@ -22,7 +22,7 @@ namespace FirstStep.Controllers
 
         public async Task<ActionResult<IEnumerable<ProfessionKeyword>>> GetProfessionKeywords()
         {
-            return Ok(await _context.ProfessionKeywords.ToListAsync());
+            return Ok(await _context.ProfessionKeywords.Include(jf => jf.job_Field).ToListAsync());
         }
 
         [HttpGet]
