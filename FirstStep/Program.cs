@@ -1,5 +1,5 @@
 using FirstStep.Data;
-using FirstStep.Services.AdvertisementServices;
+using FirstStep.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +20,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 // Services Configuration
 builder.Services.AddScoped<IAdvertisementService, AdvertisementService>();
+
 
 var app = builder.Build();
 
