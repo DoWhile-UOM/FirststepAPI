@@ -47,7 +47,6 @@ namespace FirstStep.Models
         public required int hrManager_id { get; set; }        
 
 
-        //[JsonIgnore]
         public virtual JobField? job_Field { get; set; }
 
         public required int field_id { get; set; }
@@ -56,8 +55,6 @@ namespace FirstStep.Models
         [JsonIgnore]
         public ICollection<Advertisement_Seeker>? advertisement_seekers { get; set; }
 
-        //[JsonIgnore]
-        //public ICollection<Advertisement_ProfessionKeyword>? advertisement_professionKeywords { get; set; }
         
         public virtual ICollection<ProfessionKeyword>? professionKeywords { get; set; }
     }

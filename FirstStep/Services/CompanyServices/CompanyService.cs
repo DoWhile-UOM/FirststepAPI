@@ -2,7 +2,7 @@
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace FirstStep.Services.CompanyServices
+namespace FirstStep.Services
 {
     public class CompanyService : ICompanyService
     {
@@ -59,6 +59,8 @@ namespace FirstStep.Services.CompanyServices
             dbCompany.verification_status = company.verification_status;
             dbCompany.business_reg_certificate = company.business_reg_certificate;
             dbCompany.certificate_of_incorporation = company.certificate_of_incorporation;
+
+            await _context.SaveChangesAsync();
         }
     }
 }

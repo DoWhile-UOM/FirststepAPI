@@ -15,7 +15,10 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Advertisement>> GetAll()
         {
-            return await _context.Advertisements.Include("professionKeywords").ToListAsync();
+            return await _context.Advertisements
+                .Include("professionKeywords")
+                .Include("job_Field")
+                .ToListAsync();
         }
 
         public async Task<Advertisement> GetById(int id)
@@ -34,7 +37,7 @@ namespace FirstStep.Services
             advertisement.advertisement_id = 0;
 
             _context.Advertisements.Add(advertisement);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync( );
 
             return advertisement;
         }
