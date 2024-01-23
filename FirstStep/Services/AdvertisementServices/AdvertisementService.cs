@@ -1,5 +1,7 @@
-﻿using FirstStep.Data;
+﻿using AutoMapper;
+using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -7,10 +9,12 @@ namespace FirstStep.Services
     public class AdvertisementService : IAdvertisementService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public AdvertisementService(DataContext context)
+        public AdvertisementService(DataContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Advertisement>> GetAll()
@@ -23,7 +27,11 @@ namespace FirstStep.Services
 
         public async Task<Advertisement> GetById(int id)
         {
-            Advertisement? advertisement = await _context.Advertisements.Include("professionKeywords").FirstOrDefaultAsync(x => x.advertisement_id == id);
+            Advertisement? advertisement = 
+                await _context.Advertisements
+                .Include("professionKeywords")
+                .FirstOrDefaultAsync(x => x.advertisement_id == id);
+            
             if (advertisement is null)
             {
                 throw new Exception("Advertisement not found.");
@@ -32,14 +40,11 @@ namespace FirstStep.Services
             return advertisement;
         }
 
-        public async Task<Advertisement> Create(Advertisement advertisement)
+        public async void Create(AddAdvertisementDto advertisement)
         {
-            advertisement.advertisement_id = 0;
-
-            _context.Advertisements.Add(advertisement);
+            Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisement);
+            _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync( );
-
-            return advertisement;
         }
 
         public async void Update(Advertisement advertisement)

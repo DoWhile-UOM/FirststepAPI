@@ -10,7 +10,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddAutoMapper(typeof(Program));
 
 // DataContext Configuration
 builder.Services.AddDbContext<DataContext>(options =>
@@ -23,7 +23,6 @@ builder.Services.AddScoped<IAdvertisementService, AdvertisementService>();
 builder.Services.AddScoped<IProfessionKeywordService, ProfessionKeywordService>();
 builder.Services.AddScoped<IJobFieldService, JobFieldService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
-
 
 var app = builder.Build();
 

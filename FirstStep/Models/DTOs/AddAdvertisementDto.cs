@@ -36,6 +36,6 @@
 
         public int? field_id { get; set; }
 
-        public ICollection<int>? professionKeywordIds { get; set; }
+        //public ICollection<int>? professionKeywordIds { get; set; }
     }
 }
