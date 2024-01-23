@@ -12,12 +12,12 @@ namespace FirstStep.Models
 
         
         [JsonIgnore]
-        public required JobField job_Field { get; set; }
+        public JobField? job_Field { get; set; }
         
         public required int field_id { get; set; }
 
 
         [JsonIgnore]
-        public required ICollection<Advertisement_ProfessionKeyword> advertisement_professionKeywords { get; set; }
+        public ICollection<Advertisement>? advertisements { get; set; }
     }
 }

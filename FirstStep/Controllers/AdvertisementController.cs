@@ -1,9 +1,7 @@
-﻿using FirstStep.Data;
-using FirstStep.Models;
+﻿using FirstStep.Models;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Controllers
 {

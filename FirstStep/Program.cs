@@ -20,6 +20,9 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 // Services Configuration
 builder.Services.AddScoped<IAdvertisementService, AdvertisementService>();
+builder.Services.AddScoped<IProfessionKeywordService, ProfessionKeywordService>();
+builder.Services.AddScoped<IJobFieldService, JobFieldService>();
+
 
 var app = builder.Build();
 

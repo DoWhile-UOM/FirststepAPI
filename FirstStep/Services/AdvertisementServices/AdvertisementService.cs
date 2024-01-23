@@ -1,6 +1,5 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -16,12 +15,12 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Advertisement>> GetAll()
         {
-            return await _context.Advertisements.ToListAsync();
+            return await _context.Advertisements.Include("professionKeywords").ToListAsync();
         }
 
         public async Task<Advertisement> GetById(int id)
         {
-            Advertisement? advertisement = await _context.Advertisements.FindAsync(id);
+            Advertisement? advertisement = await _context.Advertisements.Include("professionKeywords").FirstOrDefaultAsync(x => x.advertisement_id == id);
             if (advertisement is null)
             {
                 throw new Exception("Advertisement not found.");
@@ -62,6 +61,8 @@ namespace FirstStep.Services
             dbAdvertisement.job_other_details = advertisement.job_other_details;
             dbAdvertisement.hrManager_id = advertisement.hrManager_id;
             dbAdvertisement.field_id = advertisement.field_id;
+
+            await _context.SaveChangesAsync();
         }
 
         public async void Delete(int id)
