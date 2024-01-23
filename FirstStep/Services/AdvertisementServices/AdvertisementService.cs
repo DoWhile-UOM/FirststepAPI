@@ -15,7 +15,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Advertisement>> GetAll()
         {
-            return await _context.Advertisements.ToListAsync();
+            return await _context.Advertisements.Include(e => e.job_Field).ToListAsync();
         }
 
         public async Task<Advertisement> GetById(int id)
@@ -23,7 +23,6 @@ namespace FirstStep.Services
             Advertisement? advertisement = await _context.Advertisements.FindAsync(id);
             if (advertisement is null)
             {
-                // ask from abjan
                 throw new Exception("Advertisement not found.");
             }
 
