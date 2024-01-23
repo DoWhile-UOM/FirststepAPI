@@ -17,9 +17,7 @@ namespace FirstStep.Models
         public required int field_id { get; set; }
 
 
-        //[JsonIgnore]
-        public virtual ICollection<Advertisement_ProfessionKeyword>? advertisement_professionKeywords { get; set; }
-
-        //public List<Advertisement>? advertisements { get; set; }
+        [JsonIgnore]
+        public ICollection<Advertisement>? advertisements { get; set; }
     }
 }
