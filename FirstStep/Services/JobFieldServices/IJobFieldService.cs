@@ -1,6 +1,6 @@
 ﻿using FirstStep.Models;
 
-namespace FirstStep.Services.JobFieldServices
+namespace FirstStep.Services
 {
     public interface IJobFieldService
     {

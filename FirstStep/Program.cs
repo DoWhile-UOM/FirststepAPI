@@ -1,7 +1,5 @@
 using FirstStep.Data;
 using FirstStep.Services;
-using FirstStep.Services.JobFieldServices;
-using FirstStep.Services.ProfessionKeywordServices;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,5 +1,6 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +11,11 @@ namespace FirstStep.Controllers
     [ApiController]
     public class JobFieldController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly IJobFieldService _service;
 
-        public JobFieldController(DataContext context)
+        public JobFieldController(IJobFieldService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
@@ -22,7 +23,7 @@ namespace FirstStep.Controllers
 
         public async Task<ActionResult<IEnumerable<JobField>>> GetJobFields()
         {
-            return Ok(await _context.JobFields.ToListAsync());
+            return Ok(await _service.GetAll());
         }
 
         [HttpPost]
@@ -30,47 +31,25 @@ namespace FirstStep.Controllers
 
         public async Task<ActionResult<JobField>> AddJobField(JobField jobField)
         {
-            jobField.field_id = 0;
-
-            _context.JobFields.Add(jobField);
-            await _context.SaveChangesAsync();
-
-            return Ok(await _context.JobFields.ToListAsync());
+            return Ok(await _service.Create(jobField));
         }
 
         [HttpPut]
         [Route("UpdateJobField")]
 
-        public async Task<IActionResult> UpdateJobField(JobField reqJobField)
+        public IActionResult UpdateJobField(JobField reqJobField)
         {
-            var dbJobField = await _context.JobFields.FindAsync(reqJobField.field_id);
-            if (dbJobField == null)
-            {
-                return BadRequest("JobField not found.");
-            }
-
-            dbJobField.field_name = reqJobField.field_name;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(await _context.JobFields.ToListAsync());
+            _service.Update(reqJobField);
+            return Ok();
         }
 
         [HttpDelete]
         [Route("DeleteJobFieldById{id}")]
 
-        public async Task<IActionResult> DeleteJobFieldById(int id)
+        public IActionResult DeleteJobFieldById(int id)
         {
-            var dbJobField = await _context.JobFields.FindAsync(id);
-            if (dbJobField == null)
-            {
-                return BadRequest("JobField not found.");
-            }
-
-            _context.JobFields.Remove(dbJobField);
-            await _context.SaveChangesAsync();
-
-            return Ok(await _context.JobFields.ToListAsync());
+            _service.Delete(id);
+            return Ok();
         }
     }
 }

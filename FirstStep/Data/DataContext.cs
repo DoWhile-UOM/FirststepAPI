@@ -19,7 +19,7 @@ namespace FirstStep.Data
 
         public DbSet<Advertisement_Seeker> AdvertisementSeekers { get; set; } = null!;
 
-        //public DbSet<Advertisement_ProfessionKeyword> AdvertisementProfessionKeywords { get; set; } = null!;
+        public DbSet<Advertisement_ProfessionKeyword> AdvertisementProfessionKeywords { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -72,7 +72,7 @@ namespace FirstStep.Data
                     .HasForeignKey(e => e.seeker_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
-            /*
+            
             modelBuilder.Entity<Advertisement_ProfessionKeyword>(entity =>
             {
                 entity.HasKey(e => new {e.advertisement_id, e.profession_id});
@@ -86,7 +86,7 @@ namespace FirstStep.Data
                     .WithMany(e => e.advertisement_professionKeywords)
                     .HasForeignKey(e => e.profession_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
-            });*/
+            });
         }
     }
 }

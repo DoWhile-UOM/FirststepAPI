@@ -1,5 +1,6 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +11,11 @@ namespace FirstStep.Controllers
     [ApiController]
     public class ProfessionKeywordController : ControllerBase
     {
-        private readonly DataContext _context;        
+        private readonly IProfessionKeywordService _service;
 
-        public ProfessionKeywordController(DataContext context)
+        public ProfessionKeywordController(IProfessionKeywordService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
@@ -22,60 +23,37 @@ namespace FirstStep.Controllers
 
         public async Task<ActionResult<IEnumerable<ProfessionKeyword>>> GetProfessionKeywords()
         {
-            return Ok(await _context.ProfessionKeywords.Include(jf => jf.job_Field).ToListAsync());
+            return Ok(await _service.GetAll());
         }
 
         [HttpGet]
         [Route("GetProfessionKeywordById{id}")]
         public async Task<ActionResult<IEnumerable<ProfessionKeyword>>> GetProfessionKeywordById(int id)
         {
-            return Ok(await _context.ProfessionKeywords.FindAsync(id));
+            return Ok(await _service.GetById(id));
         }
 
         [HttpPost]
         [Route("AddProfessionKeyword")]
-        public async Task<ActionResult<ProfessionKeyword>> AddProfessionKeyword(ProfessionKeyword professionKeyword)
+        public async Task<ActionResult<ProfessionKeyword>> AddProfessionKeyword(ProfessionKeyword newProfessionKeyword)
         {
-            professionKeyword.profession_id = 0;
-
-            _context.ProfessionKeywords.Add(professionKeyword);
-            await _context.SaveChangesAsync();
-
-            return Ok(await _context.ProfessionKeywords.ToListAsync());
+            return Ok(await _service.Create(newProfessionKeyword));
         }
 
         [HttpPut]
         [Route("UpdateProfessionKeyword")]
-        public async Task<IActionResult> UpdateProfessionKeyword(ProfessionKeyword reqProfessionKeyword)
+        public IActionResult UpdateProfessionKeyword(ProfessionKeyword reqProfessionKeyword)
         {
-            
-            var dbProfessionKeyword = await _context.ProfessionKeywords.FindAsync(reqProfessionKeyword.profession_id);
-            if (dbProfessionKeyword == null)
-            {
-                return BadRequest("ProfessionKeyword not found.");
-            }
-
-            dbProfessionKeyword.profession_name = reqProfessionKeyword.profession_name;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(await _context.ProfessionKeywords.ToListAsync());
+            _service.Update(reqProfessionKeyword);
+            return Ok();
         }
 
         [HttpDelete]
         [Route("DeleteProfessionKeywordById{id}")]
-        public async Task<IActionResult> DeleteProfessionKeywordById(int id)
+        public IActionResult DeleteProfessionKeywordById(int id)
         {
-            var dbProfessionKeyword = await _context.ProfessionKeywords.FindAsync(id);
-            if (dbProfessionKeyword == null)
-            {
-                return BadRequest("ProfessionKeyword not found.");
-            }
-
-            _context.ProfessionKeywords.Remove(dbProfessionKeyword);
-            await _context.SaveChangesAsync();
-
-            return Ok(await _context.ProfessionKeywords.ToListAsync());
+            _service.Delete(id);
+            return Ok();
         }
     }
 }

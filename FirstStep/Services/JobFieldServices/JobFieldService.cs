@@ -2,7 +2,7 @@
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace FirstStep.Services.JobFieldServices
+namespace FirstStep.Services
 {
     public class JobFieldService : IJobFieldService
     {
