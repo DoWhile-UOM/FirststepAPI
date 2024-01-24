@@ -18,6 +18,8 @@ namespace FirstStep.Data
 
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
+        public DbSet<SystemAdmin> SystemAdmins { get; set; } = null!;
+
         public DbSet<Advertisement_Seeker> AdvertisementSeekers { get; set; } = null!;
 
         //public DbSet<Advertisement_ProfessionKeyword> AdvertisementProfessionKeywords { get; set; } = null!;

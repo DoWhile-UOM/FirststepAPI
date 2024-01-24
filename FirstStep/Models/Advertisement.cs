@@ -47,7 +47,6 @@ namespace FirstStep.Models
         public required int hrManager_id { get; set; }        
 
 
-        //[JsonIgnore]
         public virtual JobField? job_Field { get; set; }
 
         public required int field_id { get; set; }

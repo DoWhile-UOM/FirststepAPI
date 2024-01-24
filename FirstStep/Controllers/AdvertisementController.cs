@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -35,15 +36,16 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddAdvertisement")]
 
-        public async Task<ActionResult<Advertisement>> AddAdvertisement(Advertisement advertisement)
+        public IActionResult AddAdvertisement(AddAdvertisementDto advertisement)
         {
-            return Ok(await _service.Create(advertisement));
+            _service.Create(advertisement);
+            return Ok();
         }
 
         [HttpPut]
         [Route("UpdateAdvertisement")]
 
-        public  IActionResult UpdateAdvertisement(Advertisement reqAdvertisement)
+        public IActionResult UpdateAdvertisement(Advertisement reqAdvertisement)
         {
             _service.Update(reqAdvertisement);
             return Ok();

@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -8,7 +9,7 @@ namespace FirstStep.Services
 
         Task<Advertisement> GetById(int id);
 
-        Task<Advertisement> Create(Advertisement advertisement);
+        void Create(AddAdvertisementDto advertisement);
 
         void Update(Advertisement advertisement);
 
