@@ -111,7 +111,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("hrManager_id");
 
-                    b.ToTable("Advertisements");
+                    b.ToTable("Advertisements", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Advertisement_Seeker", b =>
@@ -126,7 +126,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("seeker_id");
 
-                    b.ToTable("AdvertisementSeekers");
+                    b.ToTable("AdvertisementSeekers", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Application", b =>
@@ -157,7 +157,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("applicationId");
 
-                    b.ToTable("Applications");
+                    b.ToTable("Applications", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
@@ -196,7 +196,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("company_id");
 
-                    b.ToTable("Companys");
+                    b.ToTable("Companys", (string)null);
 
                     b.UseTptMappingStrategy();
                 });
@@ -215,7 +215,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("field_id");
 
-                    b.ToTable("JobFields");
+                    b.ToTable("JobFields", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.ProfessionKeyword", b =>
@@ -237,7 +237,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("field_id");
 
-                    b.ToTable("ProfessionKeywords");
+                    b.ToTable("ProfessionKeywords", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.SeekerSkill", b =>
@@ -254,7 +254,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("skillNo");
 
-                    b.ToTable("Seekerskill");
+                    b.ToTable("Seekerskill", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.User", b =>
@@ -287,7 +287,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("user_id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.UseTptMappingStrategy();
                 });
@@ -372,7 +372,7 @@ namespace FirstStep.Migrations
                 {
                     b.HasBaseType("FirstStep.Models.User");
 
-                    b.ToTable("SystemAdmins");
+                    b.ToTable("SystemAdmins", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.HRManager", b =>

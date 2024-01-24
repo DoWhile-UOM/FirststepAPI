@@ -23,6 +23,7 @@ builder.Services.AddScoped<IAdvertisementService, AdvertisementService>();
 builder.Services.AddScoped<IProfessionKeywordService, ProfessionKeywordService>();
 builder.Services.AddScoped<IJobFieldService, JobFieldService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IHRManagerService, HRManagerService>();
 
 var app = builder.Build();
 

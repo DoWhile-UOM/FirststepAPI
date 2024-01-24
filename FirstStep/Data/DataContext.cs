@@ -20,6 +20,8 @@ namespace FirstStep.Data
         
         public DbSet<JobField> JobFields { get; set; } = null!;
 
+        public DbSet<HRManager> HRManagers { get; set; } = null!;
+
 
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
@@ -35,7 +37,7 @@ namespace FirstStep.Data
         {
             modelBuilder.Entity<Seeker>().ToTable("Seekers");
             modelBuilder.Entity<Employee>().ToTable("Employees");
-            modelBuilder.Entity<HRManager>().ToTable("HRManagers");
+            //modelBuilder.Entity<HRManager>().ToTable("HRManagers");
             modelBuilder.Entity<RegisteredCompany>().ToTable("RegisteredCompanys");
 
             modelBuilder.Entity<Advertisement>(entity => 
