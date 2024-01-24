@@ -1,4 +1,5 @@
-﻿using FirstStep.Models;
+﻿
+using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Data
