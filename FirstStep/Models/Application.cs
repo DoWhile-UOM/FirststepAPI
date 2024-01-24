@@ -15,7 +15,7 @@ namespace FirstStep.Models
 
             public required string phoneNumber { get; set; }
 
-            public required bool status { get; set; }
+            public required string status { get; set; }
 
             public DateTime? lastReviewDate { get; set; }
 
