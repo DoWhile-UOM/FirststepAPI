@@ -7,21 +7,15 @@ namespace FirstStep.Models
             [Key]
             public required string applicationId { get; set; }
 
-            public required string firstName { get; set; }
-
-            public required string lastName { get; set; }
-
             public required string email { get; set; }
 
             public required string phoneNumber { get; set; }
 
             public required string status { get; set; }
 
-            public DateTime? lastReviewDate { get; set; }
+            public DateTime? reviewDate { get; set; }
 
-            public string? lastComment { get; set; }
-
-            public string? linkedinURL { get; set; }
+            public string? comment { get; set; }
 
             public required DateTime submittedDate { get; set; }
         }

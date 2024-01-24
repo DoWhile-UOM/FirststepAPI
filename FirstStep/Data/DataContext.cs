@@ -9,7 +9,9 @@ namespace FirstStep.Data
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
         public DbSet<Advertisement> Advertisements { get; set; } = null!;
-        
+
+        public DbSet<Application> Applications { get; set; } = null!;
+
         public DbSet<User> Users { get; set; } = null!;
         
         public DbSet<Company> Companys { get; set; } = null!;
@@ -19,6 +21,8 @@ namespace FirstStep.Data
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
         public DbSet<SystemAdmin> SystemAdmins { get; set; } = null!;
+
+
 
         public DbSet<Advertisement_Seeker> AdvertisementSeekers { get; set; } = null!;
 
