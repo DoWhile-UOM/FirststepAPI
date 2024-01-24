@@ -2,7 +2,7 @@
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace FirstStep.Services.ProfessionKeywordServices
+namespace FirstStep.Services
 {
     public class ProfessionKeywordService : IProfessionKeywordService
     {
@@ -15,7 +15,7 @@ namespace FirstStep.Services.ProfessionKeywordServices
 
         public async Task<IEnumerable<ProfessionKeyword>> GetAll()
         {
-            return await _context.ProfessionKeywords.ToListAsync();
+            return await _context.ProfessionKeywords.Include(e => e.job_Field).ToListAsync();
         }
 
         public async Task<ProfessionKeyword> GetById(int id)
@@ -23,6 +23,7 @@ namespace FirstStep.Services.ProfessionKeywordServices
             ProfessionKeyword? professionKeyword = await _context.ProfessionKeywords.FindAsync(id);
             if (professionKeyword is null)
             {
+                // ask from abijan how to handle this exceptions
                 throw new Exception("ProfessionKeyword not found.");
             }
 

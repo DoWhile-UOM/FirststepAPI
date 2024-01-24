@@ -18,6 +18,6 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
-        public ICollection<Advertisement_ProfessionKeyword>? advertisement_professionKeywords { get; set; }
+        public ICollection<Advertisement>? advertisements { get; set; }
     }
 }
