@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models
 {
-    public class SystemAdmin
+    public class SystemAdmin : User
     {
     }
 }
