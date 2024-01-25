@@ -36,7 +36,7 @@ namespace FirstStep.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Seeker>().ToTable("Seekers");
-            modelBuilder.Entity<Employee>().ToTable("Employees");
+            //modelBuilder.Entity<Employee>().ToTable("Employees");
             modelBuilder.Entity<HRManager>().ToTable("HRManagers");
             modelBuilder.Entity<RegisteredCompany>().ToTable("RegisteredCompanys");
 

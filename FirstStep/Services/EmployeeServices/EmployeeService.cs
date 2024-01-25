@@ -1,6 +1,7 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace FirstStep.Services
 {
@@ -11,24 +12,6 @@ namespace FirstStep.Services
         public EmployeeService(DataContext context)
         {
             _context = context;
-        }
-
-        public async Task<Employee> Create(HRManager employee)
-        {
-            employee.user_id = 0;
-
-            _context.Employees.Add(employee);
-            await _context.SaveChangesAsync();
-
-            return employee;
-        }
-
-        public async void Delete(int id)
-        {
-            Employee employee = await GetById(id);
-
-            _context.Employees.Remove(employee);
-            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Employee>> GetAll()
@@ -47,28 +30,45 @@ namespace FirstStep.Services
             return employee;
         }
 
-        public async Task<Employee> GetAllHRManagers(int company_Id)
+        public async Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id)
         {
-            Employee? employee = await _context.Employees.Where(e => e.is_HRM).FirstOrDefaultAsync(e => e.company_id == company_Id);
-            if (employee is null)
+            ICollection<Employee> hrManagers = await _context.Employees.Where(e => e.is_HRM && e.company_id == company_Id).ToListAsync();
+            if (hrManagers is null)
             {
-                throw new Exception("Employee not found.");
+                throw new Exception("There are no HR Managers under the company");
             }
 
-            return employee;
+            return hrManagers;
         }
 
-        public async Task<Employee> GetAllHRAssistants(int company_Id)
+        public async Task<IEnumerable<Employee>> GetAllHRAssistants(int company_Id)
         {
-            Employee? employee = await _context.Employees.Where(e => !e.is_HRM).FirstOrDefaultAsync(e => e.company_id == company_Id);
-            if (employee is null)
+            ICollection<Employee> hrAssistants = await _context.Employees.Where(e => !e.is_HRM && e.company_id == company_Id).ToListAsync();
+            if (hrAssistants is null)
             {
-                throw new Exception("Employee not found.");
+                throw new Exception("There are no HR Assistants under the company");
             }
 
-            return employee;
+            return hrAssistants;
         }
 
+        public async void CreateHRManager(Employee hRManager)
+        {
+            hRManager.user_id = 0;
+            hRManager.is_HRM = true;
+
+            _context.Employees.Add(hRManager);
+            await _context.SaveChangesAsync();
+        }
+
+        public async void CreateHRAssistant(Employee hRAssistant)
+        {
+            hRAssistant.user_id = 0;
+            hRAssistant.is_HRM = false;
+
+            _context.Employees.Add(hRAssistant);
+            await _context.SaveChangesAsync();
+        }
 
         public async void Update(Employee employee)
         {
@@ -83,5 +83,12 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
+        public async void Delete(int id)
+        {
+            Employee employee = await GetById(id);
+
+            _context.Employees.Remove(employee);
+            await _context.SaveChangesAsync();
+        }
     }
 }
