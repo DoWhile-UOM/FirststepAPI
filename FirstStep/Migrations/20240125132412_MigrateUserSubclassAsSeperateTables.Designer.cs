@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240125132412_MigrateUserSubclassAsSeperateTables")]
+    partial class MigrateUserSubclassAsSeperateTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -292,7 +295,9 @@ namespace FirstStep.Migrations
 
                     b.ToTable("Users");
 
-                    b.UseTptMappingStrategy();
+                    b.HasDiscriminator<string>("user_type").HasValue("User");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("FirstStep.Models.RegisteredCompany", b =>
@@ -336,7 +341,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("company_id");
 
-                    b.ToTable("Employees", (string)null);
+                    b.HasDiscriminator().HasValue("employee");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Seeker", b =>
@@ -367,21 +372,21 @@ namespace FirstStep.Migrations
                     b.Property<string>("university")
                         .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("Seekers", (string)null);
+                    b.HasDiscriminator().HasValue("seeker");
                 });
 
             modelBuilder.Entity("FirstStep.Models.SystemAdmin", b =>
                 {
                     b.HasBaseType("FirstStep.Models.User");
 
-                    b.ToTable("SystemAdmins");
+                    b.HasDiscriminator().HasValue("systemadmin");
                 });
 
             modelBuilder.Entity("FirstStep.Models.HRManager", b =>
                 {
                     b.HasBaseType("FirstStep.Models.Employee");
 
-                    b.ToTable("HRManagers", (string)null);
+                    b.HasDiscriminator().HasValue("HRManager");
                 });
 
             modelBuilder.Entity("AdvertisementProfessionKeyword", b =>
@@ -465,40 +470,7 @@ namespace FirstStep.Migrations
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("FirstStep.Models.User", null)
-                        .WithOne()
-                        .HasForeignKey("FirstStep.Models.Employee", "user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("regCompany");
-                });
-
-            modelBuilder.Entity("FirstStep.Models.Seeker", b =>
-                {
-                    b.HasOne("FirstStep.Models.User", null)
-                        .WithOne()
-                        .HasForeignKey("FirstStep.Models.Seeker", "user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("FirstStep.Models.SystemAdmin", b =>
-                {
-                    b.HasOne("FirstStep.Models.User", null)
-                        .WithOne()
-                        .HasForeignKey("FirstStep.Models.SystemAdmin", "user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("FirstStep.Models.HRManager", b =>
-                {
-                    b.HasOne("FirstStep.Models.Employee", null)
-                        .WithOne()
-                        .HasForeignKey("FirstStep.Models.HRManager", "user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("FirstStep.Models.Advertisement", b =>

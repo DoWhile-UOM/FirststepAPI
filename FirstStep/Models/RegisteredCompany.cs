@@ -18,6 +18,6 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
-        public required ICollection<Employee> employees { get; set; }
+        public ICollection<Employee>? employees { get; set; }
     }
 }

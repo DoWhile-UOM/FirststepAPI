@@ -22,6 +22,10 @@ namespace FirstStep.Data
 
         public DbSet<Employee> Employees { get; set; } = null!;
 
+        public DbSet<Seeker> Seekers { get; set; } = null!;
+
+        public DbSet<HRManager> HRManagers { get; set; } = null!;
+
 
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
@@ -36,7 +40,7 @@ namespace FirstStep.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Seeker>().ToTable("Seekers");
-            //modelBuilder.Entity<Employee>().ToTable("Employees");
+            modelBuilder.Entity<Employee>().ToTable("Employees");
             modelBuilder.Entity<HRManager>().ToTable("HRManagers");
             modelBuilder.Entity<RegisteredCompany>().ToTable("RegisteredCompanys");
 

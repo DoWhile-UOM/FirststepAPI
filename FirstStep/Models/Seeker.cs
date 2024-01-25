@@ -20,6 +20,6 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
-        public required ICollection<Advertisement_Seeker> advertisement_seekers { get; set; }
+        public ICollection<Advertisement_Seeker>? advertisement_seekers { get; set; }
     }
 }
