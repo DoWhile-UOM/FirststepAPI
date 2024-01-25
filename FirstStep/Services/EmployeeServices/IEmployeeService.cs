@@ -8,9 +8,14 @@ namespace FirstStep.Services
 
         public Task<Employee> GetById(int id);
 
+        public Task<Employee> GetAllHRManagers(int company_Id);
+
+        public Task<Employee> GetAllHRAssistants(int company_Id);
+
         public Task<Employee> Create(HRManager employee);
 
-        //void Update(int id, Employee item);
+        //public Task<Employee> CreateHRManager(HRManager hRManager);
+
         public void Update(Employee employee);
 
         public void Delete(int id);

@@ -47,6 +47,28 @@ namespace FirstStep.Services
             return employee;
         }
 
+        public async Task<Employee> GetAllHRManagers(int company_Id)
+        {
+            Employee? employee = await _context.Employees.Where(e => e.is_HRM).FirstOrDefaultAsync(e => e.company_id == company_Id);
+            if (employee is null)
+            {
+                throw new Exception("Employee not found.");
+            }
+
+            return employee;
+        }
+
+        public async Task<Employee> GetAllHRAssistants(int company_Id)
+        {
+            Employee? employee = await _context.Employees.Where(e => !e.is_HRM).FirstOrDefaultAsync(e => e.company_id == company_Id);
+            if (employee is null)
+            {
+                throw new Exception("Employee not found.");
+            }
+
+            return employee;
+        }
+
 
         public async void Update(Employee employee)
         {
@@ -56,8 +78,7 @@ namespace FirstStep.Services
             dbEmployee.last_name = employee.last_name;
             dbEmployee.email = employee.email;
             dbEmployee.password = employee.password;
-            dbEmployee.user_id = employee.user_id;
-            dbEmployee.company_id = employee.company_id;
+            dbEmployee.is_HRM = employee.is_HRM;
 
             await _context.SaveChangesAsync();
         }

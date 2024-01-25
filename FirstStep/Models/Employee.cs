@@ -4,7 +4,7 @@ namespace FirstStep.Models
 {
     public class Employee : User
     {
-        public required string role { get; set; }
+        public bool is_HRM { get; set; }
 
 
         [JsonIgnore]
