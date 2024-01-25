@@ -12,7 +12,7 @@ namespace FirstStep.Services
 
         public Task<IEnumerable<Employee>> GetAllHRAssistants(int company_Id);
 
-        public void CreateHRManager(Employee hRManager);
+        public void CreateHRManager(HRManager hRManager);
 
         public void CreateHRAssistant(Employee hRAssistant);
 

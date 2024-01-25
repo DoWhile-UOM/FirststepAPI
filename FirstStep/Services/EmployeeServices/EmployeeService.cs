@@ -52,12 +52,12 @@ namespace FirstStep.Services
             return hrAssistants;
         }
 
-        public async void CreateHRManager(Employee hRManager)
+        public async void CreateHRManager(HRManager hRManager)
         {
             hRManager.user_id = 0;
             hRManager.is_HRM = true;
 
-            _context.Employees.Add(hRManager);
+            _context.HRManagers.Add(hRManager);
             await _context.SaveChangesAsync();
         }
 

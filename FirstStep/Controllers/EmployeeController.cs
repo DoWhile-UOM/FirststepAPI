@@ -51,7 +51,7 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddNewHRManager")]
 
-        public IActionResult AddHRManager(Employee hRManager)
+        public IActionResult AddHRManager(HRManager hRManager)
         {
             _service.CreateHRManager(hRManager);
             return Ok();
@@ -62,7 +62,7 @@ namespace FirstStep.Controllers
 
         public IActionResult AddHRAssistant(Employee hRAssistant)
         {
-            _service.CreateHRAssistant(hRAssistant);
+            //_service.CreateHRAssistant(hRAssistant);
             return Ok();
         }
 
