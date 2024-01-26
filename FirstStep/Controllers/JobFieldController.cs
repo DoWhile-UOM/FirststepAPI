@@ -1,7 +1,9 @@
-﻿using FirstStep.Models;
+﻿using FirstStep.Data;
+using FirstStep.Models;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Controllers
 {
@@ -35,18 +37,18 @@ namespace FirstStep.Controllers
         [HttpPut]
         [Route("UpdateJobField")]
 
-        public IActionResult UpdateJobField(JobField reqJobField)
+        public async Task<IActionResult> UpdateJobField(JobField reqJobField)
         {
-            _service.Update(reqJobField);
-            return Ok();
+            await _service.Update(reqJobField);
+            return Ok($"Sucessfully Updated {reqJobField.field_id}");
         }
 
         [HttpDelete]
-        [Route("DeleteJobFieldById{id}")]
+        [Route("DeleteJobFieldById/{id}")]
 
-        public IActionResult DeleteJobFieldById(int id)
+        public async Task<IActionResult> DeleteJobFieldById(int id)
         {
-            _service.Delete(id);
+            await _service.Delete(id);
             return Ok();
         }
     }
