@@ -30,35 +30,29 @@ namespace FirstStep.Services
             return jobField;
         }
 
-        public async Task<JobField> Create(JobField jobField)
+        public async Task Create(JobField jobField)
         {
             jobField.field_id = 0;
 
             _context.JobFields.Add(jobField);
             await _context.SaveChangesAsync();
-
-            return jobField;
         }
 
-        public async Task<JobField> Update(JobField reqJobField)
+        public async Task Update(JobField reqJobField)
         {
             JobField dbJobField = await GetById(reqJobField.field_id);
 
             dbJobField.field_name = reqJobField.field_name;
 
             await _context.SaveChangesAsync();
-
-            return dbJobField;
         }
 
-        public async Task<JobField> Delete(int id)
+        public async Task Delete(int id)
         {
             JobField? jobField = await GetById(id);
 
             _context.JobFields.Remove(jobField);
             await _context.SaveChangesAsync();
-
-            return jobField;
         }
     }
 }

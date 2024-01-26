@@ -51,36 +51,36 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddNewHRManager")]
 
-        public IActionResult AddHRManager(HRManager hRManager)
+        public async Task<IActionResult> AddHRManager(HRManager hRManager)
         {
-            _service.CreateHRManager(hRManager);
-            return Ok();
+            await _service.CreateHRManager(hRManager);
+            return Ok("Successfully Added");
         }
 
         [HttpPost]
         [Route("AddNewHRAssistant")]
 
-        public IActionResult AddHRAssistant(Employee hRAssistant)
+        public async Task<IActionResult> AddHRAssistant(Employee hRAssistant)
         {
             //_service.CreateHRAssistant(hRAssistant);
-            return Ok();
+            return Ok("HR Assistant Class Not Available");
         }
 
         [HttpPut]
         [Route("UpdateEmployee")]
 
-        public IActionResult UpdateEmployee(Employee reqEmployee)
+        public async Task<IActionResult> UpdateEmployee(Employee reqEmployee)
         {
-            _service.Update(reqEmployee);
+            await _service.Update(reqEmployee);
             return Ok();
         }
 
         [HttpDelete]
         [Route("DeleteEmployee/{id}")]
 
-        public IActionResult DeleteEmployee(int id)
+        public async Task<IActionResult> DeleteEmployee(int id)
         {
-            _service.Delete(id);
+            await _service.Delete(id);
             return Ok();
         }
     }
