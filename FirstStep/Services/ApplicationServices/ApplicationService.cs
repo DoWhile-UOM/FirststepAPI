@@ -50,6 +50,15 @@ namespace FirstStep.Services
         {
             Application dbApplication = await GetById(application.application_Id);
 
+            dbApplication.email = application.email;
+            dbApplication.status = application.status;
+            dbApplication.phone_number = application.phone_number;
+            dbApplication.review_date = application.review_date;
+            dbApplication.comment = application.comment;
+            dbApplication.submitted_date = application.submitted_date;
+            await _context.SaveChangesAsync();
+
+
             //dbApplication.
         }
     }
