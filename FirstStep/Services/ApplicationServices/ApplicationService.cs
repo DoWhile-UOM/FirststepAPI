@@ -13,17 +13,15 @@ namespace FirstStep.Services
             _context = context;
         }
 
-        public async Task<Application> Create(Application application) //task=>await _context
+        public async Task Create(Application application) //task=>await _context
         {
             application.application_Id = 0;
 
             _context.Applications.Add(application);
             await _context.SaveChangesAsync();
-
-            return application;
         }
 
-        public  async void Delete(int id)
+        public async Task Delete(int id)
         {
             Application application = await GetById(id);
             
@@ -47,7 +45,7 @@ namespace FirstStep.Services
             return application;
         }
 
-        public async void Update(Application application)
+        public async Task Update(Application application)
         {
             Application dbApplication = await GetById(application.application_Id);
 
@@ -57,10 +55,8 @@ namespace FirstStep.Services
             dbApplication.review_date = application.review_date;
             dbApplication.comment = application.comment;
             dbApplication.submitted_date = application.submitted_date;
-            await _context.SaveChangesAsync();
 
-
-           
+            await _context.SaveChangesAsync();           
         }
     }
 }

@@ -10,6 +10,7 @@ namespace FirstStep.Controllers
     public class ApplicationController : ControllerBase
     {
         private readonly IApplicationService _service;
+
         public ApplicationController(IApplicationService service)
         {
             _service = service;
@@ -24,7 +25,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetApplicationById{id}")]
+        [Route("GetApplicationById/{id}")]
 
         public async Task<ActionResult<Application>> GetApplicationById(int id)
         {
@@ -34,25 +35,27 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddApplication")]
 
-        public async Task<ActionResult<Application>> AddApplication(Application application)
+        public async Task<IActionResult> AddApplication(Application application)
         {
-            return Ok(await _service.Create(application));
-        }
-
-        [HttpPut]
-        [Route("UpdateCApplication")]
-
-        public IActionResult UpdateCApplication(Application reqApplication)
-        {
-            _service.Update(reqApplication);
+            await _service.Create(application);
             return Ok();
         }
 
-        [HttpDelete]
-        [Route("DeleteApplication{id}")]
-        public IActionResult DeleteApplication(int id)
+        [HttpPut]
+        [Route("UpdateApplication")]
+
+        public async Task<IActionResult> UpdateCApplication(Application reqApplication)
         {
-            _service.Delete(id);
+            await _service.Update(reqApplication);            
+            return Ok($"Successfully Updated Application ID: {reqApplication.application_Id}");
+        }
+
+        [HttpDelete]
+        [Route("DeleteApplication/{id}")]
+
+        public async Task<IActionResult> DeleteApplication(int id)
+        {
+            await _service.Delete(id);
             return Ok();
         }
 

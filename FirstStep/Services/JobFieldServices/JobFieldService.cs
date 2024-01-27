@@ -49,7 +49,7 @@ namespace FirstStep.Services
 
         public async Task Delete(int id)
         {
-            JobField? jobField = await GetById(id);
+            JobField jobField = await GetById(id);
 
             _context.JobFields.Remove(jobField);
             await _context.SaveChangesAsync();

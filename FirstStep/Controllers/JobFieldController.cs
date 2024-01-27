@@ -1,9 +1,7 @@
-﻿using FirstStep.Data;
-using FirstStep.Models;
+﻿using FirstStep.Models;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Controllers
 {
@@ -29,7 +27,7 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddJobField")]
 
-        public async Task<ActionResult<JobField>> AddJobField(JobField jobField)
+        public async Task<IActionResult> AddJobField(JobField jobField)
         {
             await _service.Create(jobField);
             return Ok();

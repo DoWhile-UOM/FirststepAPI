@@ -24,6 +24,7 @@ builder.Services.AddScoped<IProfessionKeywordService, ProfessionKeywordService>(
 builder.Services.AddScoped<IJobFieldService, JobFieldService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IApplicationService, ApplicationService>();
 
 var app = builder.Build();
 

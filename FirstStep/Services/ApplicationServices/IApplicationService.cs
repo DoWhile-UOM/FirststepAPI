@@ -4,14 +4,14 @@ namespace FirstStep.Services
 {
     public interface IApplicationService
     {
-        Task<IEnumerable<Application>> GetAll();
+        public Task<IEnumerable<Application>> GetAll();
 
-        Task<Application> GetById(int id);
+        public Task<Application> GetById(int id);
 
-        Task<Application> Create(Application application);
+        public Task Create(Application application);
 
-        void Update(Application application);
+        public Task Update(Application application);
 
-        void Delete(int id);
+        public Task Delete(int id);
     }
 }
