@@ -34,6 +34,9 @@ namespace FirstStep.Data
 
         public DbSet<Advertisement_Seeker> AdvertisementSeekers { get; set; } = null!;
 
+        public DbSet<CompanyAdmin> CompanyAdmins { get; set; } = null!;
+
+
         //public DbSet<Advertisement_ProfessionKeyword> AdvertisementProfessionKeywords { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
