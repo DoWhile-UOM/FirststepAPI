@@ -31,7 +31,8 @@ namespace FirstStep.Controllers
 
         public async Task<ActionResult<JobField>> AddJobField(JobField jobField)
         {
-            return Ok(await _service.Create(jobField));
+            await _service.Create(jobField);
+            return Ok();
         }
 
         [HttpPut]
