@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models
 {
-    public class CompanyAdmin:HRManager
+    public class CompanyAdmin : HRManager
     {
     }
 }
