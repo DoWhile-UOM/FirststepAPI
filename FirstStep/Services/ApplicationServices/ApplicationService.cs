@@ -1,5 +1,6 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
 {
@@ -30,9 +31,9 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public Task<IEnumerable<Application>> GetAll()
+        public async Task<IEnumerable<Application>> GetAll()
         {
-            throw new NotImplementedException();
+            return await _context.Applications.ToListAsync();
         }
 
         public async Task<Application> GetById(int id)
@@ -59,7 +60,7 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
 
 
-            //dbApplication.
+           
         }
     }
 }
