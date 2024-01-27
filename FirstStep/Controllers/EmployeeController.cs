@@ -62,7 +62,7 @@ namespace FirstStep.Controllers
 
         public async Task<IActionResult> AddHRAssistant(Employee hRAssistant)
         {
-            //_service.CreateHRAssistant(hRAssistant);
+            await _service.CreateHRAssistant(hRAssistant);
             return Ok("HR Assistant Class Not Available");
         }
 

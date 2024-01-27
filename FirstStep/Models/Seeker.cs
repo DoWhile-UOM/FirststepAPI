@@ -20,6 +20,6 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
-        public ICollection<Advertisement_Seeker>? advertisement_seekers { get; set; }
+        public virtual ICollection<Advertisement>? savedAdvertisemnts { get; set; }
     }
 }
