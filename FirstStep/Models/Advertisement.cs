@@ -53,10 +53,7 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
-        public ICollection<Advertisement_Seeker>? advertisement_seekers { get; set; }
-
-        //[JsonIgnore]
-        //public ICollection<Advertisement_ProfessionKeyword>? advertisement_professionKeywords { get; set; }
+        public virtual ICollection<Seeker>? savedSeekers { get; set; }
         
         public virtual ICollection<ProfessionKeyword>? professionKeywords { get; set; }
     }

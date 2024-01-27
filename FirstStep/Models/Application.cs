@@ -13,11 +13,7 @@ namespace FirstStep.Models
 
             public required string status { get; set; }
 
-            public DateTime? review_date { get; set; }
-
-            public string? comment { get; set; }
-
-            public required DateTime submitted_date { get; set; }
+            public required DateTime submitted_date { get; set; } = DateTime.Now;
         }
     }
 

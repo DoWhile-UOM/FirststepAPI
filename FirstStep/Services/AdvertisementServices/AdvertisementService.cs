@@ -40,14 +40,15 @@ namespace FirstStep.Services
             return advertisement;
         }
 
-        public async void Create(AddAdvertisementDto advertisement)
+        public async Task Create(AddAdvertisementDto advertisement)
         {
             Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisement);
+            
             _context.Advertisements.Add(newAdvertisement);
-            await _context.SaveChangesAsync( );
+            await _context.SaveChangesAsync();
         }
 
-        public async void Update(Advertisement advertisement)
+        public async Task Update(Advertisement advertisement)
         {
             Advertisement dbAdvertisement = await GetById(advertisement.advertisement_id);
 
@@ -73,7 +74,7 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async void Delete(int id)
+        public async Task Delete(int id)
         {
             Advertisement advertisement = await GetById(id);
             

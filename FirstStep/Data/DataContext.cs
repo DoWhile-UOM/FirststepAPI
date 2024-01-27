@@ -30,10 +30,12 @@ namespace FirstStep.Data
 
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
-        public DbSet<Advertisement_Seeker> AdvertisementSeekers { get; set; } = null!;
+        public DbSet<Revision> Revisions { get; set; } = null!;
 
         //public DbSet<CompanyAdmin> CompanyAdmins { get; set; } = null!;
 
+
+        //public DbSet<Advertisement_Seeker> AdvertisementSeekers { get; set; } = null!;
 
         //public DbSet<Advertisement_ProfessionKeyword> AdvertisementProfessionKeywords { get; set; } = null!;
 
@@ -78,6 +80,7 @@ namespace FirstStep.Data
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
 
+            /*
             modelBuilder.Entity<Advertisement_Seeker>(entity =>
             {
                 entity.HasKey(e => new {e.advertisement_id, e.seeker_id});

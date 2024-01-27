@@ -4,14 +4,14 @@ namespace FirstStep.Services
 {
     public interface IJobFieldService
     {
-        Task<IEnumerable<JobField>> GetAll();
+        public Task<IEnumerable<JobField>> GetAll();
 
-        Task<JobField> GetById(int id);
+        public Task<JobField> GetById(int id);
         
-        Task Create(JobField jobField);
+        public Task Create(JobField jobField);
 
-        Task Update(JobField jobField);
+        public Task Update(JobField jobField);
 
-        Task Delete(int id);
+        public Task Delete(int id);
     }
 }

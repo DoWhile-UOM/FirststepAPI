@@ -9,11 +9,11 @@ namespace FirstStep.Services
 
         Task<Advertisement> GetById(int id);
 
-        void Create(AddAdvertisementDto advertisement);
+        Task Create(AddAdvertisementDto advertisement);
 
-        void Update(Advertisement advertisement);
+        Task Update(Advertisement advertisement);
 
-        void Delete(int id);
+        Task Delete(int id);
 
         // IEnumerable<Advertisement> GetAdvertisementsByHRManagerId(int id);
     }

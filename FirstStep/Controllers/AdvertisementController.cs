@@ -36,27 +36,27 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddAdvertisement")]
 
-        public IActionResult AddAdvertisement(AddAdvertisementDto advertisement)
+        public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
-            _service.Create(advertisement);
+            await _service.Create(advertisementDto);
             return Ok();
         }
 
         [HttpPut]
         [Route("UpdateAdvertisement")]
 
-        public IActionResult UpdateAdvertisement(Advertisement reqAdvertisement)
+        public async Task<IActionResult> UpdateAdvertisement(Advertisement reqAdvertisement)
         {
-            _service.Update(reqAdvertisement);
+            await _service.Update(reqAdvertisement);
             return Ok();
         }
 
         [HttpDelete]
         [Route("DeleteAdvertisement{id}")]
 
-        public IActionResult DeleteAdvertisement(int id)
+        public async Task<IActionResult> DeleteAdvertisement(int id)
         {
-            _service.Delete(id);
+            await _service.Delete(id);
             return Ok();
         }
     }
