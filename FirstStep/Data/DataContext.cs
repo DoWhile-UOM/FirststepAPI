@@ -26,8 +26,6 @@ namespace FirstStep.Data
 
         public DbSet<HRManager> HRManagers { get; set; } = null!;
 
-        public DbSet<SystemAdmin> SystemAdmins { get; set; } = null!;
-
         public DbSet<RegisteredCompany> RegisteredCompanys { get; set; } = null!;
 
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;

@@ -1,7 +1,6 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 
 namespace FirstStep.Services
 {
@@ -52,25 +51,29 @@ namespace FirstStep.Services
             return hrAssistants;
         }
 
-        public async void CreateHRManager(HRManager hRManager)
+        public async Task CreateHRManager(HRManager hRManager)
         {
             hRManager.user_id = 0;
             hRManager.is_HRM = true;
+
+            // check whether the company is a registered company using registeredCompany Service class
 
             _context.HRManagers.Add(hRManager);
             await _context.SaveChangesAsync();
         }
 
-        public async void CreateHRAssistant(Employee hRAssistant)
+        public async Task CreateHRAssistant(Employee hRAssistant)
         {
             hRAssistant.user_id = 0;
             hRAssistant.is_HRM = false;
+
+            // check whether the company is a registered company using registeredCompany Service class
 
             _context.Employees.Add(hRAssistant);
             await _context.SaveChangesAsync();
         }
 
-        public async void Update(Employee employee)
+        public async Task Update(Employee employee)
         {
             Employee dbEmployee = await GetById(employee.user_id);
 
@@ -83,7 +86,7 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async void Delete(int id)
+        public async Task Delete(int id)
         {
             Employee employee = await GetById(id);
 

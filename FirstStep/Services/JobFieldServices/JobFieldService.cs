@@ -1,5 +1,6 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -29,28 +30,26 @@ namespace FirstStep.Services
             return jobField;
         }
 
-        public async Task<JobField> Create(JobField jobField)
+        public async Task Create(JobField jobField)
         {
             jobField.field_id = 0;
 
             _context.JobFields.Add(jobField);
             await _context.SaveChangesAsync();
-
-            return jobField;
         }
 
-        public async void Update(JobField jobField)
+        public async Task Update(JobField reqJobField)
         {
-            JobField dbJobField = await GetById(jobField.field_id);
+            JobField dbJobField = await GetById(reqJobField.field_id);
 
-            dbJobField.field_name = jobField.field_name;
+            dbJobField.field_name = reqJobField.field_name;
 
             await _context.SaveChangesAsync();
         }
 
-        public async void Delete(int id)
+        public async Task Delete(int id)
         {
-            JobField jobField = await GetById(id);
+            JobField? jobField = await GetById(id);
 
             _context.JobFields.Remove(jobField);
             await _context.SaveChangesAsync();

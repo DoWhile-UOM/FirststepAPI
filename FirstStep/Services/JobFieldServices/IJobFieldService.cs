@@ -8,10 +8,10 @@ namespace FirstStep.Services
 
         Task<JobField> GetById(int id);
         
-        Task<JobField> Create(JobField jobField);
-        
-        void Update(JobField jobField);
-        
-        void Delete(int id);
+        Task Create(JobField jobField);
+
+        Task Update(JobField jobField);
+
+        Task Delete(int id);
     }
 }
