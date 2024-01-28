@@ -1,10 +1,9 @@
 ﻿using FirstStep.Models;
-
 namespace FirstStep.Services
 {
-    public interface ISystemAdminService
+    public interface ISeekerService
     {
-        public Task<IEnumerable<SystemAdmin>> GetAll();
+        public Task<IEnumerable<Seeker>> GetAll();
 
         public Task<SystemAdmin> GetById(int id);
 

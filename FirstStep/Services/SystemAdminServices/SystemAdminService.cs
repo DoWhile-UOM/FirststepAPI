@@ -2,7 +2,7 @@
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace FirstStep.Services.SystemAdminServices
+namespace FirstStep.Services
 {
     public class SystemAdminService : ISystemAdminService
     {
