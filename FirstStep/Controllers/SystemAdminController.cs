@@ -42,7 +42,7 @@ namespace FirstStep.Controllers
         public async Task<IActionResult> UpdateSystemAdmin(SystemAdmin reqsystemAdmin)
         {
             await _service.Update(reqsystemAdmin);
-            return Ok($"Successfully Updated Application ID: {reqsystemAdmin.user_id}");
+            return Ok($"Successfully Updated SystemAdminID: {reqsystemAdmin.user_id}");
         }
         [HttpDelete]
         [Route("DeleteSystemAdmin/{id}")]

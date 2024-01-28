@@ -5,11 +5,11 @@ namespace FirstStep.Services
     {
         public Task<IEnumerable<Seeker>> GetAll();
 
-        public Task<SystemAdmin> GetById(int id);
+        public Task<Seeker> GetById(int id);
 
-        public Task Create(SystemAdmin systemAdmin);
+        public Task Create(Seeker seeker);
 
-        public Task Update(SystemAdmin systemAdmin);
+        public Task Update(Seeker seeker);
 
         public Task Delete(int id);
     }
