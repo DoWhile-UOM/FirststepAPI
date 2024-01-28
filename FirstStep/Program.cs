@@ -26,6 +26,7 @@ builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
 builder.Services.AddScoped<ISystemAdminService, SystemAdminService>();
+builder.Services.AddScoped<ISeekerService, SeekerService>();
 
 var app = builder.Build();
 

@@ -11,6 +11,11 @@ namespace FirstStep.Controllers
     {
         private readonly ISystemAdminService _service;
 
+        public SystemAdminController(ISystemAdminService service)
+        {
+            _service = service;
+        }
+
         [HttpGet]
         [Route("GetAllSystemAdmins")]
 

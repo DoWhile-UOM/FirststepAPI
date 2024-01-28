@@ -9,10 +9,15 @@ namespace FirstStep.Controllers
     [ApiController]
     public class SeekerController : ControllerBase
     {
-        private readonly ISystemAdminService _service;
+        private readonly ISeekerService _service;
+
+        public SeekerController(ISeekerService service)
+        {
+            _service = service;
+        }
 
         [HttpGet]
-        [Route("GetAllSeeker")]
+        [Route("GetAllSeekers")]
 
         public async Task<ActionResult<IEnumerable<Seeker>>> GetAllSeekers()
         {
@@ -44,6 +49,7 @@ namespace FirstStep.Controllers
             await _service.Update(reqseeker);
             return Ok($"Successfully Updated SeekerID: {reqseeker.user_id}");
         }
+
         [HttpDelete]
         [Route("DeleteSeeker/{id}")]
 

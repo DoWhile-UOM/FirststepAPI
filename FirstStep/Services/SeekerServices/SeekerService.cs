@@ -1,15 +1,18 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
+
 namespace FirstStep.Services
 {
-    public class SeekerService
+    public class SeekerService : ISeekerService
     {
         private readonly DataContext _context;
+
         public SeekerService(DataContext context)
         {
             _context = context;
         }
+
         public async Task<IEnumerable<Seeker>> GetAll()
         {
             return await _context.Seekers.ToListAsync();
@@ -50,12 +53,14 @@ namespace FirstStep.Services
             dbSeeker.profile_picture = seeker.profile_picture;
             dbSeeker.linkedin = seeker.linkedin;
 
+            await _context.SaveChangesAsync();
         }
 
         public async Task Delete(int id)
         {
             Seeker seeker = await GetById(id);
-            _context.Employees.Remove(seeker);
+
+            _context.Seekers.Remove(seeker);
             await _context.SaveChangesAsync();
         }
     }

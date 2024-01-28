@@ -13,6 +13,5 @@ namespace FirstStep.Services
         public Task Update(SystemAdmin systemAdmin);
 
         public Task Delete(int id);
-        Task Update(Seeker reqseeker);
     }
 }
