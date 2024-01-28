@@ -51,6 +51,17 @@ namespace FirstStep.Services
             return hrAssistants;
         }
 
+        public async Task<IEnumerable<Employee>> GetAllEmployees(int company_Id)
+        {
+            ICollection<Employee> employees = await _context.Employees.Where(e => e.company_id == company_Id).ToListAsync();
+            if (employees is null)
+            {
+                throw new Exception("There are no employees under the company");
+            }
+
+            return employees;
+        }
+
         public async Task CreateHRManager(HRManager hRManager)
         {
             hRManager.user_id = 0;
@@ -62,14 +73,26 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task CreateHRAssistant(Employee hRAssistant)
+        public async Task CreateHRAssistant(HRAssistant hRAssistant)
         {
             hRAssistant.user_id = 0;
             hRAssistant.is_HRM = false;
 
             // check whether the company is a registered company using registeredCompany Service class
 
-            _context.Employees.Add(hRAssistant);
+            _context.HRAssistants.Add(hRAssistant);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task CreateCompanyAdmin(CompanyAdmin companyAdmin)
+        {
+            companyAdmin.user_id = 0;
+            companyAdmin.is_HRM = true;
+
+            // check whether the company is a registered company using registeredCompany Service class
+            // company id is not needed for company admin
+
+            _context.CompanyAdmins.Add(companyAdmin);
             await _context.SaveChangesAsync();
         }
 

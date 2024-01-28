@@ -48,6 +48,14 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetAllHRAssistants(company_Id));
         }
 
+        [HttpGet]
+        [Route("GetAllEmployees/{company_Id}")]
+
+        public async Task<ActionResult<IEnumerable<Employee>>> GetAllEmployees(int company_Id)
+        {
+            return Ok(await _service.GetAllEmployees(company_Id));
+        }
+
         [HttpPost]
         [Route("AddNewHRManager")]
 
@@ -60,10 +68,19 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddNewHRAssistant")]
 
-        public async Task<IActionResult> AddHRAssistant(Employee hRAssistant)
+        public async Task<IActionResult> AddHRAssistant(HRAssistant hRAssistant)
         {
             await _service.CreateHRAssistant(hRAssistant);
-            return Ok("HR Assistant Class Not Available");
+            return Ok("Successfully Added");
+        }
+
+        [HttpPost]
+        [Route("AddNewCompanyAdmin")]
+
+        public async Task<IActionResult> AddCompanyAdmin(CompanyAdmin companyAdmin)
+        {
+            await _service.CreateCompanyAdmin(companyAdmin);
+            return Ok("Successfully Added");
         }
 
         [HttpPut]

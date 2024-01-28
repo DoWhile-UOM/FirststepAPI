@@ -30,25 +30,30 @@ namespace FirstStep.Controllers
         public async Task<IActionResult> AddJobField(JobField jobField)
         {
             await _service.Create(jobField);
-            return Ok();
+            return Ok($"Sucessfull added new job field: {jobField.field_name}");
         }
 
         [HttpPut]
-        [Route("UpdateJobField")]
+        [Route("UpdateJobField/{id:int}")]
 
-        public async Task<IActionResult> UpdateJobField(JobField reqJobField)
+        public async Task<IActionResult> UpdateJobField(JobField reqJobField, int id)
         {
+            if (id != reqJobField.field_id)
+            {
+                return BadRequest("Context is not matching");
+            }
+
             await _service.Update(reqJobField);
-            return Ok($"Sucessfully Updated {reqJobField.field_id}");
+            return Ok($"Sucessfully Updated: Job field {reqJobField.field_name}");
         }
 
         [HttpDelete]
-        [Route("DeleteJobFieldById/{id}")]
+        [Route("DeleteJobFieldById/{id:int}")]
 
         public async Task<IActionResult> DeleteJobFieldById(int id)
         {
             await _service.Delete(id);
-            return Ok();
+            return Ok($"Suncessfully Deleted: job field {id}");
         }
     }
 }

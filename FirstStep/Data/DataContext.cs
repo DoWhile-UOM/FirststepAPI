@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Data
 {
-    public class DataContext: DbContext
+    public class DataContext : DbContext
     {        
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
@@ -26,13 +26,17 @@ namespace FirstStep.Data
 
         public DbSet<HRManager> HRManagers { get; set; } = null!;
 
+        public DbSet<HRAssistant> HRAssistants { get; set; } = null!;
+
+        public DbSet<CompanyAdmin> CompanyAdmins { get; set; } = null!;
+
+        public DbSet<SystemAdmin> SystemAdmins { get; set; } = null!;
+
         public DbSet<RegisteredCompany> RegisteredCompanys { get; set; } = null!;
 
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
         public DbSet<Revision> Revisions { get; set; } = null!;
-
-        //public DbSet<CompanyAdmin> CompanyAdmins { get; set; } = null!;
 
 
         //public DbSet<Advertisement_Seeker> AdvertisementSeekers { get; set; } = null!;
@@ -44,6 +48,9 @@ namespace FirstStep.Data
             modelBuilder.Entity<Seeker>().ToTable("Seekers");
             modelBuilder.Entity<Employee>().ToTable("Employees");
             modelBuilder.Entity<HRManager>().ToTable("HRManagers");
+            modelBuilder.Entity<HRAssistant>().ToTable("HRAssistants");
+            modelBuilder.Entity<CompanyAdmin>().ToTable("CompanyAdmins");
+            modelBuilder.Entity<SystemAdmin>().ToTable("SystemAdmins");
             modelBuilder.Entity<RegisteredCompany>().ToTable("RegisteredCompanys");
 
             modelBuilder.Entity<Advertisement>(entity => 
