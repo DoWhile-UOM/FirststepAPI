@@ -7,9 +7,11 @@ namespace FirstStep.Services
     public class SystemAdminService : ISystemAdminService
     {
         private readonly DataContext _context;
+
         public SystemAdminService(DataContext context) {
             _context = context;
         }
+
         public async Task<IEnumerable<SystemAdmin>> GetAll()
         {
             return await _context.SystemAdmins.ToListAsync();
@@ -33,6 +35,7 @@ namespace FirstStep.Services
             _context.SystemAdmins.Add(systemAdmin);
             await _context.SaveChangesAsync();
         }
+
         public async Task Update(SystemAdmin systemAdmin)
         {
             SystemAdmin dbSystemAdmin= await GetById(systemAdmin.user_id);
@@ -41,6 +44,8 @@ namespace FirstStep.Services
             dbSystemAdmin.last_name = systemAdmin.last_name;
             dbSystemAdmin.email = systemAdmin.email;
             dbSystemAdmin.password = systemAdmin.password;
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task Delete(int id)
@@ -50,9 +55,5 @@ namespace FirstStep.Services
             _context.SystemAdmins.Remove(systemAdmin);
             await _context.SaveChangesAsync();
         }
-
-        
-
-        
     }
 }
