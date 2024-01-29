@@ -15,7 +15,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 // DataContext Configuration
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("TestFITiotServerConnection"));
 });
 
 // Services Configuration
