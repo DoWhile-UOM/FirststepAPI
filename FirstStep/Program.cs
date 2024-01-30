@@ -1,5 +1,6 @@
 using FirstStep.Data;
 using FirstStep.Services;
+using FirstStep.Services.RegisteredCompanyServices;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,8 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
 builder.Services.AddScoped<ISystemAdminService, SystemAdminService>();
 builder.Services.AddScoped<ISeekerService, SeekerService>();
+builder.Services.AddScoped<IRegisteredCompanyService, RegisteredCompanyService>();
+
 
 var app = builder.Build();
 
