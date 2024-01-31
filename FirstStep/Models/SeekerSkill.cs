@@ -6,6 +6,7 @@ namespace FirstStep.Models
     {
         [Key]
         public int skillNo { get; set; }
+
         public required string skillName { get; set; }
     }
 }

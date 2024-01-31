@@ -198,7 +198,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("company_id");
 
-                    b.ToTable("Companys");
+                    b.ToTable("Companies");
 
                     b.UseTptMappingStrategy();
                 });
@@ -279,7 +279,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("skillNo");
 
-                    b.ToTable("Seekerskill");
+                    b.ToTable("SeekerSkills");
                 });
 
             modelBuilder.Entity("FirstStep.Models.User", b =>
@@ -343,7 +343,7 @@ namespace FirstStep.Migrations
                     b.Property<DateTime>("company_registered_date")
                         .HasColumnType("datetime2");
 
-                    b.ToTable("RegisteredCompanys", (string)null);
+                    b.ToTable("RegisteredCompanies", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Employee", b =>

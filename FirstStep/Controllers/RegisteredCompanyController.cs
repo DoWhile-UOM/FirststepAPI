@@ -18,9 +18,9 @@ namespace FirstStep.Controllers
         [HttpGet]
         [Route("GetAllRegisteredCompanies")]
 
-        public IActionResult GetAllRegisteredCompanies()
+        public async Task<ActionResult<IEnumerable<RegisteredCompany>>> GetAllRegisteredCompanies()
         {
-            return Ok("registeredCompanies");
+            return Ok(await _service.GetAll());
         }
 
         [HttpGet]
@@ -28,15 +28,7 @@ namespace FirstStep.Controllers
 
         public async Task<ActionResult<RegisteredCompany>> GetRegisteredCompanyById(int id)
         {
-            try
-            {
-                var registeredCompany = await _service.GetById(id);
-                return Ok(registeredCompany);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(await _service.GetById(id));
         }
 
         /*
@@ -62,33 +54,19 @@ namespace FirstStep.Controllers
         [HttpPut]
         [Route("UpdateRegisteredCompany")]
 
-        public IActionResult UpdateRegisteredCompany(RegisteredCompany reqRegisteredCompany)
+        public async Task<IActionResult> UpdateRegisteredCompany(RegisteredCompany reqRegisteredCompany)
         {
-            try
-            {
-                _service.Update(reqRegisteredCompany);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _service.Update(reqRegisteredCompany);
+            return Ok("Successfully Updated Company Details");
         }
 
         [HttpDelete]
         [Route("DeleteRegisteredCompany/{id}")]
 
-        public IActionResult DeleteRegisteredCompany(int id)
+        public async Task<IActionResult> DeleteRegisteredCompany(int id)
         {
-            try
-            {
-                _service.Delete(id);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _service.Delete(id);
+            return Ok("Successfully Deleted Company");
         }
     }
 }

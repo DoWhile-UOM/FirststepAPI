@@ -5,26 +5,22 @@
 namespace FirstStep.Migrations
 {
     /// <inheritdoc />
-    public partial class SetupDBonAzure : Migration
+    public partial class AddSeekerSkillsAndAdminTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "SystemAdmins",
+                name: "SeekerSkills",
                 columns: table => new
                 {
-                    user_id = table.Column<int>(type: "int", nullable: false)
+                    skillNo = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    skillName = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SystemAdmins", x => x.user_id);
-                    table.ForeignKey(
-                        name: "FK_SystemAdmins_Users_user_id",
-                        column: x => x.user_id,
-                        principalTable: "Users",
-                        principalColumn: "user_id",
-                        onDelete: ReferentialAction.Cascade);
+                    table.PrimaryKey("PK_SeekerSkills", x => x.skillNo);
                 });
         }
 
@@ -32,7 +28,7 @@ namespace FirstStep.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "SystemAdmins");
+                name: "SeekerSkills");
         }
     }
 }

@@ -12,6 +12,8 @@ namespace FirstStep.Data
 
         public DbSet<Application> Applications { get; set; } = null!;
 
+        public DbSet<SeekerSkill> SeekerSkills { get; set; } = null!;
+
         public DbSet<User> Users { get; set; } = null!;
         
         public DbSet<Company> Companies { get; set; } = null!;
@@ -35,8 +37,6 @@ namespace FirstStep.Data
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
         public DbSet<Revision> Revisions { get; set; } = null!;
-
-        public DbSet<SeekerSkill> SeekerSkills { get; set; } = null!;
 
 
         //public DbSet<Advertisement_Seeker> AdvertisementSeekers { get; set; } = null!;
