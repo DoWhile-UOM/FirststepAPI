@@ -12,11 +12,11 @@ namespace FirstStep.Data
 
         public DbSet<Application> Applications { get; set; } = null!;
 
-        public DbSet<SeekerSkill> Seekerskill { get; set; } = null!;
+        public DbSet<SeekerSkill> SeekerSkill { get; set; } = null!;
 
         public DbSet<User> Users { get; set; } = null!;
         
-        public DbSet<Company> Companys { get; set; } = null!;
+        public DbSet<Company> Companies { get; set; } = null!;
         
         public DbSet<JobField> JobFields { get; set; } = null!;
 
@@ -32,7 +32,7 @@ namespace FirstStep.Data
 
         public DbSet<SystemAdmin> SystemAdmins { get; set; } = null!;
 
-        public DbSet<RegisteredCompany> RegisteredCompanys { get; set; } = null!;
+        public DbSet<RegisteredCompany> RegisteredCompanies { get; set; } = null!;
 
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 

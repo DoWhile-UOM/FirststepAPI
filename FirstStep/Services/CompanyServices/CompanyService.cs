@@ -17,7 +17,7 @@ namespace FirstStep.Services
         {
             company.company_id = 0;
 
-            _context.Companys.Add(company);
+            _context.Companies.Add(company);
             await _context.SaveChangesAsync();
 
             return company;
@@ -27,18 +27,18 @@ namespace FirstStep.Services
         {
             Company company = await GetById(id);
 
-            _context.Companys.Remove(company);
+            _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Company>> GetAll()
         {
-            return await _context.Companys.ToListAsync();
+            return await _context.Companies.ToListAsync();
         }
 
         public async Task<Company> GetById(int id)
         {
-            Company? company = await _context.Companys.FindAsync(id);
+            Company? company = await _context.Companies.FindAsync(id);
             if (company is null)
             {
                 throw new Exception("Company not found.");
