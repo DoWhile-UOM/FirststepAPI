@@ -17,21 +17,15 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllRegisteredCompanies")]
-        public async Task<ActionResult<IEnumerable<RegisteredCompany>>> GetRegisteredCompanies()
+
+        public IActionResult GetAllRegisteredCompanies()
         {
-            try
-            {
-                var registeredCompanies = await _service.GetAll();
-                return Ok(registeredCompanies);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok("registeredCompanies");
         }
 
         [HttpGet]
         [Route("GetRegisteredCompanyById/{id}")]
+
         public async Task<ActionResult<RegisteredCompany>> GetRegisteredCompanyById(int id)
         {
             try
@@ -45,10 +39,14 @@ namespace FirstStep.Controllers
             }
         }
 
+        /*
+
         [HttpPost]
         [Route("AddRegisteredCompany")]
+
         public async Task<ActionResult<RegisteredCompany>> AddRegisteredCompany(RegisteredCompany registeredCompany)
         {
+            /*
             try
             {
                 var createdRegisteredCompany = await _service.Create(registeredCompany);
@@ -57,11 +55,13 @@ namespace FirstStep.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
-            }
+            }*
         }
+    */
 
         [HttpPut]
         [Route("UpdateRegisteredCompany")]
+
         public IActionResult UpdateRegisteredCompany(RegisteredCompany reqRegisteredCompany)
         {
             try
@@ -77,6 +77,7 @@ namespace FirstStep.Controllers
 
         [HttpDelete]
         [Route("DeleteRegisteredCompany/{id}")]
+
         public IActionResult DeleteRegisteredCompany(int id)
         {
             try
