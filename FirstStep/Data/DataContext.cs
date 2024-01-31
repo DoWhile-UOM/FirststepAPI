@@ -12,7 +12,7 @@ namespace FirstStep.Data
 
         public DbSet<Application> Applications { get; set; } = null!;
 
-        public DbSet<SeekerSkill> SeekerSkill { get; set; } = null!;
+        public DbSet<SeekerSkill> SeekerSkills { get; set; } = null!;
 
         public DbSet<User> Users { get; set; } = null!;
         

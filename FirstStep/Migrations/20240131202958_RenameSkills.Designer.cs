@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240131202958_RenameSkills")]
+    partial class RenameSkills
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -267,17 +270,17 @@ namespace FirstStep.Migrations
 
             modelBuilder.Entity("FirstStep.Models.SeekerSkill", b =>
                 {
-                    b.Property<int>("skill_id")
+                    b.Property<int>("seeker_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("skill_id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("seeker_Id"));
 
                     b.Property<string>("skill_name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("skill_id");
+                    b.HasKey("seeker_Id");
 
                     b.ToTable("SeekerSkills");
                 });
