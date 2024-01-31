@@ -1,10 +1,6 @@
 ﻿using FirstStep.Models;
 using FirstStep.Services;
-using FirstStep.Services.RegisteredCompanyServices;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace FirstStep.Controllers
 {

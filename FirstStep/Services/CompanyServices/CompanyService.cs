@@ -4,43 +4,60 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
 {
-    public class RegisteredCompanyService : ICompanyService, IRegisteredCompanyService
+    public class CompanyService : ICompanyService
     {
-        public RegisteredCompanyService(DataContext context) : base(context)
+        public readonly DataContext _context;
+
+        public CompanyService(DataContext context)
         {
+            _context = context;
         }
 
-        public async Task<RegisteredCompany> Create(RegisteredCompany registeredCompany)
+        public async Task<IEnumerable<Company>> GetAll()
         {
-            // Cast the RegisteredCompany to Company
-            var company = (Company)registeredCompany;
+            return await _context.Companies.ToListAsync();
+        }
 
-            // Call the base class method to create a Company
-            await base.Create(company);
+        public async Task<Company> GetById(int id)
+        {
+            Company? company = await _context.Companies.FindAsync(id);
+            if (company is null)
+            {
+                throw new Exception("JobField not found.");
+            }
 
-            // Update the database with the RegisteredCompany specific properties
-            await _context.Entry(company).GetDatabaseValuesAsync();
-            registeredCompany.company_id = company.company_id;
+            return company;
+        }
 
-            _context.RegisteredCompanies.Add(registeredCompany);
+        public async Task Create(Company company)
+        {
+            company.company_id = 0;
+
+            _context.Companies.Add(company);
             await _context.SaveChangesAsync();
-
-            return registeredCompany;
         }
 
-        public async void Update(RegisteredCompany registeredCompany)
+        public async Task Update(Company reqCompany)
         {
-            // Call the base class method to update the Company properties
-            await base.Update(registeredCompany);
+            Company dbCompany = await GetById(reqCompany.company_id);
 
-            // Update the database with the RegisteredCompany specific properties
-            var dbRegisteredCompany = await _context.RegisteredCompanies
-                .FirstOrDefaultAsync(c => c.company_id == registeredCompany.company_id);
+            dbCompany.company_name = reqCompany.company_name;
+            dbCompany.business_reg_no = reqCompany.business_reg_no;
+            dbCompany.company_email = reqCompany.company_email;
+            dbCompany.company_website = reqCompany.company_website;
+            dbCompany.company_phone_number = reqCompany.company_phone_number;
+            dbCompany.verification_status = reqCompany.verification_status;
+            dbCompany.business_reg_certificate = reqCompany.business_reg_certificate;
+            dbCompany.certificate_of_incorporation = reqCompany.certificate_of_incorporation;
 
-            dbRegisteredCompany.company_logo = registeredCompany.company_logo;
-            dbRegisteredCompany.company_description = registeredCompany.company_description;
-            // Update other properties accordingly
+            await _context.SaveChangesAsync();
+        }
 
+        public async Task Delete(int id)
+        {
+            Company company = await GetById(id);
+
+            _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
         }
     }
