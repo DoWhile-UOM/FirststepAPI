@@ -26,7 +26,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetCompanyById/{id}")]
+        [Route("GetCompanyById{id}")]
 
         public async Task<ActionResult<Company>> GetCompanyById(int id)
         {
@@ -36,26 +36,25 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddCompany")]
 
-        public async Task<ActionResult> AddCompany(Company company)
+        public async Task<ActionResult<Company>> AddCompany(Company company)
         {
-            await _service.Create(company);
-            return Ok();
+            return Ok(await _service.Create(company));
         }
 
         [HttpPut]
         [Route("UpdateCompany")]
 
-        public async Task<IActionResult> UpdateCompany(Company reqCompany)
+        public IActionResult UpdateCompany(Company reqCompany)
         {
-            await _service.Update(reqCompany);
+            _service.Update(reqCompany);
             return Ok();
         }
 
         [HttpDelete]
-        [Route("DeleteCompany/{id}")]
-        public async Task<IActionResult> DeleteCompany(int id)
+        [Route("DeleteCompany{id}")]
+        public IActionResult DeleteCompany(int id)
         {
-            await _service.Delete(id);
+            _service.Delete(id);
             return Ok();
         }
     }

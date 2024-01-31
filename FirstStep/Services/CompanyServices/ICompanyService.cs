@@ -8,10 +8,10 @@ namespace FirstStep.Services
 
         public Task<Company> GetById(int id);
 
-        public Task Create(Company company);
+        public Task<Company> Create(Company company);
 
-        public Task Update(Company company);
+        public void Update(Company company);
 
-        public Task Delete(int id);
+        public void Delete(int id);
     }
 }

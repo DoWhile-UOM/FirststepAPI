@@ -5,8 +5,8 @@ namespace FirstStep.Models
     public class SeekerSkill
     {
         [Key]
-        public int skillNo { get; set; }
-
+        public required int seeker_Id { get; set; }
+        
         public required string skillName { get; set; }
     }
 }

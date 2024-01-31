@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240128080044_AddUserEmpSubClasses")]
+    partial class AddUserEmpSubClasses
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,7 +52,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("savedSeekersuser_id");
 
-                    b.ToTable("AdvertisementSeeker", (string)null);
+                    b.ToTable("AdvertisementSeeker");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Advertisement", b =>
@@ -131,7 +134,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("hrManager_id");
 
-                    b.ToTable("Advertisements", (string)null);
+                    b.ToTable("Advertisements");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Application", b =>
@@ -159,7 +162,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("application_Id");
 
-                    b.ToTable("Applications", (string)null);
+                    b.ToTable("Applications");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
@@ -198,7 +201,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("company_id");
 
-                    b.ToTable("Companys", (string)null);
+                    b.ToTable("Companys");
 
                     b.UseTptMappingStrategy();
                 });
@@ -217,7 +220,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("field_id");
 
-                    b.ToTable("JobFields", (string)null);
+                    b.ToTable("JobFields");
                 });
 
             modelBuilder.Entity("FirstStep.Models.ProfessionKeyword", b =>
@@ -239,7 +242,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("field_id");
 
-                    b.ToTable("ProfessionKeywords", (string)null);
+                    b.ToTable("ProfessionKeywords");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Revision", b =>
@@ -262,7 +265,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("revision_id");
 
-                    b.ToTable("Revisions", (string)null);
+                    b.ToTable("Revisions");
                 });
 
             modelBuilder.Entity("FirstStep.Models.SeekerSkill", b =>
@@ -279,7 +282,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("skillNo");
 
-                    b.ToTable("SeekerSkill", (string)null);
+                    b.ToTable("Seekerskill");
                 });
 
             modelBuilder.Entity("FirstStep.Models.User", b =>
@@ -312,7 +315,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("user_id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
 
                     b.UseTptMappingStrategy();
                 });

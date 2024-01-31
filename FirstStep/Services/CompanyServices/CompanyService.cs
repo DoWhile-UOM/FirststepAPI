@@ -6,58 +6,60 @@ namespace FirstStep.Services
 {
     public class CompanyService : ICompanyService
     {
-        public readonly DataContext _context;
+        private readonly DataContext _context;
 
         public CompanyService(DataContext context)
         {
             _context = context;
         }
 
+        public async Task<Company> Create(Company company)
+        {
+            company.company_id = 0;
+
+            _context.Companys.Add(company);
+            await _context.SaveChangesAsync();
+
+            return company;
+        }
+
+        public async void Delete(int id)
+        {
+            Company company = await GetById(id);
+
+            _context.Companys.Remove(company);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<IEnumerable<Company>> GetAll()
         {
-            return await _context.Companies.ToListAsync();
+            return await _context.Companys.ToListAsync();
         }
 
         public async Task<Company> GetById(int id)
         {
-            Company? company = await _context.Companies.FindAsync(id);
+            Company? company = await _context.Companys.FindAsync(id);
             if (company is null)
             {
-                throw new Exception("JobField not found.");
+                throw new Exception("Company not found.");
             }
 
             return company;
         }
 
-        public async Task Create(Company company)
+        public async void Update(Company company)
         {
-            company.company_id = 0;
+            Company dbCompany = await GetById(company.company_id);
 
-            _context.Companies.Add(company);
-            await _context.SaveChangesAsync();
-        }
+            dbCompany.company_name = company.company_name;
+            dbCompany.company_email = company.company_email;
+            dbCompany.business_reg_no = company.business_reg_no;
+            dbCompany.company_website = company.company_website;
+            dbCompany.company_phone_number = company.company_phone_number;
+            dbCompany.verification_status = company.verification_status;
+            dbCompany.business_reg_certificate = company.business_reg_certificate;
+            dbCompany.certificate_of_incorporation = company.certificate_of_incorporation;
 
-        public async Task Update(Company reqCompany)
-        {
-            Company dbCompany = await GetById(reqCompany.company_id);
-
-            dbCompany.company_name = reqCompany.company_name;
-            dbCompany.business_reg_no = reqCompany.business_reg_no;
-            dbCompany.company_email = reqCompany.company_email;
-            dbCompany.company_website = reqCompany.company_website;
-            dbCompany.company_phone_number = reqCompany.company_phone_number;
-            dbCompany.verification_status = reqCompany.verification_status;
-            dbCompany.business_reg_certificate = reqCompany.business_reg_certificate;
-            dbCompany.certificate_of_incorporation = reqCompany.certificate_of_incorporation;
-
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task Delete(int id)
-        {
-            Company company = await GetById(id);
-
-            _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
         }
     }

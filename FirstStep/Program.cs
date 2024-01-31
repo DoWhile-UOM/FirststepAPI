@@ -15,7 +15,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 // DataContext Configuration
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("TestFITiotServerConnection"));
 });
 
 // Services Configuration
@@ -27,8 +27,6 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
 builder.Services.AddScoped<ISystemAdminService, SystemAdminService>();
 builder.Services.AddScoped<ISeekerService, SeekerService>();
-//builder.Services.AddScoped<IRegisteredCompanyService, RegisteredCompanyService>();
-
 
 var app = builder.Build();
 
