@@ -11,7 +11,7 @@ namespace FirstStep.Services
         
         Task Create(ProfessionKeywordDto professionKeyword);
         
-        Task Update(ProfessionKeywordDto professionKeyword);
+        Task Update(int keywordID, ProfessionKeyword professionKeyword);
         
         Task Delete(int id);
     }

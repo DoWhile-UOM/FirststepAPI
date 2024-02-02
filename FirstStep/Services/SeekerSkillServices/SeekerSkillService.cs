@@ -1,5 +1,7 @@
-﻿using FirstStep.Data;
+﻿using AutoMapper;
+using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -7,20 +9,26 @@ namespace FirstStep.Services
     public class SeekerSkillService : ISeekerSkillService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public SeekerSkillService(DataContext context)
+        public SeekerSkillService(DataContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<SeekerSkill>> GetAll()
         {
-            return await _context.SeekerSkills.ToListAsync();
+            return await _context.SeekerSkills.Include(e => e.job_Field).ToListAsync();
         }
 
         public async Task<SeekerSkill> GetById(int id)
         {
-            SeekerSkill? seekerSkill = await _context.SeekerSkills.FindAsync(id);
+            var seekerSkill = await _context.SeekerSkills
+                .Where(e => e.skill_id == id)
+                .Include(e => e.job_Field)
+                .FirstOrDefaultAsync();
+
             if (seekerSkill is null)
             {
                 throw new Exception("SeekerSkill not found.");
@@ -29,20 +37,20 @@ namespace FirstStep.Services
             return seekerSkill;
         }
 
-        public async Task Create(SeekerSkill seekerSkill)
+        public async Task Create(SeekerSkillDto newSeekerSkill)
         {
-            seekerSkill.skill_id = 0;
+            var seekerSkill = _mapper.Map<SeekerSkill>(newSeekerSkill);
 
             _context.SeekerSkills.Add(seekerSkill);
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(SeekerSkill seekerSkill)
+        public async Task Update(int id, SeekerSkill reqSeekerSkill)
         {
-            SeekerSkill dbSeekerSkill = await GetById(seekerSkill.skill_id);
+            var dbSeekerSkill = await GetById(id);
 
-            dbSeekerSkill.skill_id = seekerSkill.skill_id;
-            dbSeekerSkill.skill_name = seekerSkill.skill_name;
+            dbSeekerSkill.skill_name = reqSeekerSkill.skill_name;
+            dbSeekerSkill.field_id = reqSeekerSkill.field_id;
 
             await _context.SaveChangesAsync();
         }

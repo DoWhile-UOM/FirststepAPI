@@ -17,5 +17,8 @@ namespace FirstStep.Models
         [JsonIgnore]
         public virtual ICollection<ProfessionKeyword>? professionKeywords { get; set; }
 
+        [JsonIgnore]
+        public virtual ICollection<SeekerSkill>? seekerSkills { get; set; }
+
     }
 }

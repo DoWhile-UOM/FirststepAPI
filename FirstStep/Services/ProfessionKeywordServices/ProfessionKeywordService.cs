@@ -47,13 +47,12 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(ProfessionKeywordDto reqProfessionKeyword)
+        public async Task Update(int keywordID, ProfessionKeyword reqProfessionKeyword)
         {
-            var dbProfessionKeyword = await GetById(reqProfessionKeyword.profession_id);
-            var professionKeyword = _mapper.Map<ProfessionKeyword>(reqProfessionKeyword);
+            var dbProfessionKeyword = await GetById(keywordID);
 
-            dbProfessionKeyword.profession_name = professionKeyword.profession_name;
-            dbProfessionKeyword.field_id = professionKeyword.field_id;
+            dbProfessionKeyword.profession_name = reqProfessionKeyword.profession_name;
+            dbProfessionKeyword.field_id = reqProfessionKeyword.field_id;
 
             await _context.SaveChangesAsync();
         }

@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -35,10 +36,10 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddSeekerSkill")]
 
-        public async Task<IActionResult> AddSeekerSkill(SeekerSkill seekerSkill)
+        public async Task<IActionResult> AddSeekerSkill(SeekerSkillDto newSeekerSkill)
         {
-            await _service.Create(seekerSkill);
-            return Ok($"Sucessfull added new seeker skill: {seekerSkill.skill_name}");
+            await _service.Create(newSeekerSkill);
+            return Ok($"Sucessfull added new seeker skill: {newSeekerSkill.skill_name}");
         }
 
         [HttpPut]
@@ -51,7 +52,7 @@ namespace FirstStep.Controllers
                 return BadRequest("Context is not matching");
             }
 
-            await _service.Update(reqSeekerSkill);
+            await _service.Update(id, reqSeekerSkill);
             return Ok($"Sucessfully Updated: Seeker skill {reqSeekerSkill.skill_name}");
         }
 

@@ -45,14 +45,14 @@ namespace FirstStep.Controllers
         [HttpPut]
         [Route("UpdateProfessionKeyword/{id:int}")]
 
-        public async Task<IActionResult> UpdateProfessionKeyword(ProfessionKeywordDto reqProfessionKeyword, int id)
+        public async Task<IActionResult> UpdateProfessionKeyword(ProfessionKeyword reqProfessionKeyword, int id)
         {
             if (id != reqProfessionKeyword.profession_id)
             {
                 return BadRequest("Context is not matching");
             }
 
-            await _service.Update(reqProfessionKeyword);
+            await _service.Update(id, reqProfessionKeyword);
             return Ok($"Successfully updated profession keyword: {reqProfessionKeyword.profession_name}.");
         }
 

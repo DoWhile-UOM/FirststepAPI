@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -8,9 +9,9 @@ namespace FirstStep.Services
 
         public Task<SeekerSkill> GetById(int id);
 
-        public Task Create(SeekerSkill seekerSkill);
+        public Task Create(SeekerSkillDto seekerSkill);
 
-        public Task Update(SeekerSkill seekerSkill);
+        public Task Update(int skillId, SeekerSkill seekerSkill);
 
         public Task Delete(int id);
     }

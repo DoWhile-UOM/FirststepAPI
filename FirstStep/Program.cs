@@ -23,10 +23,13 @@ builder.Services.AddScoped<IAdvertisementService, AdvertisementService>();
 builder.Services.AddScoped<IProfessionKeywordService, ProfessionKeywordService>();
 builder.Services.AddScoped<IJobFieldService, JobFieldService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IRegisteredCompanyService, RegisteredCompanyService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
 builder.Services.AddScoped<ISystemAdminService, SystemAdminService>();
 builder.Services.AddScoped<ISeekerService, SeekerService>();
+builder.Services.AddScoped<ISeekerSkillService, SeekerSkillService>();
+builder.Services.AddScoped<IRevisionService, RevisionService>();
 
 var app = builder.Build();
 
