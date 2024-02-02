@@ -39,8 +39,6 @@ namespace FirstStep.Services
 
         public async Task Create(ProfessionKeywordDto newProfessionKeyword)
         {
-            newProfessionKeyword.profession_id = 0;
-
             var professionKeyword = _mapper.Map<ProfessionKeyword>(newProfessionKeyword);
 
             _context.ProfessionKeywords.Add(professionKeyword);

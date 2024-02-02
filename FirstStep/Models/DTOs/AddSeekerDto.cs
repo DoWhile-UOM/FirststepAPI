@@ -1,9 +1,15 @@
-﻿using System.Text.Json.Serialization;
-
-namespace FirstStep.Models
+﻿namespace FirstStep.Models.DTOs
 {
-    public class Seeker : User
+    public class AddSeekerDto
     {
+        public required string email { get; set; }
+
+        public required string password { get; set; }
+
+        public required string first_name { get; set; }
+
+        public required string last_name { get; set; }
+
         public int phone_number { get; set; }
 
         public required string bio { get; set; }
@@ -18,13 +24,6 @@ namespace FirstStep.Models
 
         public string? linkedin { get; set; }
 
-
-        public virtual JobField? job_Field { get; set; }
-
         public required int field_id { get; set; }
-
-
-        [JsonIgnore]
-        public virtual ICollection<Advertisement>? savedAdvertisemnts { get; set; }
     }
 }

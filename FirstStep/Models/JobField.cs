@@ -12,13 +12,15 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
-        public virtual ICollection<Advertisement>? advertisements { get; set; }
-
-        [JsonIgnore]
         public virtual ICollection<ProfessionKeyword>? professionKeywords { get; set; }
 
         [JsonIgnore]
         public virtual ICollection<SeekerSkill>? seekerSkills { get; set; }
 
+        [JsonIgnore]
+        public virtual ICollection<Advertisement>? advertisements { get; set; }
+
+        [JsonIgnore]
+        public virtual ICollection<Seeker>? seekers { get; set; }
     }
 }

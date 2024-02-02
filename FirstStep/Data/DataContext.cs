@@ -39,10 +39,6 @@ namespace FirstStep.Data
         public DbSet<Revision> Revisions { get; set; } = null!;
 
 
-        //public DbSet<Advertisement_Seeker> AdvertisementSeekers { get; set; } = null!;
-
-        //public DbSet<Advertisement_ProfessionKeyword> AdvertisementProfessionKeywords { get; set; } = null!;
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Seeker>().ToTable("Seekers");
@@ -91,6 +87,14 @@ namespace FirstStep.Data
             {
                 entity.HasOne(e => e.job_Field)
                     .WithMany(e => e.seekerSkills)
+                    .HasForeignKey(e => e.field_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+            });
+
+            modelBuilder.Entity<Seeker>(entity =>
+            {
+                entity.HasOne(e => e.job_Field)
+                    .WithMany(e => e.seekers)
                     .HasForeignKey(e => e.field_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
             });

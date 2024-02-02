@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -35,27 +36,32 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddSeeker")]
 
-        public async Task<IActionResult> AddSeeker(Seeker seeker)
+        public async Task<IActionResult> AddSeeker(AddSeekerDto newSeeker)
         {
-            await _service.Create(seeker);
-            return Ok();
+            await _service.Create(newSeeker);
+            return Ok($"Suessfully added new seeker: {newSeeker.first_name} {newSeeker.last_name}");
         }
 
         [HttpPut]
-        [Route("UpdateSeeker")]
+        [Route("UpdateSeeker/{seekerId:int}")]
 
-        public async Task<IActionResult> UpdateSeeker(Seeker reqseeker)
+        public async Task<IActionResult> UpdateSeeker(Seeker reqseeker, int seekerId)
         {
-            await _service.Update(reqseeker);
-            return Ok($"Successfully Updated SeekerID: {reqseeker.user_id}");
+            if (seekerId != reqseeker.user_id)
+            {
+                return BadRequest("Context is not matching");
+            }
+
+            await _service.Update(seekerId, reqseeker);
+            return Ok($"Successfully Updated SeekerID: {reqseeker.first_name} {reqseeker.last_name}");
         }
 
         [HttpDelete]
-        [Route("DeleteSeeker/{id}")]
+        [Route("DeleteSeeker/{seekerId:int}")]
 
-        public async Task<IActionResult> DeleteSeeker(int id)
+        public async Task<IActionResult> DeleteSeeker(int seekerId)
         {
-            await _service.Delete(id);
+            await _service.Delete(seekerId);
             return Ok();
         }
     }

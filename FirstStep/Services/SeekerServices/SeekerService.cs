@@ -1,5 +1,7 @@
-﻿using FirstStep.Data;
+﻿using AutoMapper;
+using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -7,10 +9,12 @@ namespace FirstStep.Services
     public class SeekerService : ISeekerService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public SeekerService(DataContext context)
+        public SeekerService(DataContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Seeker>> GetAll()
@@ -30,17 +34,19 @@ namespace FirstStep.Services
             return seeker;
         }
 
-        public async Task Create(Seeker seeker)
+        public async Task Create(AddSeekerDto newSeeker)
         {
-            seeker.user_id = 0;
+            var seeker = _mapper.Map<Seeker>(newSeeker);
+
+            seeker.user_type = "seeker";
 
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(Seeker seeker)
+        public async Task Update(int seekerId, Seeker seeker)
         {
-            Seeker dbSeeker = await GetById(seeker.user_id);
+            Seeker dbSeeker = await GetById(seekerId);
 
             dbSeeker.first_name = seeker.first_name;
             dbSeeker.last_name = seeker.last_name;

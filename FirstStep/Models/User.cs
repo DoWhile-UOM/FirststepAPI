@@ -15,6 +15,6 @@ namespace FirstStep.Models
 
         public required string last_name { get; set; }
 
-        public required string user_type { get; set; }
+        public string? user_type { get; set; }
     }
 }
