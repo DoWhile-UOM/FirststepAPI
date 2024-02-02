@@ -11,13 +11,12 @@ namespace FirstStep.Models
         public required string profession_name { get; set; }
 
         
-        [JsonIgnore]
-        public JobField? job_Field { get; set; }
+        public virtual JobField? job_Field { get; set; }
         
         public required int field_id { get; set; }
 
 
         [JsonIgnore]
-        public ICollection<Advertisement>? advertisements { get; set; }
+        public virtual ICollection<Advertisement>? advertisements { get; set; }
     }
 }

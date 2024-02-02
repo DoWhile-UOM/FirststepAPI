@@ -1,5 +1,7 @@
-﻿using FirstStep.Data;
+﻿using AutoMapper;
+using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -7,10 +9,12 @@ namespace FirstStep.Services
     public class ProfessionKeywordService : IProfessionKeywordService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public ProfessionKeywordService(DataContext context)
+        public ProfessionKeywordService(DataContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<ProfessionKeyword>> GetAll()
@@ -20,38 +24,43 @@ namespace FirstStep.Services
 
         public async Task<ProfessionKeyword> GetById(int id)
         {
-            ProfessionKeyword? professionKeyword = await _context.ProfessionKeywords.FindAsync(id);
+            var professionKeyword = await _context.ProfessionKeywords
+                .Where(e => e.profession_id == id)
+                .Include(e => e.job_Field)
+                .FirstOrDefaultAsync();
+
             if (professionKeyword is null)
             {
-                // ask from abijan how to handle this exceptions
                 throw new Exception("ProfessionKeyword not found.");
             }
 
             return professionKeyword;
         }
 
-        public async Task<ProfessionKeyword> Create(ProfessionKeyword professionKeyword)
+        public async Task Create(ProfessionKeywordDto newProfessionKeyword)
         {
-            professionKeyword.profession_id = 0;
+            newProfessionKeyword.profession_id = 0;
+
+            var professionKeyword = _mapper.Map<ProfessionKeyword>(newProfessionKeyword);
 
             _context.ProfessionKeywords.Add(professionKeyword);
             await _context.SaveChangesAsync();
-
-            return professionKeyword;
         }
 
-        public async void Update(ProfessionKeyword professionKeyword)
+        public async Task Update(ProfessionKeywordDto reqProfessionKeyword)
         {
-            ProfessionKeyword dbProfessionKeyword = await GetById(professionKeyword.profession_id);
+            var dbProfessionKeyword = await GetById(reqProfessionKeyword.profession_id);
+            var professionKeyword = _mapper.Map<ProfessionKeyword>(reqProfessionKeyword);
 
             dbProfessionKeyword.profession_name = professionKeyword.profession_name;
+            dbProfessionKeyword.field_id = professionKeyword.field_id;
 
             await _context.SaveChangesAsync();
         }
 
-        public async void Delete(int id)
+        public async Task Delete(int id)
         {
-            ProfessionKeyword professionKeyword = await GetById(id);
+            var professionKeyword = await GetById(id);
 
             _context.ProfessionKeywords.Remove(professionKeyword);
             await _context.SaveChangesAsync();

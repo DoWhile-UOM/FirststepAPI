@@ -8,7 +8,8 @@ namespace FirstStep.MapperProfile
     {
         public MapperProfile()
         {
-            CreateMap<AddAdvertisementDto, Advertisement>();
+            CreateMap<ProfessionKeywordDto, ProfessionKeyword>();
+            //CreateMap<AddAdvertisementDto, Advertisement>();
         }
     }
 }

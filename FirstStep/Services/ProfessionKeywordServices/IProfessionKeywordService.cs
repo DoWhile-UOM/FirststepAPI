@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -8,10 +9,10 @@ namespace FirstStep.Services
 
         Task<ProfessionKeyword> GetById(int id);
         
-        Task<ProfessionKeyword> Create(ProfessionKeyword professionKeyword);
+        Task Create(ProfessionKeywordDto professionKeyword);
         
-        void Update(ProfessionKeyword professionKeyword);
+        Task Update(ProfessionKeywordDto professionKeyword);
         
-        void Delete(int id);
+        Task Delete(int id);
     }
 }

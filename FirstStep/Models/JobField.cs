@@ -12,10 +12,10 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
-        public ICollection<Advertisement>? advertisements { get; set; }
+        public virtual ICollection<Advertisement>? advertisements { get; set; }
 
         [JsonIgnore]
-        public ICollection<ProfessionKeyword>? professionKeywords { get; set; }
+        public virtual ICollection<ProfessionKeyword>? professionKeywords { get; set; }
 
     }
 }

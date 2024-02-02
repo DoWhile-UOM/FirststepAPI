@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,8 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetProfessionKeywordById{id}")]
+        [Route("GetProfessionKeywordById/{id}")]
+
         public async Task<ActionResult<IEnumerable<ProfessionKeyword>>> GetProfessionKeywordById(int id)
         {
             return Ok(await _service.GetById(id));
@@ -33,25 +35,34 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("AddProfessionKeyword")]
-        public async Task<ActionResult<ProfessionKeyword>> AddProfessionKeyword(ProfessionKeyword newProfessionKeyword)
+
+        public async Task<IActionResult> AddProfessionKeyword(ProfessionKeywordDto newProfessionKeyword)
         {
-            return Ok(await _service.Create(newProfessionKeyword));
+            await _service.Create(newProfessionKeyword);
+            return Ok($"Successfully added profession keyword: {newProfessionKeyword.profession_name}.");
         }
 
         [HttpPut]
-        [Route("UpdateProfessionKeyword")]
-        public IActionResult UpdateProfessionKeyword(ProfessionKeyword reqProfessionKeyword)
+        [Route("UpdateProfessionKeyword/{id:int}")]
+
+        public async Task<IActionResult> UpdateProfessionKeyword(ProfessionKeywordDto reqProfessionKeyword, int id)
         {
-            _service.Update(reqProfessionKeyword);
-            return Ok();
+            if (id != reqProfessionKeyword.profession_id)
+            {
+                return BadRequest("Context is not matching");
+            }
+
+            await _service.Update(reqProfessionKeyword);
+            return Ok($"Successfully updated profession keyword: {reqProfessionKeyword.profession_name}.");
         }
 
         [HttpDelete]
-        [Route("DeleteProfessionKeywordById{id}")]
-        public IActionResult DeleteProfessionKeywordById(int id)
+        [Route("DeleteProfessionKeywordById/{id:int}")]
+
+        public async Task<IActionResult> DeleteProfessionKeywordById(int id)
         {
-            _service.Delete(id);
-            return Ok();
+            await _service.Delete(id);
+            return Ok($"Successfully removed profession keyword: {id}.");
         }
     }
 }
