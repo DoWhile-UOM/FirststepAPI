@@ -9,7 +9,6 @@ namespace FirstStep.MapperProfile
         public MapperProfile()
         {
             CreateMap<ProfessionKeywordDto, ProfessionKeyword>();
-            CreateMap<SeekerSkillDto, SeekerSkill>();
             CreateMap<AddAdvertisementDto, Advertisement>();
             CreateMap<AddSeekerDto, Seeker>();
         }

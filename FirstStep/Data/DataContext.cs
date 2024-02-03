@@ -12,7 +12,7 @@ namespace FirstStep.Data
 
         public DbSet<Application> Applications { get; set; } = null!;
 
-        public DbSet<SeekerSkill> SeekerSkills { get; set; } = null!;
+        public DbSet<Skill> Skills { get; set; } = null!;
 
         public DbSet<User> Users { get; set; } = null!;
         
@@ -98,6 +98,11 @@ namespace FirstStep.Data
                     .WithMany(e => e.seekers)
                     .HasForeignKey(e => e.field_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
+
+                
+                entity.HasMany(e => e.skills)
+                    .WithMany(e => e.seekers)
+                        .UsingEntity(e => e.ToTable("SeekerSkills"));
             });
 
             /*

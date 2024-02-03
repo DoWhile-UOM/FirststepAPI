@@ -10,11 +10,13 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly ISeekerSkillService _seekerSkillService;
 
-        public SeekerService(DataContext context, IMapper mapper)
+        public SeekerService(DataContext context, IMapper mapper, ISeekerSkillService seekerSkillService)
         {
             _context = context;
             _mapper = mapper;
+            _seekerSkillService = seekerSkillService;
         }
 
         public async Task<IEnumerable<Seeker>> GetAll()

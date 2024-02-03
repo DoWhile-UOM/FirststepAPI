@@ -5,15 +5,17 @@ namespace FirstStep.Services
 {
     public interface ISeekerSkillService
     {
-        public Task<IEnumerable<SeekerSkill>> GetAll();
+        public Task<IEnumerable<Skill>> GetAll();
 
-        public Task<SeekerSkill> GetById(int id);
+        public Task<Skill> GetById(int id);
 
-        public Task<SeekerSkill> GetByName(string skillName);
+        public Task<Skill> GetByName(string skillName);
+
+        public Task<IEnumerable<Skill>> SearchByName(string skillNamePattern);
 
         public Task Create(string newSeekerSkillName);
 
-        public Task Update(int skillId, SeekerSkill seekerSkill);
+        public Task Update(int skillId, Skill seekerSkill);
 
         public Task Delete(int id);
     }

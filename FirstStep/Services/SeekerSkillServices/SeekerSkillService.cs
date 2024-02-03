@@ -9,22 +9,20 @@ namespace FirstStep.Services
     public class SeekerSkillService : ISeekerSkillService
     {
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
 
-        public SeekerSkillService(DataContext context, IMapper mapper)
+        public SeekerSkillService(DataContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<SeekerSkill>> GetAll()
+        public async Task<IEnumerable<Skill>> GetAll()
         {
-            return await _context.SeekerSkills.ToListAsync();
+            return await _context.Skills.ToListAsync();
         }
 
-        public async Task<SeekerSkill> GetById(int id)
+        public async Task<Skill> GetById(int id)
         {
-            var seekerSkill = await _context.SeekerSkills
+            var seekerSkill = await _context.Skills
                 .Where(e => e.skill_id == id)
                 .FirstOrDefaultAsync();
 
@@ -36,9 +34,9 @@ namespace FirstStep.Services
             return seekerSkill;
         }
 
-        public async Task<SeekerSkill> GetByName(string skillName)
+        public async Task<Skill> GetByName(string skillName)
         {
-            var seekerSkill = await _context.SeekerSkills
+            var seekerSkill = await _context.Skills
                 .Where(e => e.skill_name == skillName)
                 .FirstOrDefaultAsync();
 
@@ -50,21 +48,28 @@ namespace FirstStep.Services
             return seekerSkill;
         }
 
+        public async Task<IEnumerable<Skill>> SearchByName(string skillNamePattern)
+        {
+            return await _context.Skills
+                .Where(e => e.skill_name.Contains(skillNamePattern))
+                .ToListAsync();
+        }
+
         public async Task Create(string newSeekerSkillName)
         {
-            var seekerSkill = new SeekerSkill
+            var seekerSkill = new Skill
             {
                 skill_id = 0,
                 skill_name = newSeekerSkillName
             };
 
-            _context.SeekerSkills.Add(seekerSkill);
+            _context.Skills.Add(seekerSkill);
             await _context.SaveChangesAsync();
         }
 
         // not relavent for this controller
 
-        public async Task Update(int id, SeekerSkill reqSeekerSkill)
+        public async Task Update(int id, Skill reqSeekerSkill)
         {
             var dbSeekerSkill = await GetById(id);
 
@@ -75,9 +80,9 @@ namespace FirstStep.Services
 
         public async Task Delete(int id)
         {
-            SeekerSkill seekerSkill = await GetById(id);
+            Skill seekerSkill = await GetById(id);
 
-            _context.SeekerSkills.Remove(seekerSkill);
+            _context.Skills.Remove(seekerSkill);
             await _context.SaveChangesAsync();
         }
     }

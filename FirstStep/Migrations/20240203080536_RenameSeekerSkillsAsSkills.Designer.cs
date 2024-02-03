@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240203080536_RenameSeekerSkillsAsSkills")]
+    partial class RenameSeekerSkillsAsSkills
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -316,21 +319,6 @@ namespace FirstStep.Migrations
                     b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("SeekerSkill", b =>
-                {
-                    b.Property<int>("seekersuser_id")
-                        .HasColumnType("int");
-
-                    b.Property<int>("skillsskill_id")
-                        .HasColumnType("int");
-
-                    b.HasKey("seekersuser_id", "skillsskill_id");
-
-                    b.HasIndex("skillsskill_id");
-
-                    b.ToTable("SeekerSkills", (string)null);
-                });
-
             modelBuilder.Entity("FirstStep.Models.RegisteredCompany", b =>
                 {
                     b.HasBaseType("FirstStep.Models.Company");
@@ -501,21 +489,6 @@ namespace FirstStep.Migrations
                         .IsRequired();
 
                     b.Navigation("job_Field");
-                });
-
-            modelBuilder.Entity("SeekerSkill", b =>
-                {
-                    b.HasOne("FirstStep.Models.Seeker", null)
-                        .WithMany()
-                        .HasForeignKey("seekersuser_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FirstStep.Models.Skill", null)
-                        .WithMany()
-                        .HasForeignKey("skillsskill_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("FirstStep.Models.RegisteredCompany", b =>

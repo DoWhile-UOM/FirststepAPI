@@ -20,7 +20,7 @@ namespace FirstStep.Controllers
         [HttpGet]
         [Route("GetAllSeekerSkills")]
 
-        public async Task<ActionResult<IEnumerable<SeekerSkill>>> GetSeekerSkills()
+        public async Task<ActionResult<IEnumerable<Skill>>> GetSeekerSkills()
         {
             return Ok(await _service.GetAll());
         }
@@ -28,7 +28,7 @@ namespace FirstStep.Controllers
         [HttpGet]
         [Route("GetSeekerSkillById/{id:int}")]
 
-        public async Task<ActionResult<SeekerSkill>> GetSeekerSkillById(int id)
+        public async Task<ActionResult<Skill>> GetSeekerSkillById(int id)
         {
             return Ok(await _service.GetById(id));
         }
@@ -45,7 +45,7 @@ namespace FirstStep.Controllers
         [HttpPut]
         [Route("UpdateSeekerSkill/{id:int}")]
 
-        public async Task<IActionResult> UpdateSeekerSkill(SeekerSkill reqSeekerSkill, int id)
+        public async Task<IActionResult> UpdateSeekerSkill(Skill reqSeekerSkill, int id)
         {
             if (id != reqSeekerSkill.skill_id)
             {

@@ -26,5 +26,7 @@ namespace FirstStep.Models
 
         [JsonIgnore]
         public virtual ICollection<Advertisement>? savedAdvertisemnts { get; set; }
+
+        public virtual ICollection<Skill>? skills { get; set; }
     }
 }
