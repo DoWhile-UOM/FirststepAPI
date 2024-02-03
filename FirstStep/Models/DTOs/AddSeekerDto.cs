@@ -25,5 +25,7 @@
         public string? linkedin { get; set; }
 
         public required int field_id { get; set; }
+
+        public virtual ICollection<SeekerSkillDto>? skills { get; set; }
     }
 }

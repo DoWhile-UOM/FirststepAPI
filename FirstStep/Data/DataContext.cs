@@ -83,13 +83,14 @@ namespace FirstStep.Data
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
 
+            /*
             modelBuilder.Entity<SeekerSkill>(entity =>
             {
                 entity.HasOne(e => e.job_Field)
                     .WithMany(e => e.seekerSkills)
                     .HasForeignKey(e => e.field_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
-            });
+            });*/
 
             modelBuilder.Entity<Seeker>(entity =>
             {

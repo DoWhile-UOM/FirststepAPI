@@ -9,7 +9,9 @@ namespace FirstStep.Services
 
         public Task<SeekerSkill> GetById(int id);
 
-        public Task Create(SeekerSkillDto seekerSkill);
+        public Task<SeekerSkill> GetByName(string skillName);
+
+        public Task Create(string newSeekerSkillName);
 
         public Task Update(int skillId, SeekerSkill seekerSkill);
 

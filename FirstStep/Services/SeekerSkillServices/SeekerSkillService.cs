@@ -19,14 +19,13 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<SeekerSkill>> GetAll()
         {
-            return await _context.SeekerSkills.Include(e => e.job_Field).ToListAsync();
+            return await _context.SeekerSkills.ToListAsync();
         }
 
         public async Task<SeekerSkill> GetById(int id)
         {
             var seekerSkill = await _context.SeekerSkills
                 .Where(e => e.skill_id == id)
-                .Include(e => e.job_Field)
                 .FirstOrDefaultAsync();
 
             if (seekerSkill is null)
@@ -37,20 +36,39 @@ namespace FirstStep.Services
             return seekerSkill;
         }
 
-        public async Task Create(SeekerSkillDto newSeekerSkill)
+        public async Task<SeekerSkill> GetByName(string skillName)
         {
-            var seekerSkill = _mapper.Map<SeekerSkill>(newSeekerSkill);
+            var seekerSkill = await _context.SeekerSkills
+                .Where(e => e.skill_name == skillName)
+                .FirstOrDefaultAsync();
+
+            if (seekerSkill is null)
+            {
+                throw new Exception("SeekerSkill not found.");
+            }
+
+            return seekerSkill;
+        }
+
+        public async Task Create(string newSeekerSkillName)
+        {
+            var seekerSkill = new SeekerSkill
+            {
+                skill_id = 0,
+                skill_name = newSeekerSkillName
+            };
 
             _context.SeekerSkills.Add(seekerSkill);
             await _context.SaveChangesAsync();
         }
+
+        // not relavent for this controller
 
         public async Task Update(int id, SeekerSkill reqSeekerSkill)
         {
             var dbSeekerSkill = await GetById(id);
 
             dbSeekerSkill.skill_name = reqSeekerSkill.skill_name;
-            dbSeekerSkill.field_id = reqSeekerSkill.field_id;
 
             await _context.SaveChangesAsync();
         }

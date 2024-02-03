@@ -34,12 +34,12 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("AddSeekerSkill")]
+        [Route("AddSeekerSkill/{skillName}")]
 
-        public async Task<IActionResult> AddSeekerSkill(SeekerSkillDto newSeekerSkill)
+        public async Task<IActionResult> AddSeekerSkill(string skillName)
         {
-            await _service.Create(newSeekerSkill);
-            return Ok($"Sucessfull added new seeker skill: {newSeekerSkill.skill_name}");
+            await _service.Create(skillName);
+            return Ok($"Sucessfull added new seeker skill: {skillName}");
         }
 
         [HttpPut]
