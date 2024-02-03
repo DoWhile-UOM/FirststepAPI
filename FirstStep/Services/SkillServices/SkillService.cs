@@ -52,9 +52,7 @@ namespace FirstStep.Services
 
         public async Task Create(string newskillName)
         {
-            var dbSkill = await GetByName(newskillName);
-
-            if (dbSkill != null)
+            if (await GetByName(newskillName) != null)
                 throw new Exception("Skill already exists.");
 
             var skill = new Skill

@@ -21,12 +21,19 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Seeker>> GetAll()
         {
-            return await _context.Seekers.ToListAsync();
+            return await _context.Seekers
+                .Include(e => e.job_Field)
+                .Include(e => e.skills)
+                .ToListAsync();
         }
 
         public async Task<Seeker> GetById(int id)
         {
-            Seeker? seeker = await _context.Seekers.FindAsync(id);
+            Seeker? seeker = await _context.Seekers
+                .Where(e => e.user_id == id)
+                .Include(e => e.job_Field)
+                .Include(e => e.skills)
+                .FirstOrDefaultAsync();
 
             if (seeker is null)
             {
@@ -38,11 +45,34 @@ namespace FirstStep.Services
 
         public async Task Create(AddSeekerDto newSeeker)
         {
+            // map the AddSeekerDto to a Seeker object
             var seeker = _mapper.Map<Seeker>(newSeeker);
 
+            // user type is seeker
             seeker.user_type = "seeker";
 
-            
+            // Add skills to seeker
+            if (newSeeker.seekerSkills != null)
+            {
+                seeker.skills = new List<Skill>();
+
+                foreach (var skill in newSeeker.seekerSkills)
+                {
+                    // check whether the skill exists in the database
+                    var dbSkill = await _seekerSkillService.GetByName(skill);
+
+                    if (dbSkill != null)
+                    {
+                        // if it exists, add it to the seeker's list of skills
+                        seeker.skills.Add(dbSkill);
+                    }
+                    else
+                    {
+                        // if it doesn't exist, create it and add it to the seeker's list of skills
+                        seeker.skills.Add(new Skill { skill_id = 0, skill_name = skill });
+                    }
+                }
+            }
 
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
@@ -50,6 +80,8 @@ namespace FirstStep.Services
 
         public async Task Update(int seekerId, Seeker seeker)
         {
+            // create UpdateSeekerDto and recheck this endpoint using relationships
+
             Seeker dbSeeker = await GetById(seekerId);
 
             dbSeeker.first_name = seeker.first_name;

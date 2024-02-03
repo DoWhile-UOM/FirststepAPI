@@ -26,6 +26,6 @@
 
         public required int field_id { get; set; }
 
-        public virtual ICollection<string>? skills { get; set; }
+        public virtual List<string>? seekerSkills { get; set; }
     }
 }

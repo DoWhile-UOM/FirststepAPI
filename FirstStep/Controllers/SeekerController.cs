@@ -26,11 +26,11 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetSeeker/{id}")]
+        [Route("GetSeeker/{seekerId:int}")]
 
-        public async Task<ActionResult<Seeker>> GetSeekerById(int id)
+        public async Task<ActionResult<Seeker>> GetSeekerById(int seekerId)
         {
-            return Ok(await _service.GetById(id));
+            return Ok(await _service.GetById(seekerId));
         }
 
         [HttpPost]
