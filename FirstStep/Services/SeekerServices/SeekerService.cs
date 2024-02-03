@@ -10,9 +10,9 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
-        private readonly ISeekerSkillService _seekerSkillService;
+        private readonly ISkillService _seekerSkillService;
 
-        public SeekerService(DataContext context, IMapper mapper, ISeekerSkillService seekerSkillService)
+        public SeekerService(DataContext context, IMapper mapper, ISkillService seekerSkillService)
         {
             _context = context;
             _mapper = mapper;
@@ -41,6 +41,8 @@ namespace FirstStep.Services
             var seeker = _mapper.Map<Seeker>(newSeeker);
 
             seeker.user_type = "seeker";
+
+            
 
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();

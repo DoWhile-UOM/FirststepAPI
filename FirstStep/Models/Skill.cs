@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace FirstStep.Models
 {
@@ -10,6 +11,7 @@ namespace FirstStep.Models
         public required string skill_name { get; set; }
 
 
+        [JsonIgnore]
         public virtual ICollection<Seeker>? seekers { get; set; }
     }
 }

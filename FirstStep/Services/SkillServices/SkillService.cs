@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
 {
-    public class SeekerSkillService : ISeekerSkillService
+    public class SkillService : ISkillService
     {
         private readonly DataContext _context;
 
-        public SeekerSkillService(DataContext context)
+        public SkillService(DataContext context)
         {
             _context = context;
         }
@@ -22,30 +22,25 @@ namespace FirstStep.Services
 
         public async Task<Skill> GetById(int id)
         {
-            var seekerSkill = await _context.Skills
+            var skill = await _context.Skills
                 .Where(e => e.skill_id == id)
                 .FirstOrDefaultAsync();
 
-            if (seekerSkill is null)
+            if (skill is null)
             {
-                throw new Exception("SeekerSkill not found.");
+                throw new Exception("Skill not found.");
             }
 
-            return seekerSkill;
+            return skill;
         }
 
-        public async Task<Skill> GetByName(string skillName)
+        public async Task<Skill?> GetByName(string skillName)
         {
-            var seekerSkill = await _context.Skills
+            var skill = await _context.Skills
                 .Where(e => e.skill_name == skillName)
                 .FirstOrDefaultAsync();
 
-            if (seekerSkill is null)
-            {
-                throw new Exception("SeekerSkill not found.");
-            }
-
-            return seekerSkill;
+            return skill;
         }
 
         public async Task<IEnumerable<Skill>> SearchByName(string skillNamePattern)
@@ -55,34 +50,39 @@ namespace FirstStep.Services
                 .ToListAsync();
         }
 
-        public async Task Create(string newSeekerSkillName)
+        public async Task Create(string newskillName)
         {
-            var seekerSkill = new Skill
+            var dbSkill = await GetByName(newskillName);
+
+            if (dbSkill != null)
+                throw new Exception("Skill already exists.");
+
+            var skill = new Skill
             {
                 skill_id = 0,
-                skill_name = newSeekerSkillName
+                skill_name = newskillName
             };
 
-            _context.Skills.Add(seekerSkill);
+            _context.Skills.Add(skill);
             await _context.SaveChangesAsync();
         }
 
         // not relavent for this controller
 
-        public async Task Update(int id, Skill reqSeekerSkill)
+        public async Task Update(int id, Skill reqskill)
         {
-            var dbSeekerSkill = await GetById(id);
+            var dbskill = await GetById(id);
 
-            dbSeekerSkill.skill_name = reqSeekerSkill.skill_name;
+            dbskill.skill_name = reqskill.skill_name;
 
             await _context.SaveChangesAsync();
         }
 
         public async Task Delete(int id)
         {
-            Skill seekerSkill = await GetById(id);
+            Skill skill = await GetById(id);
 
-            _context.Skills.Remove(seekerSkill);
+            _context.Skills.Remove(skill);
             await _context.SaveChangesAsync();
         }
     }
