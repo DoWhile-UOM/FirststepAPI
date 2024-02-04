@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240204102518_AddPasswordHash")]
+    partial class AddPasswordHash
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -357,11 +360,6 @@ namespace FirstStep.Migrations
                     b.Property<DateTime>("company_registered_date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("verified_system_admin_id")
-                        .HasColumnType("int");
-
-                    b.HasIndex("verified_system_admin_id");
-
                     b.ToTable("RegisteredCompanys", (string)null);
                 });
 
@@ -530,14 +528,6 @@ namespace FirstStep.Migrations
                         .HasForeignKey("FirstStep.Models.RegisteredCompany", "company_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("FirstStep.Models.SystemAdmin", "verified_system_admin")
-                        .WithMany("registeredCompanies")
-                        .HasForeignKey("verified_system_admin_id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.Navigation("verified_system_admin");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Employee", b =>
@@ -622,11 +612,6 @@ namespace FirstStep.Migrations
             modelBuilder.Entity("FirstStep.Models.RegisteredCompany", b =>
                 {
                     b.Navigation("employees");
-                });
-
-            modelBuilder.Entity("FirstStep.Models.SystemAdmin", b =>
-                {
-                    b.Navigation("registeredCompanies");
                 });
 
             modelBuilder.Entity("FirstStep.Models.HRAssistant", b =>

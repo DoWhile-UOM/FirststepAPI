@@ -103,7 +103,7 @@ namespace FirstStep.Services
             dbEmployee.first_name = employee.first_name;
             dbEmployee.last_name = employee.last_name;
             dbEmployee.email = employee.email;
-            dbEmployee.password = employee.password;
+            dbEmployee.password_hash = employee.password_hash;
             dbEmployee.is_HRM = employee.is_HRM;
 
             await _context.SaveChangesAsync();

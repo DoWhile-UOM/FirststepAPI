@@ -1,9 +1,12 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace FirstStep.Models
 {
     public class Seeker : User
     {
+
+        [DataType(DataType.PhoneNumber)]
         public int phone_number { get; set; }
 
         public required string bio { get; set; }

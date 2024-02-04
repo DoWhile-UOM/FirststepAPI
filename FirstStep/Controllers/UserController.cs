@@ -21,7 +21,7 @@ namespace FirstStep.Controllers
         [Route("Login")]
         public async Task<IActionResult> Login(User user)
         {
-            if (user.email == null || user.password == null)
+            if (user.email == null || user.password_hash == null)
             {
                 return BadRequest("Email or password is null.");
             }
@@ -32,7 +32,7 @@ namespace FirstStep.Controllers
                 return BadRequest("User not found.");
             }
 
-            if (dbUser.password != user.password)
+            if (dbUser.password_hash != user.password_hash)
             {
                 return BadRequest("Password is incorrect.");
             }

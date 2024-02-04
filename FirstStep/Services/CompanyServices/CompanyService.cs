@@ -1,5 +1,7 @@
-﻿using FirstStep.Data;
+﻿using AutoMapper;
+using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -7,23 +9,23 @@ namespace FirstStep.Services
     public class CompanyService : ICompanyService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public CompanyService(DataContext context)
+        public CompanyService(DataContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        public async Task<Company> Create(Company company)
+        public async Task Create(CompanyDto newCompanyDto)
         {
-            company.company_id = 0;
+            var company = _mapper.Map<Company>(newCompanyDto);
 
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
-
-            return company;
         }
 
-        public async void Delete(int id)
+        public async Task Delete(int id)
         {
             Company company = await GetById(id);
 
@@ -47,9 +49,9 @@ namespace FirstStep.Services
             return company;
         }
 
-        public async void Update(Company company)
+        public async Task Update(int companyID, Company company)
         {
-            Company dbCompany = await GetById(company.company_id);
+            Company dbCompany = await GetById(companyID);
 
             dbCompany.company_name = company.company_name;
             dbCompany.company_email = company.company_email;

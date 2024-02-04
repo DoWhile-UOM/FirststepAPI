@@ -17,6 +17,11 @@ namespace FirstStep.Models
         public required DateTime company_registered_date { get; set; }
 
 
+        public required int verified_system_admin_id { get; set; }
+
+        public virtual SystemAdmin? verified_system_admin { get; set; }
+
+
         [JsonIgnore]
         public ICollection<Employee>? employees { get; set; }
     }

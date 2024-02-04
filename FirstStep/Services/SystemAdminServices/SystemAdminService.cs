@@ -43,7 +43,7 @@ namespace FirstStep.Services
             dbSystemAdmin.first_name = systemAdmin.first_name;
             dbSystemAdmin.last_name = systemAdmin.last_name;
             dbSystemAdmin.email = systemAdmin.email;
-            dbSystemAdmin.password = systemAdmin.password;
+            dbSystemAdmin.password_hash = systemAdmin.password_hash;
 
             await _context.SaveChangesAsync();
         }

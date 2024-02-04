@@ -1,17 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace FirstStep.Models
+namespace FirstStep.Models.DTOs
 {
-    public class Company
+    public class CompanyDto
     {
-        [Key]
-        public int company_id { get; set; }
-
         public required int business_reg_no { get; set; }
 
         public required string company_name { get; set; }
 
-        [EmailAddress]
         public required string company_email { get; set; }
 
         public string? company_website { get; set; }
@@ -19,7 +15,7 @@ namespace FirstStep.Models
         [DataType(DataType.PhoneNumber)]
         public required int company_phone_number { get; set; }
 
-        public required bool verification_status { get; set; }
+        public required bool verification_status { get; set; } = false;
 
         public string? business_reg_certificate { get; set; }
 

@@ -1,7 +1,5 @@
-﻿using AutoMapper;
-using FirstStep.Data;
+﻿using FirstStep.Data;
 using FirstStep.Models;
-using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
