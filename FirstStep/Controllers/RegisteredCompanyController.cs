@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllRegisteredCompanies")]
-
         public async Task<ActionResult<IEnumerable<RegisteredCompany>>> GetRegisteredCompanies()
         {
             return Ok(await _service.GetAll());
@@ -26,7 +26,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetRegisteredCompanyById/{id:int}")]
-
         public async Task<ActionResult<RegisteredCompany>> GetRegisteredCompanyById(int id)
         {
             return Ok(await _service.GetById(id));
@@ -34,7 +33,6 @@ namespace FirstStep.Controllers
 
         [HttpPut]
         [Route("UpdateRegisteredCompany/{id:int}")]
-
         public async Task<IActionResult> UpdateRegisteredCompany(RegisteredCompany reqRegisteredCompany, int id)
         {
             if (id != reqRegisteredCompany.company_id)
@@ -48,11 +46,19 @@ namespace FirstStep.Controllers
 
         [HttpDelete]
         [Route("DeleteRegisteredCompanyById/{id:int}")]
-
         public async Task<IActionResult> DeleteRegisteredCompanyById(int id)
         {
             await _service.Delete(id);
             return Ok($"Suncessfully Deleted: registered company {id}");
         }
+
+        [HttpPost]
+        [Route("SetAsRegisteredCompany/{companyID:int}")]
+        public async Task<IActionResult> SetAsRegisteredCompany(RegisteredCompanyDto newRegCompany,int companyID)
+        {
+            await _service.SetAsRegistered(companyID, newRegCompany);
+            return Ok($"Sucessfully Set: Registered company {companyID}");
+        }
     }
 }
+

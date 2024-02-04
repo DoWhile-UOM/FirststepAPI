@@ -15,8 +15,6 @@ namespace FirstStep.Models.DTOs
         [DataType(DataType.PhoneNumber)]
         public required int company_phone_number { get; set; }
 
-        public required bool verification_status { get; set; } = false;
-
         public string? business_reg_certificate { get; set; }
 
         public string? certificate_of_incorporation { get; set; }

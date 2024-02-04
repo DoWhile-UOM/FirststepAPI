@@ -1,5 +1,7 @@
-﻿using FirstStep.Data;
+﻿using AutoMapper;
+using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -7,10 +9,14 @@ namespace FirstStep.Services
     public class RegisteredCompanyService : IRegisteredCompanyService
     {
         private readonly DataContext _context;
+        private readonly ICompanyService _companyService;
+        private readonly IMapper _mapper;
 
-        public RegisteredCompanyService(DataContext context)
+        public RegisteredCompanyService(DataContext context, ICompanyService companyService, IMapper mapper)
         {
             _context = context;
+            _companyService = companyService;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<RegisteredCompany>> GetAll()
@@ -56,6 +62,46 @@ namespace FirstStep.Services
             RegisteredCompany registeredCompany = await GetById(id);
 
             _context.RegisteredCompanies.Remove(registeredCompany);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SetAsRegistered(int companyID, RegisteredCompanyDto unregisteredCompany)
+        {
+            Company company = await _companyService.GetById(companyID);
+
+            if (company == null)
+            {
+                throw new Exception("Company not found.");
+            }
+
+            // create new object which is a registered company
+            RegisteredCompany newRegisteredCompany = new()
+            {
+                company_id = companyID,
+                company_name = company.company_name,
+                company_email = company.company_email,
+                business_reg_no = company.business_reg_no,
+                company_website = company.company_website,
+                company_phone_number = company.company_phone_number,
+                verification_status = true,
+                business_reg_certificate = company.business_reg_certificate,
+                certificate_of_incorporation = company.certificate_of_incorporation,
+                company_logo = unregisteredCompany.company_logo,
+                company_description = unregisteredCompany.company_description,
+                company_city = unregisteredCompany.company_city,
+                company_province = unregisteredCompany.company_province,
+                company_business_scale = unregisteredCompany.company_business_scale,
+                company_registered_date = unregisteredCompany.company_registered_date,
+                verified_system_admin_id = unregisteredCompany.verified_system_admin_id
+            };
+            
+
+            // remove form the company table
+            _context.Companies.Remove(company);
+
+            // set as registered
+            _context.RegisteredCompanies.Add(newRegisteredCompany);
+
             await _context.SaveChangesAsync();
         }
     }

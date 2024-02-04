@@ -21,6 +21,8 @@ namespace FirstStep.Services
         {
             var company = _mapper.Map<Company>(newCompanyDto);
 
+            company.verification_status = false;
+
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
         }

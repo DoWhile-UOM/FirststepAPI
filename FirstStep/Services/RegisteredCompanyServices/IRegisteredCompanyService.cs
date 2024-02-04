@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -11,5 +12,7 @@ namespace FirstStep.Services
         public Task Update(RegisteredCompany registeredCompany);
 
         public Task Delete(int id);
+
+        public Task SetAsRegistered(int companyID, RegisteredCompanyDto newRegCompany);
     }
 }

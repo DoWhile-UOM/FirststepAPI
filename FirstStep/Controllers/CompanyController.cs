@@ -1,5 +1,4 @@
-﻿using FirstStep.Data;
-using FirstStep.Models;
+﻿using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +19,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllCompanies")]
-
         public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
         {
             return Ok(await _service.GetAll());
@@ -28,7 +26,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetCompanyById/{companyId:int}")]
-
         public async Task<ActionResult<Company>> GetCompanyById(int companyId)
         {
             return Ok(await _service.GetById(companyId));
@@ -36,7 +33,6 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("AddCompany")]
-
         public async Task<IActionResult> AddCompany(CompanyDto newCompany)
         {
             await _service.Create(newCompany);
@@ -45,7 +41,6 @@ namespace FirstStep.Controllers
 
         [HttpPut]
         [Route("UpdateCompany/{companyId:int}")]
-
         public async Task<IActionResult> UpdateCompany(Company reqCompany, int companyId)
         {
             if (companyId != reqCompany.company_id)
@@ -59,7 +54,6 @@ namespace FirstStep.Controllers
 
         [HttpDelete]
         [Route("DeleteCompany/{companyId:int}")]
-
         public async Task<IActionResult> DeleteCompany(int companyId)
         {
             await _service.Delete(companyId);
