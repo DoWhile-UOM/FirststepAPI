@@ -130,5 +130,15 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> IsRegisteredCompany(int id)
+        {
+            if (await _context.Companies.Where(c => c.verification_status).AnyAsync(e => e.company_id == id))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

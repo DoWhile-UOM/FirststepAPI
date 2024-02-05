@@ -40,12 +40,16 @@ namespace FirstStep.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Seeker>().ToTable("Seekers");
+            modelBuilder.Entity<SystemAdmin>().ToTable("SystemAdmins");
             modelBuilder.Entity<Employee>().ToTable("Employees");
             modelBuilder.Entity<HRManager>().ToTable("HRManagers");
             modelBuilder.Entity<HRAssistant>().ToTable("HRAssistants");
             modelBuilder.Entity<CompanyAdmin>().ToTable("CompanyAdmins");
-            modelBuilder.Entity<SystemAdmin>().ToTable("SystemAdmins");
-
+            /*
+            modelBuilder.Entity<HRManager>().HasDiscriminator(e => e.emp_role);
+            modelBuilder.Entity<HRAssistant>().HasDiscriminator(e => e.emp_role);
+            modelBuilder.Entity<CompanyAdmin>().HasDiscriminator(e => e.emp_role);
+            */
             modelBuilder.Entity<Advertisement>(entity => 
             {
                 entity.HasOne(e => e.job_Field)

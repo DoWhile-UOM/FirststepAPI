@@ -6,6 +6,8 @@ namespace FirstStep.Models
     {
         public bool is_HRM { get; set; }
 
+        public required string emp_role { get; set; }
+
 
         [JsonIgnore]
         public Company? company { get; set; }
