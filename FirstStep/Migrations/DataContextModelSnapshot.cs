@@ -49,7 +49,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("savedSeekersuser_id");
 
-                    b.ToTable("AdvertisementSeeker");
+                    b.ToTable("AdvertisementSeeker", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Advertisement", b =>
@@ -131,7 +131,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("hrManager_id");
 
-                    b.ToTable("Advertisements");
+                    b.ToTable("Advertisements", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Application", b =>
@@ -159,7 +159,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("application_Id");
 
-                    b.ToTable("Applications");
+                    b.ToTable("Applications", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
@@ -227,7 +227,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("verified_system_admin_id");
 
-                    b.ToTable("Companies");
+                    b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.JobField", b =>
@@ -244,7 +244,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("field_id");
 
-                    b.ToTable("JobFields");
+                    b.ToTable("JobFields", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.ProfessionKeyword", b =>
@@ -266,7 +266,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("field_id");
 
-                    b.ToTable("ProfessionKeywords");
+                    b.ToTable("ProfessionKeywords", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Revision", b =>
@@ -289,7 +289,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("revision_id");
 
-                    b.ToTable("Revisions");
+                    b.ToTable("Revisions", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Skill", b =>
@@ -306,7 +306,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("skill_id");
 
-                    b.ToTable("Skills");
+                    b.ToTable("Skills", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.User", b =>
@@ -338,7 +338,7 @@ namespace FirstStep.Migrations
 
                     b.HasKey("user_id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.UseTptMappingStrategy();
                 });
@@ -365,16 +365,12 @@ namespace FirstStep.Migrations
                     b.Property<int>("company_id")
                         .HasColumnType("int");
 
-                    b.Property<string>("emp_role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("is_HRM")
                         .HasColumnType("bit");
 
                     b.HasIndex("company_id");
 
-                    b.ToTable("Employees");
+                    b.ToTable("Employees", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Seeker", b =>
@@ -424,21 +420,21 @@ namespace FirstStep.Migrations
                 {
                     b.HasBaseType("FirstStep.Models.Employee");
 
-                    b.ToTable("HRAssistants");
+                    b.ToTable("HRAssistants", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.HRManager", b =>
                 {
                     b.HasBaseType("FirstStep.Models.Employee");
 
-                    b.ToTable("HRManagers");
+                    b.ToTable("HRManagers", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.CompanyAdmin", b =>
                 {
                     b.HasBaseType("FirstStep.Models.HRManager");
 
-                    b.ToTable("CompanyAdmins");
+                    b.ToTable("CompanyAdmins", (string)null);
                 });
 
             modelBuilder.Entity("AdvertisementProfessionKeyword", b =>
@@ -538,6 +534,12 @@ namespace FirstStep.Migrations
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
+                    b.HasOne("FirstStep.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("FirstStep.Models.Employee", "user_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("company");
                 });
 
@@ -563,6 +565,33 @@ namespace FirstStep.Migrations
                     b.HasOne("FirstStep.Models.User", null)
                         .WithOne()
                         .HasForeignKey("FirstStep.Models.SystemAdmin", "user_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FirstStep.Models.HRAssistant", b =>
+                {
+                    b.HasOne("FirstStep.Models.Employee", null)
+                        .WithOne()
+                        .HasForeignKey("FirstStep.Models.HRAssistant", "user_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FirstStep.Models.HRManager", b =>
+                {
+                    b.HasOne("FirstStep.Models.Employee", null)
+                        .WithOne()
+                        .HasForeignKey("FirstStep.Models.HRManager", "user_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FirstStep.Models.CompanyAdmin", b =>
+                {
+                    b.HasOne("FirstStep.Models.HRManager", null)
+                        .WithOne()
+                        .HasForeignKey("FirstStep.Models.CompanyAdmin", "user_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

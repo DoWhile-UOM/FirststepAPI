@@ -7,12 +7,10 @@ namespace FirstStep.Services
     public class EmployeeService : IEmployeeService
     {
         private readonly DataContext _context;
-        private readonly ICompanyService _companyService;
 
-        public EmployeeService(DataContext context, ICompanyService companyService)
+        public EmployeeService(DataContext context)
         {
             _context = context;
-            _companyService = companyService;
         }
 
         public async Task<IEnumerable<Employee>> GetAll()
@@ -70,7 +68,6 @@ namespace FirstStep.Services
             hRManager.is_HRM = true;
 
             // check whether the company is a registered company using registeredCompany Service class
-            await ValidateCompany(hRManager.company_id);
 
             _context.HRManagers.Add(hRManager);
             await _context.SaveChangesAsync();
@@ -82,7 +79,6 @@ namespace FirstStep.Services
             hRAssistant.is_HRM = false;
 
             // check whether the company is a registered company using registeredCompany Service class
-            await ValidateCompany(hRAssistant.company_id);
 
             _context.HRAssistants.Add(hRAssistant);
             await _context.SaveChangesAsync();
@@ -95,7 +91,6 @@ namespace FirstStep.Services
 
             // check whether the company is a registered company using registeredCompany Service class
             // company id is not needed for company admin
-            await ValidateCompany(companyAdmin.company_id);
 
             _context.CompanyAdmins.Add(companyAdmin);
             await _context.SaveChangesAsync();
@@ -120,14 +115,6 @@ namespace FirstStep.Services
 
             _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();
-        }
-
-        private async Task ValidateCompany(int comID)
-        {
-            if (!(await _companyService.IsRegisteredCompany(comID)))
-            {
-                throw new Exception("The company is not a registered company");
-            }
         }
     }
 }
