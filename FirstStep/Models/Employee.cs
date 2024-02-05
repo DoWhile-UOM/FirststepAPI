@@ -8,7 +8,7 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
-        public RegisteredCompany? regCompany { get; set; }
+        public Company? company { get; set; }
         
         public required int company_id { get; set; }
     }

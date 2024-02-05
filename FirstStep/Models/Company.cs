@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace FirstStep.Models
 {
@@ -24,5 +25,31 @@ namespace FirstStep.Models
         public string? business_reg_certificate { get; set; }
 
         public string? certificate_of_incorporation { get; set; }
+
+        public required DateTime company_applied_date { get; set; } = DateTime.Now;
+
+        public string? company_logo { get; set; }
+
+        public string? company_description { get; set; }
+
+        public string? company_city { get; set; }
+
+        public string? company_province { get; set; }
+
+        public string? company_business_scale { get; set; }
+
+        public string? comment { get; set;}
+
+        public DateTime company_registered_date { get; set; }
+
+
+        [JsonIgnore]
+        public virtual SystemAdmin? verified_system_admin { get; set; }
+
+        public int verified_system_admin_id { get; set; }
+
+
+        [JsonIgnore]
+        public ICollection<Employee>? employees { get; set; }
     }
 }

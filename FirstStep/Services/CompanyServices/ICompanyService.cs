@@ -7,11 +7,21 @@ namespace FirstStep.Services
     {
         public Task<IEnumerable<Company>> GetAll();
 
+        public Task<IEnumerable<Company>> GetAllUnregisteredCompanies();
+
+        public Task<IEnumerable<Company>> GetAllRegisteredCompanies();
+
         public Task<Company> GetById(int id);
 
-        public Task Create(CompanyDto company);
+        public Task Create(AddCompanyDto company);
 
-        public Task Update(int companyID, Company company);
+        public Task RegisterCompany(int companyID, AddDetailsCompanyDto company);
+
+        public Task UpdateCompanyVerification(int companyID, CompanyRegInfoDto companyRegInfo);
+
+        public Task UpdateUnregisteredCompany(int companyID, UpdateUnRegCompanyDto company);
+
+        public Task UpdateRegisteredCompany(int companyID, UpdateCompanyDto company);
 
         public Task Delete(int id);
     }

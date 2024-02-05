@@ -2,7 +2,7 @@
 
 namespace FirstStep.Models.DTOs
 {
-    public class RegisteredCompanyDto
+    public class AddDetailsCompanyDto
     {
         public required int company_id { get; set; }
 
@@ -15,9 +15,5 @@ namespace FirstStep.Models.DTOs
         public required string company_province { get; set; }
 
         public required string company_business_scale { get; set; }
-
-        public required DateTime company_registered_date { get; set; } = DateTime.UtcNow;
-
-        public required int verified_system_admin_id { get; set; }
     }
 }

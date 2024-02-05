@@ -5,6 +5,6 @@ namespace FirstStep.Models
     public class SystemAdmin : User
     {
         [JsonIgnore]
-        public ICollection<RegisteredCompany>? registeredCompanies { get; set; }
+        public ICollection<Company>? verified_companies { get; set; }
     }
 }

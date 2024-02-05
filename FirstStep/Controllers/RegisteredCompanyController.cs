@@ -10,6 +10,7 @@ namespace FirstStep.Controllers
     [ApiController]
     public class RegisteredCompanyController : ControllerBase
     {
+        /*
         private readonly IRegisteredCompanyService _service;
 
         public RegisteredCompanyController(IRegisteredCompanyService service)
@@ -59,6 +60,7 @@ namespace FirstStep.Controllers
             await _service.SetAsRegistered(companyID, newRegCompany);
             return Ok($"Sucessfully Set: Registered company {companyID}");
         }
+        */
     }
 }
 

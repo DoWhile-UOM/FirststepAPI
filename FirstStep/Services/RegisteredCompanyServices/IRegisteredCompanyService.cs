@@ -5,6 +5,7 @@ namespace FirstStep.Services
 {
     public interface IRegisteredCompanyService
     {
+        /*
         public Task<IEnumerable<RegisteredCompany>> GetAll();
 
         public Task<RegisteredCompany> GetById(int id);
@@ -14,5 +15,6 @@ namespace FirstStep.Services
         public Task Delete(int id);
 
         public Task SetAsRegistered(int companyID, RegisteredCompanyDto newRegCompany);
+        */
     }
 }

@@ -32,7 +32,7 @@ namespace FirstStep.Data
 
         public DbSet<SystemAdmin> SystemAdmins { get; set; } = null!;
 
-        public DbSet<RegisteredCompany> RegisteredCompanies { get; set; } = null!;
+        //public DbSet<RegisteredCompany> RegisteredCompanies { get; set; } = null!;
 
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
@@ -47,7 +47,9 @@ namespace FirstStep.Data
             modelBuilder.Entity<HRAssistant>().ToTable("HRAssistants");
             modelBuilder.Entity<CompanyAdmin>().ToTable("CompanyAdmins");
             modelBuilder.Entity<SystemAdmin>().ToTable("SystemAdmins");
-            modelBuilder.Entity<RegisteredCompany>().ToTable("RegisteredCompanys");
+            //modelBuilder.Entity<RegisteredCompany>().ToTable("RegisteredCompanys");
+
+            //modelBuilder.Entity<RegisteredCompany>().HasBaseType<Company>();
 
             modelBuilder.Entity<Advertisement>(entity => 
             {
@@ -64,12 +66,11 @@ namespace FirstStep.Data
                 entity.HasMany(e => e.professionKeywords)
                     .WithMany(e => e.advertisements)
                     .UsingEntity(e => e.ToTable("AdvertisementProfessionKeywords"));
-                    
             });
 
             modelBuilder.Entity<Employee>(entity =>
             {
-                entity.HasOne(e => e.regCompany)
+                entity.HasOne(e => e.company)
                     .WithMany(e => e.employees)
                     .HasForeignKey(e => e.company_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
@@ -83,22 +84,13 @@ namespace FirstStep.Data
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
 
-            modelBuilder.Entity<RegisteredCompany>(entity =>
+            modelBuilder.Entity<Company>(entity =>
             {
                 entity.HasOne(e => e.verified_system_admin)
-                    .WithMany(e => e.registeredCompanies)
+                    .WithMany(e => e.verified_companies)
                     .HasForeignKey(e => e.verified_system_admin_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
-
-            /*
-            modelBuilder.Entity<SeekerSkill>(entity =>
-            {
-                entity.HasOne(e => e.job_Field)
-                    .WithMany(e => e.seekerSkills)
-                    .HasForeignKey(e => e.field_id)
-                    .OnDelete(DeleteBehavior.ClientCascade);
-            });*/
 
             modelBuilder.Entity<Seeker>(entity =>
             {
@@ -107,10 +99,9 @@ namespace FirstStep.Data
                     .HasForeignKey(e => e.field_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
 
-                
                 entity.HasMany(e => e.skills)
                     .WithMany(e => e.seekers)
-                        .UsingEntity(e => e.ToTable("SeekerSkills"));
+                    .UsingEntity(e => e.ToTable("SeekerSkills"));
             });
 
             /*

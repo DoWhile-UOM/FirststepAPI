@@ -6,8 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
 {
-    public class RegisteredCompanyService : IRegisteredCompanyService
+    public class RegisteredCompanyService //: IRegisteredCompanyService
     {
+        /*
         private readonly DataContext _context;
         private readonly ICompanyService _companyService;
         private readonly IMapper _mapper;
@@ -104,5 +105,6 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
+        */
     }
 }
