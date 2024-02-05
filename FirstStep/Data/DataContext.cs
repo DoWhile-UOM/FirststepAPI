@@ -41,8 +41,10 @@ namespace FirstStep.Data
         {
             modelBuilder.Entity<Seeker>().ToTable("Seekers");
             modelBuilder.Entity<Employee>().ToTable("Employees");
-            modelBuilder.Entity<HRManager>().ToTable("HRManagers");
-            modelBuilder.Entity<HRAssistant>().ToTable("HRAssistants");
+            
+            //modelBuilder.Entity<HRManager>().ToTable("HRManagers");
+            //modelBuilder.Entity<HRAssistant>().ToTable("HRAssistants");
+            
             modelBuilder.Entity<CompanyAdmin>().ToTable("CompanyAdmins");
             modelBuilder.Entity<SystemAdmin>().ToTable("SystemAdmins");
 
