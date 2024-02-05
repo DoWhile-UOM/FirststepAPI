@@ -32,8 +32,6 @@ namespace FirstStep.Data
 
         public DbSet<SystemAdmin> SystemAdmins { get; set; } = null!;
 
-        //public DbSet<RegisteredCompany> RegisteredCompanies { get; set; } = null!;
-
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
         public DbSet<Revision> Revisions { get; set; } = null!;
@@ -47,9 +45,6 @@ namespace FirstStep.Data
             modelBuilder.Entity<HRAssistant>().ToTable("HRAssistants");
             modelBuilder.Entity<CompanyAdmin>().ToTable("CompanyAdmins");
             modelBuilder.Entity<SystemAdmin>().ToTable("SystemAdmins");
-            //modelBuilder.Entity<RegisteredCompany>().ToTable("RegisteredCompanys");
-
-            //modelBuilder.Entity<RegisteredCompany>().HasBaseType<Company>();
 
             modelBuilder.Entity<Advertisement>(entity => 
             {
@@ -103,38 +98,6 @@ namespace FirstStep.Data
                     .WithMany(e => e.seekers)
                     .UsingEntity(e => e.ToTable("SeekerSkills"));
             });
-
-            /*
-            modelBuilder.Entity<Advertisement_Seeker>(entity =>
-            {
-                entity.HasKey(e => new {e.advertisement_id, e.seeker_id});
-
-                entity.HasOne(e => e.advertisement)
-                    .WithMany(e => e.advertisement_seekers)
-                    .HasForeignKey(e => e.advertisement_id)
-                    .OnDelete(DeleteBehavior.ClientCascade);
-
-                entity.HasOne(e => e.seeker)
-                    .WithMany(e => e.advertisement_seekers)
-                    .HasForeignKey(e => e.seeker_id)
-                    .OnDelete(DeleteBehavior.ClientCascade);
-            });
-            /*
-            
-            modelBuilder.Entity<Advertisement_ProfessionKeyword>(entity =>
-            {
-                entity.HasKey(e => new {e.advertisement_id, e.profession_id});
-                               
-                entity.HasOne(e => e.advertisement)
-                    .WithMany(e => e.advertisement_professionKeywords)
-                    .HasForeignKey(e => e.advertisement_id)
-                    .OnDelete(DeleteBehavior.ClientCascade);
-
-                entity.HasOne(e => e.professionKeyword)
-                    .WithMany(e => e.advertisement_professionKeywords)
-                    .HasForeignKey(e => e.profession_id)
-                    .OnDelete(DeleteBehavior.ClientCascade);
-            });*/
         }
     }
 }
