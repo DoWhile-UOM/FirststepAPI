@@ -90,6 +90,11 @@ namespace FirstStep.Services
         {
             Company dbCompany = await GetById(companyID);
 
+            if (dbCompany.verification_status)
+            {
+                throw new Exception("Company is already registered. Error API Call!");
+            }
+
             dbCompany.company_name = company.company_name;
             dbCompany.company_email = company.company_email;
             dbCompany.business_reg_no = company.business_reg_no;
@@ -106,6 +111,11 @@ namespace FirstStep.Services
         public async Task UpdateRegisteredCompany(int companyID, UpdateCompanyDto company)
         {
             Company dbCompany = await GetById(companyID);
+
+            if (!dbCompany.verification_status)
+            {
+                throw new Exception("Company is not registered. Error API Call!");
+            }
 
             dbCompany.company_name = company.company_name;
             dbCompany.company_email = company.company_email;

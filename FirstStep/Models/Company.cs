@@ -46,7 +46,7 @@ namespace FirstStep.Models
         [JsonIgnore]
         public virtual SystemAdmin? verified_system_admin { get; set; }
 
-        public int verified_system_admin_id { get; set; }
+        public int? verified_system_admin_id { get; set; }
 
 
         [JsonIgnore]

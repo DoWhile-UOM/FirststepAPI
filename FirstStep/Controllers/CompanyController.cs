@@ -70,6 +70,11 @@ namespace FirstStep.Controllers
         [Route("RegisterCompany/{companyId:int}")] // Company Admin
         public async Task<IActionResult> RegisterCompany(AddDetailsCompanyDto reqCompany, int companyId)
         {
+            if (companyId != reqCompany.company_id)
+            {
+                return BadRequest("Context is not matching");
+            }
+
             await _service.RegisterCompany(companyId, reqCompany);
             return Ok($"Successfully registered company on ID: {companyId}.");
         }
@@ -78,6 +83,11 @@ namespace FirstStep.Controllers
         [Route("UpdateUnregisteredCompany/{companyId:int}")] // Company Admin
         public async Task<IActionResult> UpdateUnregisteredCompany(UpdateUnRegCompanyDto reqCompany, int companyId)
         {
+            if (companyId != reqCompany.company_id)
+            {
+                return BadRequest("Context is not matching");
+            }
+
             await _service.UpdateUnregisteredCompany(companyId, reqCompany);
             return Ok($"Successfully updated unregistered company on ID: {companyId}.");
         }
@@ -86,6 +96,11 @@ namespace FirstStep.Controllers
         [Route("UpdateRegisteredCompany/{companyId:int}")] // Company Admin
         public async Task<IActionResult> UpdateRegisteredCompany(UpdateCompanyDto reqCompany, int companyId)
         {
+            if (companyId != reqCompany.company_id)
+            {
+                return BadRequest("Context is not matching");
+            }
+
             await _service.UpdateRegisteredCompany(companyId, reqCompany);
             return Ok($"Successfully updated registered company on ID: {companyId}.");
         }
