@@ -97,16 +97,16 @@ namespace FirstStep.Services
             await ValidateCompany(newCompanyAdmin.company_id);
 
             // validate there is no any other company admin in within the company
-            if (await _context.CompanyAdmins.AnyAsync(ca => ca.company_id == newCompanyAdmin.company_id))
+            if (await _context.HRManagers.AnyAsync(ca => ca.company_id == newCompanyAdmin.company_id))
             {
                 throw new Exception("Company already has an admin. Can't complete the process");
             }
 
-            var companyAdmin = _mapper.Map<CompanyAdmin>(newCompanyAdmin);
+            var companyAdmin = _mapper.Map<HRManager>(newCompanyAdmin);
 
             companyAdmin.user_type = "CA";
 
-            _context.CompanyAdmins.Add(companyAdmin);
+            _context.HRManagers.Add(companyAdmin);
             await _context.SaveChangesAsync();
         }
 

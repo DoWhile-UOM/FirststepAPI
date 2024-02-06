@@ -28,8 +28,6 @@ namespace FirstStep.Data
 
         public DbSet<HRAssistant> HRAssistants { get; set; } = null!;
 
-        public DbSet<CompanyAdmin> CompanyAdmins { get; set; } = null!;
-
         public DbSet<SystemAdmin> SystemAdmins { get; set; } = null!;
 
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
@@ -41,11 +39,6 @@ namespace FirstStep.Data
         {
             modelBuilder.Entity<Seeker>().ToTable("Seekers");
             modelBuilder.Entity<Employee>().ToTable("Employees");
-            
-            //modelBuilder.Entity<HRManager>().ToTable("HRManagers");
-            //modelBuilder.Entity<HRAssistant>().ToTable("HRAssistants");
-            
-            modelBuilder.Entity<CompanyAdmin>().ToTable("CompanyAdmins");
             modelBuilder.Entity<SystemAdmin>().ToTable("SystemAdmins");
 
             modelBuilder.Entity<Advertisement>(entity => 
