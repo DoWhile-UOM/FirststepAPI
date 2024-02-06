@@ -1,5 +1,7 @@
-﻿using FirstStep.Data;
+﻿using AutoMapper;
+using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -7,10 +9,14 @@ namespace FirstStep.Services
     public class EmployeeService : IEmployeeService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
+        private readonly ICompanyService _companyService;
 
-        public EmployeeService(DataContext context)
+        public EmployeeService(DataContext context, IMapper mapper, ICompanyService companyService)
         {
             _context = context;
+            _mapper = mapper;
+            _companyService = companyService;
         }
 
         public async Task<IEnumerable<Employee>> GetAll()
@@ -31,7 +37,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id)
         {
-            ICollection<Employee> hrManagers = await _context.Employees.Where(e => e.is_HRM && e.company_id == company_Id).ToListAsync();
+            ICollection<HRManager> hrManagers = await _context.HRManagers.Where(e => e.company_id == company_Id).ToListAsync();
             if (hrManagers is null)
             {
                 throw new Exception("There are no HR Managers under the company");
@@ -42,7 +48,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllHRAssistants(int company_Id)
         {
-            ICollection<Employee> hrAssistants = await _context.Employees.Where(e => !e.is_HRM && e.company_id == company_Id).ToListAsync();
+            ICollection<HRAssistant> hrAssistants = await _context.HRAssistants.Where(e => e.company_id == company_Id).ToListAsync();
             if (hrAssistants is null)
             {
                 throw new Exception("There are no HR Assistants under the company");
@@ -62,35 +68,43 @@ namespace FirstStep.Services
             return employees;
         }
 
-        public async Task CreateHRManager(HRManager hRManager)
+        public async Task CreateHRManager(AddEmployeeDto newHRManager)
         {
-            hRManager.user_id = 0;
-            hRManager.is_HRM = true;
+            await ValidateCompany(newHRManager.company_id);
+            
+            var hrManager = _mapper.Map<HRManager>(newHRManager);
 
-            // check whether the company is a registered company using registeredCompany Service class
+            hrManager.user_type = "HRM";
 
-            _context.HRManagers.Add(hRManager);
+            _context.HRManagers.Add(hrManager);
             await _context.SaveChangesAsync();
         }
 
-        public async Task CreateHRAssistant(HRAssistant hRAssistant)
+        public async Task CreateHRAssistant(AddEmployeeDto newHRAssistant)
         {
-            hRAssistant.user_id = 0;
-            hRAssistant.is_HRM = false;
+            await ValidateCompany(newHRAssistant.company_id);
 
-            // check whether the company is a registered company using registeredCompany Service class
+            var hrAssistant = _mapper.Map<HRAssistant>(newHRAssistant);
 
-            _context.HRAssistants.Add(hRAssistant);
+            hrAssistant.user_type = "HRA";
+
+            _context.HRAssistants.Add(hrAssistant);
             await _context.SaveChangesAsync();
         }
 
-        public async Task CreateCompanyAdmin(CompanyAdmin companyAdmin)
+        public async Task CreateCompanyAdmin(AddEmployeeDto newCompanyAdmin)
         {
-            companyAdmin.user_id = 0;
-            companyAdmin.is_HRM = true;
+            await ValidateCompany(newCompanyAdmin.company_id);
 
-            // check whether the company is a registered company using registeredCompany Service class
-            // company id is not needed for company admin
+            // validate there is no any other company admin in within the company
+            if (await _context.CompanyAdmins.AnyAsync(ca => ca.company_id == newCompanyAdmin.company_id))
+            {
+                throw new Exception("Company already has an admin. Can't complete the process");
+            }
+
+            var companyAdmin = _mapper.Map<CompanyAdmin>(newCompanyAdmin);
+
+            companyAdmin.user_type = "CA";
 
             _context.CompanyAdmins.Add(companyAdmin);
             await _context.SaveChangesAsync();
@@ -100,11 +114,12 @@ namespace FirstStep.Services
         {
             Employee dbEmployee = await GetById(employee.user_id);
 
+            // need to use seperate dto (without password hash, be password) as UpdateEmployeeDto
             dbEmployee.first_name = employee.first_name;
             dbEmployee.last_name = employee.last_name;
             dbEmployee.email = employee.email;
             dbEmployee.password_hash = employee.password_hash;
-            dbEmployee.is_HRM = employee.is_HRM;
+            dbEmployee.user_type = employee.user_type;
 
             await _context.SaveChangesAsync();
         }
@@ -115,6 +130,14 @@ namespace FirstStep.Services
 
             _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();
+        }
+
+        private async Task ValidateCompany(int companyID)
+        {
+            if (!await _companyService.IsRegistered(companyID))
+            {
+                throw new Exception("Invalid input, Company is not registered");
+            }
         }
     }
 }

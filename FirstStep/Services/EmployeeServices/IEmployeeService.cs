@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -14,11 +15,11 @@ namespace FirstStep.Services
 
         public Task<IEnumerable<Employee>> GetAllEmployees(int company_Id);
 
-        public Task CreateHRManager(HRManager hRManager);
+        public Task CreateHRManager(AddEmployeeDto newHRManager);
 
-        public Task CreateHRAssistant(HRAssistant hRAssistant);
+        public Task CreateHRAssistant(AddEmployeeDto newHRAssistant);
 
-        public Task CreateCompanyAdmin(CompanyAdmin companyAdmin);
+        public Task CreateCompanyAdmin(AddEmployeeDto newCompanyAdmin);
 
         public Task Update(Employee employee);
 

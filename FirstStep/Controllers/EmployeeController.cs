@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetEmployeeById/{id}")]
+        [Route("GetEmployeeById/{id:int}")]
 
         public async Task<ActionResult<Employee>> GetEmployeeById(int id)
         {
@@ -33,7 +34,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllHRManagers/{company_Id}")]
+        [Route("GetAllHRManagers/{company_Id:int}")]
         
         public async Task<ActionResult<IEnumerable<Employee>>> GetAllHRManagers(int company_Id)
         {
@@ -41,7 +42,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllHRAssistants/{company_Id}")]
+        [Route("GetAllHRAssistants/{company_Id:int}")]
 
         public async Task<ActionResult<IEnumerable<Employee>>> GetAllHRAssistants(int company_Id)
         {
@@ -49,7 +50,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllEmployees/{company_Id}")]
+        [Route("GetAllEmployees/{company_Id:int}")]
 
         public async Task<ActionResult<IEnumerable<Employee>>> GetAllEmployees(int company_Id)
         {
@@ -59,41 +60,46 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddNewHRManager")]
 
-        public async Task<IActionResult> AddHRManager(HRManager hRManager)
+        public async Task<IActionResult> AddHRManager(AddEmployeeDto newHRManager)
         {
-            await _service.CreateHRManager(hRManager);
+            await _service.CreateHRManager(newHRManager);
             return Ok("Successfully Added");
         }
 
         [HttpPost]
         [Route("AddNewHRAssistant")]
 
-        public async Task<IActionResult> AddHRAssistant(HRAssistant hRAssistant)
+        public async Task<IActionResult> AddHRAssistant(AddEmployeeDto newHRAssistant)
         {
-            await _service.CreateHRAssistant(hRAssistant);
+            await _service.CreateHRAssistant(newHRAssistant);
             return Ok("Successfully Added");
         }
 
         [HttpPost]
         [Route("AddNewCompanyAdmin")]
 
-        public async Task<IActionResult> AddCompanyAdmin(CompanyAdmin companyAdmin)
+        public async Task<IActionResult> AddCompanyAdmin(AddEmployeeDto newCompanyAdmin)
         {
-            await _service.CreateCompanyAdmin(companyAdmin);
+            await _service.CreateCompanyAdmin(newCompanyAdmin);
             return Ok("Successfully Added");
         }
 
         [HttpPut]
-        [Route("UpdateEmployee")]
+        [Route("UpdateEmployee/{id:int}")]
 
-        public async Task<IActionResult> UpdateEmployee(Employee reqEmployee)
+        public async Task<IActionResult> UpdateEmployee(Employee reqEmployee, int id)
         {
+            if (id != reqEmployee.user_id)
+            {
+                return BadRequest("Context is not matching");
+            }
+
             await _service.Update(reqEmployee);
             return Ok();
         }
 
         [HttpDelete]
-        [Route("DeleteEmployee/{id}")]
+        [Route("DeleteEmployee/{id:int}")]
 
         public async Task<IActionResult> DeleteEmployee(int id)
         {

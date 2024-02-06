@@ -130,5 +130,12 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> IsRegistered(int companyID)
+        {
+            Company company = await GetById(companyID);
+
+            return company.verification_status;
+        }
     }
 }
