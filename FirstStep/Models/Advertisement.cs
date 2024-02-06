@@ -42,9 +42,15 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
-        public HRManager? hrManager { get; set; }
+        public virtual HRManager? hrManager { get; set; }
 
-        public required int hrManager_id { get; set; }        
+        public required int hrManager_id { get; set; }
+
+        
+        [JsonIgnore]
+        public virtual Company? company { get; set; }
+
+        public required int company_id { get; set; }
 
 
         public virtual JobField? job_Field { get; set; }

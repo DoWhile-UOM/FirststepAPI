@@ -53,9 +53,18 @@ namespace FirstStep.Data
                     .HasForeignKey(e => e.hrManager_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
 
+                entity.HasOne(e => e.company)
+                    .WithMany(e => e.advertisements)
+                    .HasForeignKey(e => e.company_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
                 entity.HasMany(e => e.professionKeywords)
                     .WithMany(e => e.advertisements)
                     .UsingEntity(e => e.ToTable("AdvertisementProfessionKeywords"));
+
+                entity.HasMany(e => e.savedSeekers)
+                    .WithMany(e => e.savedAdvertisemnts)
+                    .UsingEntity(e => e.ToTable("AdvertisementSeekers"));
             });
 
             modelBuilder.Entity<Employee>(entity =>
