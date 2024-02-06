@@ -26,7 +26,5 @@ namespace FirstStep.Services
         public Task Delete(int id);
 
         public Task<bool> IsRegistered(int companyID);
-
-        // need to create function for get the company admin
     }
 }

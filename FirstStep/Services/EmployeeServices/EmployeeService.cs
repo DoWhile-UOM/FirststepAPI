@@ -74,6 +74,7 @@ namespace FirstStep.Services
             
             var hrManager = _mapper.Map<HRManager>(newHRManager);
 
+            hrManager.password_hash = newHRManager.password;
             hrManager.user_type = "HRM";
 
             _context.HRManagers.Add(hrManager);
@@ -86,6 +87,7 @@ namespace FirstStep.Services
 
             var hrAssistant = _mapper.Map<HRAssistant>(newHRAssistant);
 
+            hrAssistant.password_hash = newHRAssistant.password;
             hrAssistant.user_type = "HRA";
 
             _context.HRAssistants.Add(hrAssistant);
@@ -97,14 +99,18 @@ namespace FirstStep.Services
             await ValidateCompany(newCompanyAdmin.company_id);
 
             // validate there is no any other company admin in within the company
-            if (await _context.HRManagers.AnyAsync(ca => ca.company_id == newCompanyAdmin.company_id))
+            var company = await _companyService.GetById(newCompanyAdmin.company_id);
+            
+            if (company.company_admin_id != null)
             {
-                throw new Exception("Company already has an admin. Can't complete the process");
+                throw new Exception("Company already has an admin");
             }
 
             var companyAdmin = _mapper.Map<HRManager>(newCompanyAdmin);
 
+            companyAdmin.password_hash = newCompanyAdmin.password;
             companyAdmin.user_type = "CA";
+            companyAdmin.admin_company = company;
 
             _context.HRManagers.Add(companyAdmin);
             await _context.SaveChangesAsync();

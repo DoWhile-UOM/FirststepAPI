@@ -66,6 +66,14 @@ namespace FirstStep.Data
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
 
+            modelBuilder.Entity<HRManager>(entity =>
+            {
+                entity.HasOne(e => e.admin_company)
+                    .WithOne(e => e.company_admin)
+                    .HasForeignKey<Company>(e => e.company_admin_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+            });
+
             modelBuilder.Entity<ProfessionKeyword>(entity =>
             {
                 entity.HasOne(e => e.job_Field)

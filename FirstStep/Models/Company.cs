@@ -48,7 +48,13 @@ namespace FirstStep.Models
 
         public int? verified_system_admin_id { get; set; }
 
+        
+        [JsonIgnore]
+        public virtual HRManager? company_admin { get; set; }
 
+        public int? company_admin_id { get; set; }
+
+        
         [JsonIgnore]
         public ICollection<Employee>? employees { get; set; }
     }
