@@ -5,14 +5,16 @@ namespace FirstStep.Services
 {
     public interface IProfessionKeywordService
     {
-        Task<IEnumerable<ProfessionKeyword>> GetAll();
+        public Task<IEnumerable<ProfessionKeyword>> GetAll();
 
-        Task<ProfessionKeyword> GetById(int id);
+        public Task<ProfessionKeyword> GetById(int id);
+
+        public Task<ProfessionKeyword> GetByName(string name, int fieldID);
+
+        public Task Create(ProfessionKeywordDto professionKeyword);
         
-        Task Create(ProfessionKeywordDto professionKeyword);
+        public Task Update(int keywordID, ProfessionKeyword professionKeyword);
         
-        Task Update(int keywordID, ProfessionKeyword professionKeyword);
-        
-        Task Delete(int id);
+        public Task Delete(int id);
     }
 }

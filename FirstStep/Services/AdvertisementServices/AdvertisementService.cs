@@ -10,11 +10,25 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly IProfessionKeywordService _keywordService;
+        private readonly ICompanyService _companyService;
+        private readonly IEmployeeService _employeeService;
+        private readonly IJobFieldService _jobFieldService;
 
-        public AdvertisementService(DataContext context, IMapper mapper)
+        public AdvertisementService(
+            DataContext context, 
+            IMapper mapper, 
+            IProfessionKeywordService keywordService, 
+            ICompanyService companyService, 
+            IEmployeeService employeeService, 
+            IJobFieldService jobFieldService)
         {
             _context = context;
             _mapper = mapper;
+            _keywordService = keywordService;
+            _companyService = companyService;
+            _employeeService = employeeService;
+            _jobFieldService = jobFieldService;
         }
 
         public async Task<IEnumerable<Advertisement>> GetAll()
@@ -40,10 +54,44 @@ namespace FirstStep.Services
             return advertisement;
         }
 
-        public async Task Create(AddAdvertisementDto advertisement)
+        public async Task Create(AddAdvertisementDto advertisementDto)
         {
-            Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisement);
-            
+            // map the AddAdvertisementDto to a Advertisement object
+            Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisementDto);
+
+            newAdvertisement.hrManager = await _employeeService.FindHRM(newAdvertisement.hrManager_id);
+            newAdvertisement.company = await _companyService.GetById(newAdvertisement.hrManager.company_id);
+            newAdvertisement.company_id = newAdvertisement.company.company_id; 
+            newAdvertisement.job_Field = await _jobFieldService.GetById(newAdvertisement.field_id);
+
+            // add keywords to the advertisement
+            if (advertisementDto.keywords != null)
+            {
+                newAdvertisement.professionKeywords = new List<ProfessionKeyword>();
+
+                foreach (var keyword in advertisementDto.keywords)
+                {
+                    // check whether the keyword exists in the database
+                    var dbKeyword = await _keywordService.GetByName(keyword, newAdvertisement.field_id);
+
+                    if (dbKeyword != null)
+                    {
+                        // if it exists, add it to the advertisement's list of keywords
+                        newAdvertisement.professionKeywords.Add(dbKeyword);
+                    }
+                    else
+                    {
+                        // if it doesn't exist, create a new keyword and add it to the advertisement's list of keywords
+                        newAdvertisement.professionKeywords.Add(new ProfessionKeyword
+                        {
+                            profession_id = 0,
+                            profession_name = keyword,
+                            field_id = newAdvertisement.field_id
+                        });
+                    }
+                }
+            }
+
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
         }

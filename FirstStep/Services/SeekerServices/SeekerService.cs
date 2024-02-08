@@ -69,7 +69,11 @@ namespace FirstStep.Services
                     else
                     {
                         // if it doesn't exist, create it and add it to the seeker's list of skills
-                        seeker.skills.Add(new Skill { skill_id = 0, skill_name = skill });
+                        seeker.skills.Add(new Skill 
+                        { 
+                            skill_id = 0, 
+                            skill_name = skill 
+                        });
                     }
                 }
             }

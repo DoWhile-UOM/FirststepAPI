@@ -35,6 +35,17 @@ namespace FirstStep.Services
             return employee;
         }
 
+        public async Task<HRManager> FindHRM(int id)
+        {
+            var hrmanager = await _context.HRManagers.FindAsync(id);
+            if (hrmanager is null)
+            {
+                throw new Exception("HR Manager not found.");
+            }
+
+            return hrmanager;
+        }
+
         public async Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id)
         {
             ICollection<HRManager> hrManagers = await _context.HRManagers.Where(e => e.company_id == company_Id).ToListAsync();
