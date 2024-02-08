@@ -72,7 +72,7 @@ namespace FirstStep.Services
                 foreach (var keyword in advertisementDto.keywords)
                 {
                     // check whether the keyword exists in the database
-                    var dbKeyword = await _keywordService.GetByName(keyword, newAdvertisement.field_id);
+                    var dbKeyword = await _keywordService.GetByName(keyword.ToLower(), newAdvertisement.field_id);
 
                     if (dbKeyword != null)
                     {
@@ -85,7 +85,7 @@ namespace FirstStep.Services
                         newAdvertisement.professionKeywords.Add(new ProfessionKeyword
                         {
                             profession_id = 0,
-                            profession_name = keyword,
+                            profession_name = keyword.ToLower(),
                             field_id = newAdvertisement.field_id
                         });
                     }

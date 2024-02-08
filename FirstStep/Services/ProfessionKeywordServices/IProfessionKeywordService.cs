@@ -9,7 +9,7 @@ namespace FirstStep.Services
 
         public Task<ProfessionKeyword> GetById(int id);
 
-        public Task<ProfessionKeyword> GetByName(string name, int fieldID);
+        public Task<ProfessionKeyword?> GetByName(string name, int fieldID);
 
         public Task Create(ProfessionKeywordDto professionKeyword);
         
