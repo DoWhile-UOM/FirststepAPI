@@ -11,7 +11,7 @@ namespace FirstStep.Services
 
         Task Create(AddAdvertisementDto advertisement);
 
-        Task Update(Advertisement advertisement);
+        Task Update(int jobID, UpdateAdvertisementDto advertisement);
 
         Task Delete(int id);
 

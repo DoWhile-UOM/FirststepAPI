@@ -96,28 +96,58 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(Advertisement advertisement)
+        public async Task Update(int jobID, UpdateAdvertisementDto reqAdvertisement)
         {
-            Advertisement dbAdvertisement = await GetById(advertisement.advertisement_id);
+            Advertisement dbAdvertisement = await GetById(jobID);
 
-            dbAdvertisement.job_number = advertisement.job_number;
-            dbAdvertisement.title = advertisement.title;
-            dbAdvertisement.location_province = advertisement.location_province;
-            dbAdvertisement.location_city = advertisement.location_city;
-            dbAdvertisement.employeement_type = advertisement.employeement_type;
-            dbAdvertisement.arrangement = advertisement.arrangement;
-            dbAdvertisement.is_experience_required = advertisement.is_experience_required;
-            dbAdvertisement.salary = advertisement.salary;
-            dbAdvertisement.posted_date = advertisement.posted_date;
-            dbAdvertisement.submission_deadline = advertisement.submission_deadline;
-            dbAdvertisement.current_status = advertisement.current_status;
-            dbAdvertisement.job_overview = advertisement.job_overview;
-            dbAdvertisement.job_responsibilities = advertisement.job_responsibilities;
-            dbAdvertisement.job_qualifications = advertisement.job_qualifications;
-            dbAdvertisement.job_benefits = advertisement.job_benefits;
-            dbAdvertisement.job_other_details = advertisement.job_other_details;
-            dbAdvertisement.hrManager_id = advertisement.hrManager_id;
-            dbAdvertisement.field_id = advertisement.field_id;
+            dbAdvertisement.job_number = reqAdvertisement.job_number;
+            dbAdvertisement.title = reqAdvertisement.title;
+            dbAdvertisement.location_province = reqAdvertisement.location_province;
+            dbAdvertisement.location_city = reqAdvertisement.location_city;
+            dbAdvertisement.employeement_type = reqAdvertisement.employeement_type;
+            dbAdvertisement.arrangement = reqAdvertisement.arrangement;
+            dbAdvertisement.is_experience_required = reqAdvertisement.is_experience_required;
+            dbAdvertisement.salary = reqAdvertisement.salary;
+            dbAdvertisement.submission_deadline = reqAdvertisement.submission_deadline;
+            dbAdvertisement.job_overview = reqAdvertisement.job_overview;
+            dbAdvertisement.job_responsibilities = reqAdvertisement.job_responsibilities;
+            dbAdvertisement.job_qualifications = reqAdvertisement.job_qualifications;
+            dbAdvertisement.job_benefits = reqAdvertisement.job_benefits;
+            dbAdvertisement.job_other_details = reqAdvertisement.job_other_details;
+            dbAdvertisement.field_id = reqAdvertisement.field_id;
+
+            // add keywords to the advertisement
+            if (reqAdvertisement.keywords != null)
+            {
+                foreach (var keyword in reqAdvertisement.keywords)
+                {
+                    // check whether the keyword exists in the database
+                    var dbKeyword = await _keywordService.GetByName(keyword.ToLower(), dbAdvertisement.field_id);
+
+                    // create new profession keyword array when it is null
+                    if (dbAdvertisement.professionKeywords == null)
+                    {
+                        dbAdvertisement.professionKeywords = new List<ProfessionKeyword>();
+                    }
+
+                    if (dbKeyword != null && !dbAdvertisement.professionKeywords.Contains(dbKeyword))
+                    {
+                        // if it exists, check whether it is already in the list
+                        // if it is not, add it to the advertisement's list of keywords
+                        dbAdvertisement.professionKeywords.Add(dbKeyword);
+                    }
+                    else if (dbKeyword == null)
+                    {
+                        // if it doesn't exist, create a new keyword and add it to the advertisement's list of keywords
+                        dbAdvertisement.professionKeywords.Add(new ProfessionKeyword
+                        {
+                            profession_id = 0,
+                            profession_name = keyword.ToLower(),
+                            field_id = dbAdvertisement.field_id
+                        });
+                    }
+                }
+            }
 
             await _context.SaveChangesAsync();
         }

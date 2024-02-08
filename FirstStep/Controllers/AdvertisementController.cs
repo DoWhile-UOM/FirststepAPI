@@ -26,11 +26,11 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementById{id}")]
+        [Route("GetAdvertisementById/{jobID:int}")]
 
-        public async Task<ActionResult<Advertisement>> GetAdvertisementById(int id)
+        public async Task<ActionResult<Advertisement>> GetAdvertisementById(int jobID)
         {            
-            return Ok(await _service.GetById(id));
+            return Ok(await _service.GetById(jobID));
         }
 
         [HttpPost]
@@ -39,25 +39,25 @@ namespace FirstStep.Controllers
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
             await _service.Create(advertisementDto);
-            return Ok();
+            return Ok($"Sucessfully added new advertisement: {advertisementDto.title}");
         }
 
         [HttpPut]
-        [Route("UpdateAdvertisement")]
+        [Route("UpdateAdvertisement/{jobID:int}")]
 
-        public async Task<IActionResult> UpdateAdvertisement(Advertisement reqAdvertisement)
+        public async Task<IActionResult> UpdateAdvertisement(UpdateAdvertisementDto reqAdvertisement, int jobID)
         {
-            await _service.Update(reqAdvertisement);
-            return Ok();
+            await _service.Update(jobID, reqAdvertisement);
+            return Ok($"Sucessfully updated advertisement: {reqAdvertisement.title}");
         }
 
         [HttpDelete]
-        [Route("DeleteAdvertisement{id}")]
+        [Route("DeleteAdvertisement/{jobID:int}")]
 
-        public async Task<IActionResult> DeleteAdvertisement(int id)
+        public async Task<IActionResult> DeleteAdvertisement(int jobID)
         {
-            await _service.Delete(id);
-            return Ok();
+            await _service.Delete(jobID);
+            return Ok($"Successfully deleted advertisement: {jobID}");
         }
     }
 }
