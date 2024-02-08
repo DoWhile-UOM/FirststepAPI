@@ -38,6 +38,11 @@ namespace FirstStep.Controllers
 
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
+            if (advertisementDto is null)
+            {
+                return BadRequest("Advertisement cannot be null.");
+            }
+
             await _service.Create(advertisementDto);
             return Ok($"Sucessfully added new advertisement: {advertisementDto.title}");
         }
@@ -47,6 +52,16 @@ namespace FirstStep.Controllers
 
         public async Task<IActionResult> UpdateAdvertisement(UpdateAdvertisementDto reqAdvertisement, int jobID)
         {
+            if (reqAdvertisement is null)
+            {
+                return BadRequest("Advertisement cannot be null.");
+            }
+
+            if (jobID != reqAdvertisement.advertisement_id)
+            {
+                return BadRequest("Advertisement ID mismatch.");
+            }
+
             await _service.Update(jobID, reqAdvertisement);
             return Ok($"Sucessfully updated advertisement: {reqAdvertisement.title}");
         }

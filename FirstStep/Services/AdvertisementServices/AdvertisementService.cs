@@ -65,32 +65,7 @@ namespace FirstStep.Services
             newAdvertisement.job_Field = await _jobFieldService.GetById(newAdvertisement.field_id);
 
             // add keywords to the advertisement
-            if (advertisementDto.keywords != null)
-            {
-                newAdvertisement.professionKeywords = new List<ProfessionKeyword>();
-
-                foreach (var keyword in advertisementDto.keywords)
-                {
-                    // check whether the keyword exists in the database
-                    var dbKeyword = await _keywordService.GetByName(keyword.ToLower(), newAdvertisement.field_id);
-
-                    if (dbKeyword != null)
-                    {
-                        // if it exists, add it to the advertisement's list of keywords
-                        newAdvertisement.professionKeywords.Add(dbKeyword);
-                    }
-                    else
-                    {
-                        // if it doesn't exist, create a new keyword and add it to the advertisement's list of keywords
-                        newAdvertisement.professionKeywords.Add(new ProfessionKeyword
-                        {
-                            profession_id = 0,
-                            profession_name = keyword.ToLower(),
-                            field_id = newAdvertisement.field_id
-                        });
-                    }
-                }
-            }
+            newAdvertisement.professionKeywords = await ProfessionKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
 
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
@@ -116,38 +91,8 @@ namespace FirstStep.Services
             dbAdvertisement.job_other_details = reqAdvertisement.job_other_details;
             dbAdvertisement.field_id = reqAdvertisement.field_id;
 
-            // add keywords to the advertisement
-            if (reqAdvertisement.keywords != null)
-            {
-                foreach (var keyword in reqAdvertisement.keywords)
-                {
-                    // check whether the keyword exists in the database
-                    var dbKeyword = await _keywordService.GetByName(keyword.ToLower(), dbAdvertisement.field_id);
-
-                    // create new profession keyword array when it is null
-                    if (dbAdvertisement.professionKeywords == null)
-                    {
-                        dbAdvertisement.professionKeywords = new List<ProfessionKeyword>();
-                    }
-
-                    if (dbKeyword != null && !dbAdvertisement.professionKeywords.Contains(dbKeyword))
-                    {
-                        // if it exists, check whether it is already in the list
-                        // if it is not, add it to the advertisement's list of keywords
-                        dbAdvertisement.professionKeywords.Add(dbKeyword);
-                    }
-                    else if (dbKeyword == null)
-                    {
-                        // if it doesn't exist, create a new keyword and add it to the advertisement's list of keywords
-                        dbAdvertisement.professionKeywords.Add(new ProfessionKeyword
-                        {
-                            profession_id = 0,
-                            profession_name = keyword.ToLower(),
-                            field_id = dbAdvertisement.field_id
-                        });
-                    }
-                }
-            }
+            // update keywords in the advertisement
+            dbAdvertisement.professionKeywords = await ProfessionKeywordsToAdvertisement(reqAdvertisement.keywords, dbAdvertisement.field_id);
 
             await _context.SaveChangesAsync();
         }
@@ -158,6 +103,40 @@ namespace FirstStep.Services
             
             _context.Advertisements.Remove(advertisement);
             _context.SaveChanges();
+        }
+
+        private async Task<ICollection<ProfessionKeyword>?> ProfessionKeywordsToAdvertisement(ICollection<string>? newKeywords, int fieldId)
+        {
+            if (newKeywords != null)
+            {
+                var professionKeywords = new List<ProfessionKeyword>();
+
+                foreach (var keyword in newKeywords)
+                {
+                    // check whether the keyword exists in the database
+                    var dbKeyword = await _keywordService.GetByName(keyword.ToLower(), fieldId);
+
+                    if (dbKeyword != null)
+                    {
+                        // if it exists, add it to the advertisement's list of keywords
+                        professionKeywords.Add(dbKeyword);
+                    }
+                    else
+                    {
+                        // if it doesn't exist, create a new keyword and add it to the advertisement's list of keywords
+                        professionKeywords.Add(new ProfessionKeyword
+                        {
+                            profession_id = 0,
+                            profession_name = keyword.ToLower(),
+                            field_id = fieldId
+                        });
+                    }
+                }
+
+                return professionKeywords;
+            }
+
+            return null;
         }
 
         // for find no of applications for a job
