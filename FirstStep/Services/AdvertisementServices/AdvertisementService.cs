@@ -39,7 +39,7 @@ namespace FirstStep.Services
                 .ToListAsync();
         }
 
-        public async Task<Advertisement> GetById(int id)
+        public async Task<Advertisement> FindById(int id)
         {
             Advertisement? advertisement = 
                 await _context.Advertisements
@@ -52,6 +52,17 @@ namespace FirstStep.Services
             }
 
             return advertisement;
+        }
+
+        public async Task<AdvertisementDto> GetById(int id)
+        {
+            var dbAdvertismeent = await FindById(id);
+            var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
+
+            advertisementDto.company_name = (await _companyService.GetById(dbAdvertismeent.company_id)).company_name;
+            advertisementDto.field_name = (await _jobFieldService.GetById(dbAdvertismeent.field_id)).field_name;
+
+            return advertisementDto;
         }
 
         public async Task Create(AddAdvertisementDto advertisementDto)
@@ -73,7 +84,7 @@ namespace FirstStep.Services
 
         public async Task Update(int jobID, UpdateAdvertisementDto reqAdvertisement)
         {
-            Advertisement dbAdvertisement = await GetById(jobID);
+            Advertisement dbAdvertisement = await FindById(jobID);
 
             dbAdvertisement.job_number = reqAdvertisement.job_number;
             dbAdvertisement.title = reqAdvertisement.title;
@@ -99,7 +110,7 @@ namespace FirstStep.Services
 
         public async Task Delete(int id)
         {
-            Advertisement advertisement = await GetById(id);
+            Advertisement advertisement = await FindById(id);
             
             _context.Advertisements.Remove(advertisement);
             _context.SaveChanges();

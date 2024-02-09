@@ -7,7 +7,9 @@ namespace FirstStep.Services
     {
         Task<IEnumerable<Advertisement>> GetAll();
 
-        Task<Advertisement> GetById(int id);
+        Task<Advertisement> FindById(int id);
+
+        Task<AdvertisementDto> GetById(int id);
 
         Task Create(AddAdvertisementDto advertisement);
 
