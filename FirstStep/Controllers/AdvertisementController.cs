@@ -20,7 +20,7 @@ namespace FirstStep.Controllers
         [HttpGet]
         [Route("GetAllAdvertisements")]
 
-        public async Task<ActionResult<IEnumerable<Advertisement>>> GetAdvertisements()
+        public async Task<ActionResult<IEnumerable<AdvertisementCardDto>>> GetAdvertisements()
         {
             return Ok(await _service.GetAll());
         }

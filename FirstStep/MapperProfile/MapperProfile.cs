@@ -13,6 +13,7 @@ namespace FirstStep.MapperProfile
             CreateMap<AddAdvertisementDto, Advertisement>();
             CreateMap<UpdateAdvertisementDto, Advertisement>();
             CreateMap<Advertisement, AdvertisementDto>();
+            CreateMap<Advertisement, AdvertisementCardDto>();
             
             CreateMap<AddSeekerDto, Seeker>();
             CreateMap<AddCompanyDto, Company>();

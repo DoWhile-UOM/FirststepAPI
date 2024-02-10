@@ -31,12 +31,34 @@ namespace FirstStep.Services
             _jobFieldService = jobFieldService;
         }
 
-        public async Task<IEnumerable<Advertisement>> GetAll()
+        public async Task<IEnumerable<Advertisement>> FindAll()
         {
             return await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
+                .Include("company")
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<AdvertisementCardDto>> GetAll()
+        {
+            var dbAdvertisements = await FindAll();
+            var advertisementDtos = new List<AdvertisementCardDto>();
+                
+            foreach (var dbAdvertisement in dbAdvertisements)
+            {
+                var advertisementDto = _mapper.Map<AdvertisementCardDto>(dbAdvertisement);
+                
+                advertisementDto.company_name = dbAdvertisement.company!.company_name;
+                advertisementDto.field_name = dbAdvertisement.job_Field!.field_name;
+                
+                // recheck this part
+                advertisementDto.is_saved = false;
+
+                advertisementDtos.Add(advertisementDto);
+            }
+
+            return advertisementDtos;
         }
 
         public async Task<Advertisement> FindById(int id)
@@ -44,6 +66,8 @@ namespace FirstStep.Services
             Advertisement? advertisement = 
                 await _context.Advertisements
                 .Include("professionKeywords")
+                .Include("job_Field")
+                .Include("company")
                 .FirstOrDefaultAsync(x => x.advertisement_id == id);
             
             if (advertisement is null)
@@ -59,8 +83,8 @@ namespace FirstStep.Services
             var dbAdvertismeent = await FindById(id);
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
-            advertisementDto.company_name = (await _companyService.GetById(dbAdvertismeent.company_id)).company_name;
-            advertisementDto.field_name = (await _jobFieldService.GetById(dbAdvertismeent.field_id)).field_name;
+            advertisementDto.company_name = dbAdvertismeent.company!.company_name;
+            advertisementDto.field_name = dbAdvertismeent.job_Field!.field_name;
 
             return advertisementDto;
         }

@@ -5,7 +5,9 @@ namespace FirstStep.Services
 {
     public interface IAdvertisementService
     {
-        Task<IEnumerable<Advertisement>> GetAll();
+        Task<IEnumerable<Advertisement>> FindAll();
+
+        Task<IEnumerable<AdvertisementCardDto>> GetAll();
 
         Task<Advertisement> FindById(int id);
 
