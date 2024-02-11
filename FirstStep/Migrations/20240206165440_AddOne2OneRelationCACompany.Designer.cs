@@ -105,11 +105,11 @@ namespace FirstStep.Migrations
                     b.Property<string>("job_responsibilities")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("location_city")
+                    b.Property<string>("city")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("location_province")
+                    b.Property<string>("country")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

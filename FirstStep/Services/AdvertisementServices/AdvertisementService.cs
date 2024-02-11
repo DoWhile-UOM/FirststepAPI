@@ -94,6 +94,7 @@ namespace FirstStep.Services
             // map the AddAdvertisementDto to a Advertisement object
             Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisementDto);
 
+            newAdvertisement.current_status = "active";
             newAdvertisement.hrManager = await _employeeService.FindHRM(newAdvertisement.hrManager_id);
             newAdvertisement.company = await _companyService.GetById(newAdvertisement.hrManager.company_id);
             newAdvertisement.company_id = newAdvertisement.company.company_id; 
@@ -112,8 +113,8 @@ namespace FirstStep.Services
 
             dbAdvertisement.job_number = reqAdvertisement.job_number;
             dbAdvertisement.title = reqAdvertisement.title;
-            dbAdvertisement.location_province = reqAdvertisement.location_province;
-            dbAdvertisement.location_city = reqAdvertisement.location_city;
+            dbAdvertisement.country = reqAdvertisement.country;
+            dbAdvertisement.city = reqAdvertisement.city;
             dbAdvertisement.employeement_type = reqAdvertisement.employeement_type;
             dbAdvertisement.arrangement = reqAdvertisement.arrangement;
             dbAdvertisement.is_experience_required = reqAdvertisement.is_experience_required;

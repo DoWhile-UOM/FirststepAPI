@@ -5,8 +5,8 @@
         public int advertisement_id { get; set; }
         public int job_number { get; set; }
         public required string title { get; set; }
-        public required string location_province { get; set; }
-        public required string location_city { get; set; }
+        public required string country { get; set; }
+        public required string city { get; set; }
         public required string employeement_type { get; set; }
         public required string arrangement { get; set; }
         public required bool is_experience_required { get; set; }

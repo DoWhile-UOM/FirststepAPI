@@ -44,7 +44,7 @@ namespace FirstStep.Controllers
             }
 
             await _service.Create(advertisementDto);
-            return Ok($"Sucessfully added new advertisement: {advertisementDto.title}");
+            return Ok();
         }
 
         [HttpPut]
@@ -63,7 +63,7 @@ namespace FirstStep.Controllers
             }
 
             await _service.Update(jobID, reqAdvertisement);
-            return Ok($"Sucessfully updated advertisement: {reqAdvertisement.title}");
+            return Ok();
         }
 
         [HttpDelete]
@@ -72,7 +72,7 @@ namespace FirstStep.Controllers
         public async Task<IActionResult> DeleteAdvertisement(int jobID)
         {
             await _service.Delete(jobID);
-            return Ok($"Successfully deleted advertisement: {jobID}");
+            return Ok();
         }
     }
 }
