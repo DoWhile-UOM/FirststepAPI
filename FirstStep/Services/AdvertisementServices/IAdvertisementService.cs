@@ -13,6 +13,8 @@ namespace FirstStep.Services
 
         Task<AdvertisementDto> GetById(int id);
 
+        Task<AdvertisementCompanyDto> GetAllByCompany(int company_id);
+
         Task Create(AddAdvertisementDto advertisement);
 
         Task Update(int jobID, UpdateAdvertisementDto advertisement);

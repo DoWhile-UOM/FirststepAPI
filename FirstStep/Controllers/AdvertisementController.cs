@@ -19,23 +19,28 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllAdvertisements")]
-
         public async Task<ActionResult<IEnumerable<AdvertisementCardDto>>> GetAdvertisements()
         {
-            return Ok(await _service.GetAll());
+            var advertisementList = await _service.GetAll();
+            return advertisementList == null ? NotFound() : Ok(advertisementList);
         }
 
         [HttpGet]
         [Route("GetAdvertisementById/{jobID:int}")]
-
         public async Task<ActionResult<AdvertisementDto>> GetAdvertisementById(int jobID)
         {            
             return Ok(await _service.GetById(jobID));
         }
 
+        [HttpGet]
+        [Route("GetAdvertisementsByCompany/{companyID:int}")]
+        public async Task<ActionResult<AdvertisementCompanyDto>> GetAdvertisementsByCompany(int companyID)
+        {
+            return Ok(await _service.GetAllByCompany(companyID));
+        }
+
         [HttpPost]
         [Route("AddAdvertisement")]
-
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
             if (advertisementDto is null)
@@ -49,7 +54,6 @@ namespace FirstStep.Controllers
 
         [HttpPut]
         [Route("UpdateAdvertisement/{jobID:int}")]
-
         public async Task<IActionResult> UpdateAdvertisement(UpdateAdvertisementDto reqAdvertisement, int jobID)
         {
             if (reqAdvertisement is null)
@@ -68,7 +72,6 @@ namespace FirstStep.Controllers
 
         [HttpDelete]
         [Route("DeleteAdvertisement/{jobID:int}")]
-
         public async Task<IActionResult> DeleteAdvertisement(int jobID)
         {
             await _service.Delete(jobID);

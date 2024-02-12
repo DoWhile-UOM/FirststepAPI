@@ -40,25 +40,10 @@ namespace FirstStep.Services
                 .ToListAsync();
         }
 
+        // temporary function
         public async Task<IEnumerable<AdvertisementCardDto>> GetAll()
         {
-            var dbAdvertisements = await FindAll();
-            var advertisementDtos = new List<AdvertisementCardDto>();
-                
-            foreach (var dbAdvertisement in dbAdvertisements)
-            {
-                var advertisementDto = _mapper.Map<AdvertisementCardDto>(dbAdvertisement);
-                
-                advertisementDto.company_name = dbAdvertisement.company!.company_name;
-                advertisementDto.field_name = dbAdvertisement.job_Field!.field_name;
-                
-                // recheck this part
-                advertisementDto.is_saved = false;
-
-                advertisementDtos.Add(advertisementDto);
-            }
-
-            return advertisementDtos;
+            return MapAdsToCardDtos(await FindAll());
         }
 
         public async Task<Advertisement> FindById(int id)
@@ -89,6 +74,29 @@ namespace FirstStep.Services
             return advertisementDto;
         }
 
+        public async Task<AdvertisementCompanyDto> GetAllByCompany(int company_id)
+        {
+            var dbAdvertisements = await _context.Advertisements
+                .Include("professionKeywords")
+                .Include("job_Field")
+                .Where(x => x.company_id == company_id)
+                .ToListAsync();
+
+            // search for the company by its id
+            // create new object from AdvertisementCompanyDto
+            // map the company's data to the new object
+            var advertisementCompanyDto = 
+                _mapper.Map<AdvertisementCompanyDto>(
+                    await _companyService.GetById(company_id)
+                    );
+
+            // map the company's advertisements to a list of AdvertisementCardDtos
+            // CardDto is used to show advertisement data in home page as a card
+            advertisementCompanyDto.advertisementUnderCompany = MapAdsToCardDtos(dbAdvertisements);
+
+            return advertisementCompanyDto;
+        }
+
         public async Task Create(AddAdvertisementDto advertisementDto)
         {
             // map the AddAdvertisementDto to a Advertisement object
@@ -101,7 +109,7 @@ namespace FirstStep.Services
             newAdvertisement.job_Field = await _jobFieldService.GetById(newAdvertisement.field_id);
 
             // add keywords to the advertisement
-            newAdvertisement.professionKeywords = await ProfessionKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
+            newAdvertisement.professionKeywords = await IncludeProfessionKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
 
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
@@ -128,7 +136,7 @@ namespace FirstStep.Services
             dbAdvertisement.field_id = reqAdvertisement.field_id;
 
             // update keywords in the advertisement
-            dbAdvertisement.professionKeywords = await ProfessionKeywordsToAdvertisement(reqAdvertisement.keywords, dbAdvertisement.field_id);
+            dbAdvertisement.professionKeywords = await IncludeProfessionKeywordsToAdvertisement(reqAdvertisement.keywords, dbAdvertisement.field_id);
 
             await _context.SaveChangesAsync();
         }
@@ -141,7 +149,8 @@ namespace FirstStep.Services
             _context.SaveChanges();
         }
 
-        private async Task<ICollection<ProfessionKeyword>?> ProfessionKeywordsToAdvertisement(ICollection<string>? newKeywords, int fieldId)
+        // Add keywords to the advertisement
+        private async Task<ICollection<ProfessionKeyword>?> IncludeProfessionKeywordsToAdvertisement(ICollection<string>? newKeywords, int fieldId)
         {
             if (newKeywords != null)
             {
@@ -173,6 +182,27 @@ namespace FirstStep.Services
             }
 
             return null;
+        }
+
+        // map the advertisements to a list of AdvertisementCardDtos
+        private IEnumerable<AdvertisementCardDto> MapAdsToCardDtos(IEnumerable<Advertisement> dbAds)
+        {
+            var adCardDtos = new List<AdvertisementCardDto>();
+
+            foreach (var ad in dbAds)
+            {
+                var adDto = _mapper.Map<AdvertisementCardDto>(ad);
+
+                adDto.company_name = ad.company!.company_name;
+                adDto.field_name = ad.job_Field!.field_name;
+
+                // recheck this part
+                adDto.is_saved = false;
+
+                adCardDtos.Add(adDto);
+            }
+
+            return adCardDtos;
         }
 
         // for find no of applications for a job
