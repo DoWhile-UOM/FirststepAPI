@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public class CompanyProfileDetailsDto
+    public struct CompanyProfileDetailsDto
     {
         public required string company_name { get; set; }
         public required string company_email { get; set; }

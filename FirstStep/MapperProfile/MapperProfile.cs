@@ -14,7 +14,7 @@ namespace FirstStep.MapperProfile
             CreateMap<AddCompanyDto, Company>();
             CreateMap<AddEmployeeDto, HRManager>();
             CreateMap<AddEmployeeDto, HRAssistant>();
-            CreateMap<FillDefaultCompanyDetailsDto, Company>();
+            CreateMap<Company, CompanyProfileDetailsDto>();
 
         }
     }

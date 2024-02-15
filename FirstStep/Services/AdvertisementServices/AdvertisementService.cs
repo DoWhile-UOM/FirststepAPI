@@ -60,7 +60,7 @@ namespace FirstStep.Services
             Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisementDto);
 
             newAdvertisement.hrManager = await _employeeService.FindHRM(newAdvertisement.hrManager_id);
-            newAdvertisement.company = await _companyService.GetById(newAdvertisement.hrManager.company_id);
+            newAdvertisement.company = await _companyService.FindByID(newAdvertisement.hrManager.company_id); // fix conflic error. remove all of these
             newAdvertisement.company_id = newAdvertisement.company.company_id; 
             newAdvertisement.job_Field = await _jobFieldService.GetById(newAdvertisement.field_id);
 
