@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public struct AdvertisementCardDto
+    public struct AdvertisementShortDto
     {
         public int advertisement_id { get; set; }
         public string title { get; set; }

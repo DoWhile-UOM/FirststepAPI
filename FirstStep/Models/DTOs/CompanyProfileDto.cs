@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public struct AdvertisementCompanyDto
+    public struct CompanyProfileDto
     {
         public string company_name { get; set; }
 
@@ -14,6 +14,6 @@
 
         public string company_website { get; set; }
 
-        public IEnumerable<AdvertisementCardDto> advertisementUnderCompany { get; set; }
+        public IEnumerable<AdvertisementShortDto> advertisementUnderCompany { get; set; }
     }
 }

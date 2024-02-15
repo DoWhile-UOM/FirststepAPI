@@ -50,7 +50,6 @@ namespace FirstStep.Services
 
             return advertisement;
         }
-
         
         public async Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID)
         {
@@ -68,8 +67,7 @@ namespace FirstStep.Services
             return advertisementList;
         }
 
-        // temporary function
-        public async Task<IEnumerable<AdvertisementCardDto>> GetAll()
+        public async Task<IEnumerable<AdvertisementShortDto>> GetAll()
         {
             return MapAdsToCardDtos(await FindAll());
         }
@@ -83,6 +81,37 @@ namespace FirstStep.Services
             advertisementDto.field_name = dbAdvertismeent.job_Field!.field_name;
 
             return advertisementDto;
+        }
+
+        public async Task<IEnumerable<JobOfferDto>> GetJobOffersByCompanyID(int companyID)
+        {
+            var dbAdvertisements = await FindByCompanyID(companyID);
+
+            // map to jobofferDtos
+            var jobOfferDtos = new List<JobOfferDto>();
+
+            foreach (var ad in dbAdvertisements)
+            {
+                var jobOfferDto = _mapper.Map<JobOfferDto>(ad);
+
+                jobOfferDto.field_name = ad.job_Field!.field_name;
+
+                // search number of applications
+                jobOfferDto.no_of_applications = 0;
+
+                // search number of evaluated applications
+                jobOfferDto.no_of_evaluated_applications = 0;
+
+                // search number if accepted applications
+                jobOfferDto.no_of_accepted_applications = 0;
+
+                // search number of rejected applications
+                jobOfferDto.no_of_rejected_applications = 0;
+
+                jobOfferDtos.Add(jobOfferDto);
+            }
+
+            return jobOfferDtos;
         }
 
         public async Task Create(AddAdvertisementDto advertisementDto)
@@ -184,13 +213,13 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of AdvertisementCardDtos
-        public IEnumerable<AdvertisementCardDto> MapAdsToCardDtos(IEnumerable<Advertisement> dbAds)
+        public IEnumerable<AdvertisementShortDto> MapAdsToCardDtos(IEnumerable<Advertisement> dbAds)
         {
-            var adCardDtos = new List<AdvertisementCardDto>();
+            var adCardDtos = new List<AdvertisementShortDto>();
 
             foreach (var ad in dbAds)
             {
-                var adDto = _mapper.Map<AdvertisementCardDto>(ad);
+                var adDto = _mapper.Map<AdvertisementShortDto>(ad);
 
                 adDto.company_name = ad.company!.company_name;
                 adDto.field_name = ad.job_Field!.field_name;

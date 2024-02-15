@@ -47,7 +47,7 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetCompanyProfile/{companyID:int}")]
-        public async Task<ActionResult<AdvertisementCompanyDto>> GetAdvertisementsByCompany(int companyID)
+        public async Task<ActionResult<CompanyProfileDto>> GetAdvertisementsByCompany(int companyID)
         {
             return Ok(await _service.GetCompanyProfile(companyID));
         }

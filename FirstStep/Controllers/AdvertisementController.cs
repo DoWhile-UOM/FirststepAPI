@@ -19,7 +19,7 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllAdvertisements")]
-        public async Task<ActionResult<IEnumerable<AdvertisementCardDto>>> GetAdvertisements()
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisements()
         {
             var advertisementList = await _service.GetAll();
             return advertisementList == null ? NotFound() : Ok(advertisementList);
@@ -30,6 +30,13 @@ namespace FirstStep.Controllers
         public async Task<ActionResult<AdvertisementDto>> GetAdvertisementById(int jobID)
         {            
             return Ok(await _service.GetById(jobID));
+        }
+
+        [HttpGet]
+        [Route("GetAdvertisementsByCompanyID/{companyID:int}")]
+        public async Task<ActionResult<IEnumerable<JobOfferDto>>> GetAdvertisementsByCompanyID(int companyID)
+        {
+            return Ok(await _service.GetJobOffersByCompanyID(companyID));
         }
 
         [HttpPost]
