@@ -45,6 +45,13 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetAllRegisteredCompanies());
         }
 
+        [HttpGet]
+        [Route("GetCompanyProfile/{companyID:int}")]
+        public async Task<ActionResult<AdvertisementCompanyDto>> GetAdvertisementsByCompany(int companyID)
+        {
+            return Ok(await _service.GetCompanyProfile(companyID));
+        }
+
         [HttpPost]
         [Route("AddCompany")] // Company Admin
         public async Task<IActionResult> AddCompany(AddCompanyDto newCompany)

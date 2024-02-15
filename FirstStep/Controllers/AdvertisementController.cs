@@ -32,13 +32,6 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetById(jobID));
         }
 
-        [HttpGet]
-        [Route("GetAdvertisementsByCompany/{companyID:int}")]
-        public async Task<ActionResult<AdvertisementCompanyDto>> GetAdvertisementsByCompany(int companyID)
-        {
-            return Ok(await _service.GetAllByCompany(companyID));
-        }
-
         [HttpPost]
         [Route("AddAdvertisement")]
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)

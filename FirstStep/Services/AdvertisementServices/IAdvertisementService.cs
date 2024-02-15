@@ -7,19 +7,21 @@ namespace FirstStep.Services
     {
         Task<IEnumerable<Advertisement>> FindAll();
 
-        Task<IEnumerable<AdvertisementCardDto>> GetAll();
-
         Task<Advertisement> FindById(int id);
 
-        Task<AdvertisementDto> GetById(int id);
+        Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID);
 
-        Task<AdvertisementCompanyDto> GetAllByCompany(int company_id);
+        Task<IEnumerable<AdvertisementCardDto>> GetAll();
+
+        Task<AdvertisementDto> GetById(int id);
 
         Task Create(AddAdvertisementDto advertisement);
 
         Task Update(int jobID, UpdateAdvertisementDto advertisement);
 
         Task Delete(int id);
+
+        IEnumerable<AdvertisementCardDto> MapAdsToCardDtos(IEnumerable<Advertisement> advertisements);
 
         // IEnumerable<Advertisement> GetAdvertisementsByHRManagerId(int id);
     }
