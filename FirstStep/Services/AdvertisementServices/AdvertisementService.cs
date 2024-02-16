@@ -146,7 +146,6 @@ namespace FirstStep.Services
         {
             Advertisement dbAdvertisement = await FindById(jobID);
 
-
             dbAdvertisement.job_number = reqAdvertisement.job_number;
             dbAdvertisement.title = reqAdvertisement.title;
             dbAdvertisement.country = reqAdvertisement.country;
