@@ -1,4 +1,4 @@
-﻿namespace FirstStep.Models.DTOs
+﻿namespace Email_Test.DTOs
 {
     public class RequestDTO
     {
