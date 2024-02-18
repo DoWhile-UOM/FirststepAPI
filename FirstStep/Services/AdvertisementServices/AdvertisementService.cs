@@ -231,19 +231,5 @@ namespace FirstStep.Services
 
             return adCardDtos;
         }
-
-        // for find no of applications for a job
-        /*
-        public Task<int> findNoOfApplications(int job_id)
-        {
-            var dbAdvertisement = findAdvertisement(job_id);
-            if (dbAdvertisement == null)
-            {
-                return Task.FromResult(0);
-            }
-
-            return Task.FromResult(0);
-            //return dbAdvertisement.no_of_applications;
-        }*/
     }
 }
