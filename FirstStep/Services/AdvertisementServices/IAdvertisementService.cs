@@ -25,6 +25,8 @@ namespace FirstStep.Services
 
         IEnumerable<AdvertisementShortDto> MapAdsToCardDtos(IEnumerable<Advertisement> advertisements);
 
+        Task SearchAds();
+
         // IEnumerable<Advertisement> GetAdvertisementsByHRManagerId(int id);
     }
 }
