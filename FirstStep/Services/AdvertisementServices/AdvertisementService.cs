@@ -233,6 +233,7 @@ namespace FirstStep.Services
         }
 
 
+        // temp function
         // random function to add 10 advertisements to the database
         private async Task AddRandomAdvertisements(int limit)
         {
@@ -271,6 +272,8 @@ namespace FirstStep.Services
                 }
 
                 await Create(addAdvertisementDto);
+
+                Console.Out.WriteLine($"Advertisement added. { i + 1 }");
             }
         }
 
@@ -282,6 +285,11 @@ namespace FirstStep.Services
         private bool isAdvertisementExists(int id)
         {
             return _context.Advertisements.Any(e => e.advertisement_id == id);
+        }
+
+        private async Task binarySearch()
+        {
+            
         }
 
         // for find no of applications for a job
