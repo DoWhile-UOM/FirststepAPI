@@ -282,14 +282,13 @@ namespace FirstStep.Services
             await AddRandomAdvertisements(10);
         }
 
-        private bool isAdvertisementExists(int id)
+        private async Task<bool> isAdvertisementExists(AdvertisementDto dto)
         {
-            return _context.Advertisements.Any(e => e.advertisement_id == id);
-        }
+            var advertisements = await _context.Advertisements.ToListAsync();
 
-        private async Task binarySearch()
-        {
-            
+            //return _context.Advertisements.Any(e => e.advertisement_id == id);
+
+            return true;
         }
 
         // for find no of applications for a job
