@@ -5,15 +5,27 @@ namespace FirstStep.Services
 {
     public interface IAdvertisementService
     {
-        Task<IEnumerable<Advertisement>> GetAll();
+        Task<IEnumerable<Advertisement>> FindAll();
 
-        Task<Advertisement> GetById(int id);
+        Task<Advertisement> FindById(int id);
+
+        Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID);
+
+        Task<IEnumerable<AdvertisementShortDto>> GetAll();
+
+        Task<AdvertisementDto> GetById(int id);
+
+        Task<IEnumerable<JobOfferDto>> GetJobOffersByCompanyID(int companyID);
 
         Task Create(AddAdvertisementDto advertisement);
 
-        Task Update(Advertisement advertisement);
+        Task Update(int jobID, UpdateAdvertisementDto advertisement);
 
         Task Delete(int id);
+
+        IEnumerable<AdvertisementShortDto> MapAdsToCardDtos(IEnumerable<Advertisement> advertisements);
+
+        Task SearchAds();
 
         // IEnumerable<Advertisement> GetAdvertisementsByHRManagerId(int id);
     }

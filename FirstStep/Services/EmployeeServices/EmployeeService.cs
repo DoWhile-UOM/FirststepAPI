@@ -46,6 +46,12 @@ namespace FirstStep.Services
             return hrmanager;
         }
 
+        public async Task<int> FindCompany(int id)
+        {
+            var employee = await GetById(id);
+            return employee.company_id;
+        }
+
         public async Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id)
         {
             ICollection<HRManager> hrManagers = await _context.HRManagers.Where(e => e.company_id == company_Id).ToListAsync();

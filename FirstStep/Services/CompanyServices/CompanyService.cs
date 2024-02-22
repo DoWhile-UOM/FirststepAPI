@@ -10,11 +10,13 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly IAdvertisementService _advertisementService;
 
-        public CompanyService(DataContext context, IMapper mapper)
+        public CompanyService(DataContext context, IMapper mapper, IAdvertisementService advertisementService)
         {
             _context = context;
             _mapper = mapper;
+            _advertisementService = advertisementService;
         }
 
         public async Task<IEnumerable<Company>> GetAll()
@@ -48,6 +50,24 @@ namespace FirstStep.Services
         public async Task<IEnumerable<Company>> GetAllRegisteredCompanies()
         {
             return await _context.Companies.Where(c => c.verification_status).ToListAsync();
+        }
+
+        
+        public async Task<CompanyProfileDto> GetCompanyProfile(int companyID)
+        {
+            // get all advertisements under the company
+            IEnumerable<Advertisement> dbAdvertisements = await _advertisementService.FindByCompanyID(companyID);
+
+            // get company details
+            var dbCompany = await GetById(companyID);
+
+            // map to DTO
+            var advertisementCompanyDto = _mapper.Map<CompanyProfileDto>(dbCompany);
+
+            // feed all advertisments under the company to DTO as an array of advertisementCardDtos
+            advertisementCompanyDto.advertisementUnderCompany = _advertisementService.MapAdsToCardDtos(dbAdvertisements);
+            
+            return advertisementCompanyDto;
         }
 
         public async Task Create(AddCompanyDto newCompanyDto)

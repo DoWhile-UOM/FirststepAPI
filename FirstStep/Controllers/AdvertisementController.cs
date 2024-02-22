@@ -3,6 +3,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace FirstStep.Controllers
 {
@@ -19,44 +20,72 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllAdvertisements")]
-
-        public async Task<ActionResult<IEnumerable<Advertisement>>> GetAdvertisements()
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisements()
         {
-            return Ok(await _service.GetAll());
+            var advertisementList = await _service.GetAll();
+            return advertisementList == null ? NotFound() : Ok(advertisementList);
         }
 
         [HttpGet]
-        [Route("GetAdvertisementById{id}")]
-
-        public async Task<ActionResult<Advertisement>> GetAdvertisementById(int id)
+        [Route("GetAdvertisementById/{jobID:int}")]
+        public async Task<ActionResult<AdvertisementDto>> GetAdvertisementById(int jobID)
         {            
-            return Ok(await _service.GetById(id));
+            return Ok(await _service.GetById(jobID));
+        }
+
+        [HttpGet]
+        [Route("GetAdvertisementsByCompanyID/{companyID:int}")]
+        public async Task<ActionResult<IEnumerable<JobOfferDto>>> GetAdvertisementsByCompanyID(int companyID)
+        {
+            return Ok(await _service.GetJobOffersByCompanyID(companyID));
         }
 
         [HttpPost]
         [Route("AddAdvertisement")]
-
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
+            if (advertisementDto is null)
+            {
+                return BadRequest("Advertisement cannot be null.");
+            }
+
             await _service.Create(advertisementDto);
             return Ok();
         }
 
         [HttpPut]
-        [Route("UpdateAdvertisement")]
-
-        public async Task<IActionResult> UpdateAdvertisement(Advertisement reqAdvertisement)
+        [Route("UpdateAdvertisement/{jobID:int}")]
+        public async Task<IActionResult> UpdateAdvertisement(UpdateAdvertisementDto reqAdvertisement, int jobID)
         {
-            await _service.Update(reqAdvertisement);
+            if (reqAdvertisement is null)
+            {
+                return BadRequest("Advertisement cannot be null.");
+            }
+
+            if (jobID != reqAdvertisement.advertisement_id)
+            {
+                return BadRequest("Advertisement ID mismatch.");
+            }
+
+            await _service.Update(jobID, reqAdvertisement);
             return Ok();
         }
 
         [HttpDelete]
-        [Route("DeleteAdvertisement{id}")]
-
-        public async Task<IActionResult> DeleteAdvertisement(int id)
+        [Route("DeleteAdvertisement/{jobID:int}")]
+        public async Task<IActionResult> DeleteAdvertisement(int jobID)
         {
-            await _service.Delete(id);
+            await _service.Delete(jobID);
+            return Ok();
+        }
+
+
+        // temporary function
+        [HttpGet]
+        [Route("SearchAds")]
+        public async Task<ActionResult<IEnumerable<Advertisement>>> SearchAds()
+        {
+            await _service.SearchAds();
             return Ok();
         }
     }
