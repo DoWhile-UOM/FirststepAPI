@@ -12,9 +12,9 @@ namespace FirstStep.Models
 
         public required string title { get; set; }
 
-        public required string location_province { get; set; }
+        public required string country { get; set; }
 
-        public required string location_city { get; set; }
+        public required string city { get; set; }
 
         public required string employeement_type { get; set; }
 

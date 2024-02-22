@@ -64,8 +64,16 @@ namespace FirstStep.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("city")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("company_id")
                         .HasColumnType("int");
+
+                    b.Property<string>("country")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("current_status")
                         .IsRequired()
@@ -100,14 +108,6 @@ namespace FirstStep.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("job_responsibilities")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("location_city")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("location_province")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("posted_date")

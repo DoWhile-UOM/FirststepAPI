@@ -11,41 +11,38 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IProfessionKeywordService _keywordService;
-        private readonly ICompanyService _companyService;
-        private readonly IEmployeeService _employeeService;
         private readonly IJobFieldService _jobFieldService;
 
         public AdvertisementService(
             DataContext context, 
             IMapper mapper, 
             IProfessionKeywordService keywordService, 
-            ICompanyService companyService, 
-            IEmployeeService employeeService, 
             IJobFieldService jobFieldService)
         {
             _context = context;
             _mapper = mapper;
             _keywordService = keywordService;
-            _companyService = companyService;
-            _employeeService = employeeService;
             _jobFieldService = jobFieldService;
         }
 
-        public async Task<IEnumerable<Advertisement>> GetAll()
+        public async Task<IEnumerable<Advertisement>> FindAll()
         {
             return await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
+                .Include("company")
                 .ToListAsync();
         }
 
-        public async Task<Advertisement> GetById(int id)
+        public async Task<Advertisement> FindById(int id)
         {
-            Advertisement? advertisement = 
+            Advertisement? advertisement =
                 await _context.Advertisements
                 .Include("professionKeywords")
+                .Include("job_Field")
+                .Include("company")
                 .FirstOrDefaultAsync(x => x.advertisement_id == id);
-            
+
             if (advertisement is null)
             {
                 throw new Exception("Advertisement not found.");
@@ -53,95 +50,244 @@ namespace FirstStep.Services
 
             return advertisement;
         }
+        
+        public async Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID)
+        {
+            var advertisementList = await _context.Advertisements
+                .Include("professionKeywords")
+                .Include("job_Field")
+                .Where(x => x.company_id == companyID)
+                .ToListAsync();
+
+            if (advertisementList is null)
+            {
+                throw new Exception("No advertisements found under this company.");
+            }
+
+            return advertisementList;
+        }
+
+        public async Task<IEnumerable<AdvertisementShortDto>> GetAll()
+        {
+            return MapAdsToCardDtos(await FindAll());
+        }
+
+        public async Task<AdvertisementDto> GetById(int id)
+        {
+            var dbAdvertismeent = await FindById(id);
+            var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
+
+            advertisementDto.company_name = dbAdvertismeent.company!.company_name;
+            advertisementDto.field_name = dbAdvertismeent.job_Field!.field_name;
+
+            return advertisementDto;
+        }
+
+        public async Task<IEnumerable<JobOfferDto>> GetJobOffersByCompanyID(int companyID)
+        {
+            var dbAdvertisements = await FindByCompanyID(companyID);
+
+            // map to jobofferDtos
+            var jobOfferDtos = new List<JobOfferDto>();
+
+            foreach (var ad in dbAdvertisements)
+            {
+                var jobOfferDto = _mapper.Map<JobOfferDto>(ad);
+
+                jobOfferDto.field_name = ad.job_Field!.field_name;
+
+                // search number of applications
+                jobOfferDto.no_of_applications = 0;
+
+                // search number of evaluated applications
+                jobOfferDto.no_of_evaluated_applications = 0;
+
+                // search number if accepted applications
+                jobOfferDto.no_of_accepted_applications = 0;
+
+                // search number of rejected applications
+                jobOfferDto.no_of_rejected_applications = 0;
+
+                jobOfferDtos.Add(jobOfferDto);
+            }
+
+            return jobOfferDtos;
+        }
 
         public async Task Create(AddAdvertisementDto advertisementDto)
         {
             // map the AddAdvertisementDto to a Advertisement object
             Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisementDto);
 
-            newAdvertisement.hrManager = await _employeeService.FindHRM(newAdvertisement.hrManager_id);
-            newAdvertisement.company = await _companyService.GetById(newAdvertisement.hrManager.company_id);
-            newAdvertisement.company_id = newAdvertisement.company.company_id; 
+            newAdvertisement.current_status = "active";
+
+            // find hrmanager
+            var hrManager = await _context.HRManagers.FirstOrDefaultAsync(e => e.user_id == advertisementDto.hrManager_id);
+
+            // validate hrmanager
+            if (hrManager == null)
+            {
+                throw new Exception("HR Manager not found.");
+            }
+
+            // set the company id
+            newAdvertisement.company_id = hrManager.company_id;
+
             newAdvertisement.job_Field = await _jobFieldService.GetById(newAdvertisement.field_id);
 
             // add keywords to the advertisement
-            if (advertisementDto.keywords != null)
-            {
-                newAdvertisement.professionKeywords = new List<ProfessionKeyword>();
-
-                foreach (var keyword in advertisementDto.keywords)
-                {
-                    // check whether the keyword exists in the database
-                    var dbKeyword = await _keywordService.GetByName(keyword, newAdvertisement.field_id);
-
-                    if (dbKeyword != null)
-                    {
-                        // if it exists, add it to the advertisement's list of keywords
-                        newAdvertisement.professionKeywords.Add(dbKeyword);
-                    }
-                    else
-                    {
-                        // if it doesn't exist, create a new keyword and add it to the advertisement's list of keywords
-                        newAdvertisement.professionKeywords.Add(new ProfessionKeyword
-                        {
-                            profession_id = 0,
-                            profession_name = keyword,
-                            field_id = newAdvertisement.field_id
-                        });
-                    }
-                }
-            }
+            newAdvertisement.professionKeywords = await IncludeProfessionKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
 
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(Advertisement advertisement)
+        public async Task Update(int jobID, UpdateAdvertisementDto reqAdvertisement)
         {
-            Advertisement dbAdvertisement = await GetById(advertisement.advertisement_id);
+            Advertisement dbAdvertisement = await FindById(jobID);
 
-            dbAdvertisement.job_number = advertisement.job_number;
-            dbAdvertisement.title = advertisement.title;
-            dbAdvertisement.location_province = advertisement.location_province;
-            dbAdvertisement.location_city = advertisement.location_city;
-            dbAdvertisement.employeement_type = advertisement.employeement_type;
-            dbAdvertisement.arrangement = advertisement.arrangement;
-            dbAdvertisement.is_experience_required = advertisement.is_experience_required;
-            dbAdvertisement.salary = advertisement.salary;
-            dbAdvertisement.posted_date = advertisement.posted_date;
-            dbAdvertisement.submission_deadline = advertisement.submission_deadline;
-            dbAdvertisement.current_status = advertisement.current_status;
-            dbAdvertisement.job_overview = advertisement.job_overview;
-            dbAdvertisement.job_responsibilities = advertisement.job_responsibilities;
-            dbAdvertisement.job_qualifications = advertisement.job_qualifications;
-            dbAdvertisement.job_benefits = advertisement.job_benefits;
-            dbAdvertisement.job_other_details = advertisement.job_other_details;
-            dbAdvertisement.hrManager_id = advertisement.hrManager_id;
-            dbAdvertisement.field_id = advertisement.field_id;
+            dbAdvertisement.job_number = reqAdvertisement.job_number;
+            dbAdvertisement.title = reqAdvertisement.title;
+            dbAdvertisement.country = reqAdvertisement.country;
+            dbAdvertisement.city = reqAdvertisement.city;
+            dbAdvertisement.employeement_type = reqAdvertisement.employeement_type;
+            dbAdvertisement.arrangement = reqAdvertisement.arrangement;
+            dbAdvertisement.is_experience_required = reqAdvertisement.is_experience_required;
+            dbAdvertisement.salary = reqAdvertisement.salary;
+            dbAdvertisement.submission_deadline = reqAdvertisement.submission_deadline;
+            dbAdvertisement.job_overview = reqAdvertisement.job_overview;
+            dbAdvertisement.job_responsibilities = reqAdvertisement.job_responsibilities;
+            dbAdvertisement.job_qualifications = reqAdvertisement.job_qualifications;
+            dbAdvertisement.job_benefits = reqAdvertisement.job_benefits;
+            dbAdvertisement.job_other_details = reqAdvertisement.job_other_details;
+            dbAdvertisement.field_id = reqAdvertisement.field_id;
+
+            // update keywords in the advertisement
+            dbAdvertisement.professionKeywords = await IncludeProfessionKeywordsToAdvertisement(reqAdvertisement.keywords, dbAdvertisement.field_id);
 
             await _context.SaveChangesAsync();
         }
 
         public async Task Delete(int id)
         {
-            Advertisement advertisement = await GetById(id);
+            Advertisement advertisement = await FindById(id);
             
             _context.Advertisements.Remove(advertisement);
             _context.SaveChanges();
         }
 
-        // for find no of applications for a job
-        /*
-        public Task<int> findNoOfApplications(int job_id)
+        // Add keywords to the advertisement
+        private async Task<ICollection<ProfessionKeyword>?> IncludeProfessionKeywordsToAdvertisement(ICollection<string>? newKeywords, int fieldId)
         {
-            var dbAdvertisement = findAdvertisement(job_id);
-            if (dbAdvertisement == null)
+            if (newKeywords != null)
             {
-                return Task.FromResult(0);
+                var professionKeywords = new List<ProfessionKeyword>();
+
+                foreach (var keyword in newKeywords)
+                {
+                    // check whether the keyword exists in the database
+                    var dbKeyword = await _keywordService.GetByName(keyword.ToLower(), fieldId);
+
+                    if (dbKeyword != null)
+                    {
+                        // if it exists, add it to the advertisement's list of keywords
+                        professionKeywords.Add(dbKeyword);
+                    }
+                    else
+                    {
+                        // if it doesn't exist, create a new keyword and add it to the advertisement's list of keywords
+                        professionKeywords.Add(new ProfessionKeyword
+                        {
+                            profession_id = 0,
+                            profession_name = keyword.ToLower(),
+                            field_id = fieldId
+                        });
+                    }
+                }
+
+                return professionKeywords;
             }
 
-            return Task.FromResult(0);
-            //return dbAdvertisement.no_of_applications;
-        }*/
+            return null;
+        }
+
+        // map the advertisements to a list of AdvertisementCardDtos
+        public IEnumerable<AdvertisementShortDto> MapAdsToCardDtos(IEnumerable<Advertisement> dbAds)
+        {
+            var adCardDtos = new List<AdvertisementShortDto>();
+
+            foreach (var ad in dbAds)
+            {
+                var adDto = _mapper.Map<AdvertisementShortDto>(ad);
+
+                adDto.company_name = ad.company!.company_name;
+                adDto.field_name = ad.job_Field!.field_name;
+
+                // recheck this part
+                adDto.is_saved = false;
+
+                adCardDtos.Add(adDto);
+            }
+
+            return adCardDtos;
+        }
+
+        // temp function
+        // random function to add 10 advertisements to the database
+        private async Task AddRandomAdvertisements(int limit)
+        {
+            var keywordArray = new List<string>() { "C#", "python", "ASP.NET", "MVC", "SQL", "Azure", "Entity Framework", "LINQ", "Web API", "RESTful", "SOAP", "WCF", "WPF", "Xamarin", "Blazor", "Razor", "SignalR", "Angular", "React", "Vue", "Bootstrap", "jQuery", "HTML", "CSS", "JavaScript", "TypeScript", ".NET Core", ".NET Framework", ".NET Standard", "Visual Studio", "Git", "GitHub", "DevOps", "Agile", "Scrum", "TDD", "BDD", "SOLID", "Design Patterns", "OOP", "Microservices", "Docker", "Kubernetes", "AWS", "Machine Learning", "AI", "Data Science", "Python", "R", "TensorFlow" };
+            
+            var titleArray = new List<string>() { "Web Developer", "Software Engineer", "Data Analyst", "Network Administrator", "Database Administrator", "Cybersecurity Analyst", "Cloud Engineer", "Machine Learning Engineer", "Artificial Intelligence Engineer", "Software Tester", "Technical Support Specialist", "IT Project Manager", "Business Analyst", "UX Designer", "UI Developer", "Game Developer", "Blockchain Developer", "DevOps Engineer", "IT Consultant", "Webmaster" };
+
+            var random = new Random();
+
+            for (int i = 0; i < limit; i++)
+            {
+                var addAdvertisementDto = new AddAdvertisementDto
+                {
+                    job_number = random.Next(100, 999),
+                    title = titleArray[random.Next(0, titleArray.Count - 1)],
+                    country = "Sri Lanka",
+                    city = "Colombo",
+                    employeement_type = random.Next(0, 1) == 0 ? "Full-time" : "Part-time",
+                    arrangement = random.Next(0, 1) == 0 ? "Remote" : "On-site",
+                    is_experience_required = random.Next(0, 1) == 1 ? true: false,
+                    salary = random.Next(300000, 600000),
+                    submission_deadline = DateTime.Now.AddDays(random.Next(25, 45)),
+                    job_overview = "We are looking for a software developer to join our team.",
+                    job_responsibilities = "Develop software applications.",
+                    job_qualifications = "Bachelor's degree in computer science.",
+                    job_benefits = "Health insurance, pension, and more.",
+                    job_other_details = "We are a company that values its employees.",
+                    hrManager_id = 10, // under bistec
+                    field_id = 1, // it and cs
+                    keywords = new List<string>() 
+                };
+
+                for (int j = 0; j < random.Next(4, 11); j++)
+                {
+                    addAdvertisementDto.keywords.Add(keywordArray[random.Next(0, keywordArray.Count - 1)].ToLower());
+                }
+
+                await Create(addAdvertisementDto);
+
+                Console.Out.WriteLine($"Advertisement added. { i + 1 }");
+            }
+        }
+
+        public async Task SearchAds()
+        {
+            await AddRandomAdvertisements(10);
+        }
+
+        private async Task<bool> isAdvertisementExists(AdvertisementDto dto)
+        {
+            var advertisements = await _context.Advertisements.ToListAsync();
+
+            //return _context.Advertisements.Any(e => e.advertisement_id == id);
+
+            return true;
+        }
     }
 }
