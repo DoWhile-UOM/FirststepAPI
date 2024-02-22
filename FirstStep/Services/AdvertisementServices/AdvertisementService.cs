@@ -232,7 +232,6 @@ namespace FirstStep.Services
             return adCardDtos;
         }
 
-
         // temp function
         // random function to add 10 advertisements to the database
         private async Task AddRandomAdvertisements(int limit)
@@ -290,19 +289,5 @@ namespace FirstStep.Services
 
             return true;
         }
-
-        // for find no of applications for a job
-        /*
-        public Task<int> findNoOfApplications(int job_id)
-        {
-            var dbAdvertisement = findAdvertisement(job_id);
-            if (dbAdvertisement == null)
-            {
-                return Task.FromResult(0);
-            }
-
-            return Task.FromResult(0);
-            //return dbAdvertisement.no_of_applications;
-        }*/
     }
 }
