@@ -231,5 +231,63 @@ namespace FirstStep.Services
 
             return adCardDtos;
         }
+
+        // temp function
+        // random function to add 10 advertisements to the database
+        private async Task AddRandomAdvertisements(int limit)
+        {
+            var keywordArray = new List<string>() { "C#", "python", "ASP.NET", "MVC", "SQL", "Azure", "Entity Framework", "LINQ", "Web API", "RESTful", "SOAP", "WCF", "WPF", "Xamarin", "Blazor", "Razor", "SignalR", "Angular", "React", "Vue", "Bootstrap", "jQuery", "HTML", "CSS", "JavaScript", "TypeScript", ".NET Core", ".NET Framework", ".NET Standard", "Visual Studio", "Git", "GitHub", "DevOps", "Agile", "Scrum", "TDD", "BDD", "SOLID", "Design Patterns", "OOP", "Microservices", "Docker", "Kubernetes", "AWS", "Machine Learning", "AI", "Data Science", "Python", "R", "TensorFlow" };
+            
+            var titleArray = new List<string>() { "Web Developer", "Software Engineer", "Data Analyst", "Network Administrator", "Database Administrator", "Cybersecurity Analyst", "Cloud Engineer", "Machine Learning Engineer", "Artificial Intelligence Engineer", "Software Tester", "Technical Support Specialist", "IT Project Manager", "Business Analyst", "UX Designer", "UI Developer", "Game Developer", "Blockchain Developer", "DevOps Engineer", "IT Consultant", "Webmaster" };
+
+            var random = new Random();
+
+            for (int i = 0; i < limit; i++)
+            {
+                var addAdvertisementDto = new AddAdvertisementDto
+                {
+                    job_number = random.Next(100, 999),
+                    title = titleArray[random.Next(0, titleArray.Count - 1)],
+                    country = "Sri Lanka",
+                    city = "Colombo",
+                    employeement_type = random.Next(0, 1) == 0 ? "Full-time" : "Part-time",
+                    arrangement = random.Next(0, 1) == 0 ? "Remote" : "On-site",
+                    is_experience_required = random.Next(0, 1) == 1 ? true: false,
+                    salary = random.Next(300000, 600000),
+                    submission_deadline = DateTime.Now.AddDays(random.Next(25, 45)),
+                    job_overview = "We are looking for a software developer to join our team.",
+                    job_responsibilities = "Develop software applications.",
+                    job_qualifications = "Bachelor's degree in computer science.",
+                    job_benefits = "Health insurance, pension, and more.",
+                    job_other_details = "We are a company that values its employees.",
+                    hrManager_id = 10, // under bistec
+                    field_id = 1, // it and cs
+                    keywords = new List<string>() 
+                };
+
+                for (int j = 0; j < random.Next(4, 11); j++)
+                {
+                    addAdvertisementDto.keywords.Add(keywordArray[random.Next(0, keywordArray.Count - 1)].ToLower());
+                }
+
+                await Create(addAdvertisementDto);
+
+                Console.Out.WriteLine($"Advertisement added. { i + 1 }");
+            }
+        }
+
+        public async Task SearchAds()
+        {
+            await AddRandomAdvertisements(10);
+        }
+
+        private async Task<bool> isAdvertisementExists(AdvertisementDto dto)
+        {
+            var advertisements = await _context.Advertisements.ToListAsync();
+
+            //return _context.Advertisements.Any(e => e.advertisement_id == id);
+
+            return true;
+        }
     }
 }

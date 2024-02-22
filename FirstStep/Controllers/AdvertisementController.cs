@@ -3,6 +3,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace FirstStep.Controllers
 {
@@ -75,6 +76,16 @@ namespace FirstStep.Controllers
         public async Task<IActionResult> DeleteAdvertisement(int jobID)
         {
             await _service.Delete(jobID);
+            return Ok();
+        }
+
+
+        // temporary function
+        [HttpGet]
+        [Route("SearchAds")]
+        public async Task<ActionResult<IEnumerable<Advertisement>>> SearchAds()
+        {
+            await _service.SearchAds();
             return Ok();
         }
     }
