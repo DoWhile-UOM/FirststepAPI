@@ -127,15 +127,15 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(Employee employee)
+        public async Task Update(int userId, UpdateEmployeeDto employee)
         {
-            Employee dbEmployee = await GetById(employee.user_id);
+            var dbEmployee = await GetById(userId);
 
             // need to use seperate dto (without password hash, be password) as UpdateEmployeeDto
             dbEmployee.first_name = employee.first_name;
             dbEmployee.last_name = employee.last_name;
             dbEmployee.email = employee.email;
-            dbEmployee.password_hash = employee.password_hash;
+            //dbEmployee.password_hash = employee.password_hash;
             dbEmployee.user_type = employee.user_type;
 
             await _context.SaveChangesAsync();
