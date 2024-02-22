@@ -116,7 +116,7 @@ namespace FirstStep.Services
             await ValidateCompany(newCompanyAdmin.company_id);
 
             // validate there is no any other company admin in within the company
-            var company = await _companyService.GetById(newCompanyAdmin.company_id);
+            var company = await _companyService.FindByID(newCompanyAdmin.company_id);
             
             if (company.company_admin_id != null)
             {
