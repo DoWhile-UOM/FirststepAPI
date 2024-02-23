@@ -37,13 +37,6 @@ namespace FirstStep.Controllers
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}")]
         public async Task<ActionResult<IEnumerable<JobOfferDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
         {
-            var possibleStatuses = new List<string> { "active", "hold", "closed", "all" };
-
-            if (!possibleStatuses.Contains(status))
-            {
-                return BadRequest("Invalid status filter.");
-            }
-
             return Ok(await _service.GetJobOffersByCompanyID(companyID, status));
         }
 
@@ -79,10 +72,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpPut]
-        [Route("CloseAdvertisement/{jobID:int}")]
-        public async Task<IActionResult> CloseAdvertisement(int jobID)
+        [Route("ChangeStatus/{jobID:int}/status={newStatus}")]
+        public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
         {
-            await _service.CloseAdvertisement(jobID);
+            await _service.ChangeStatus(jobID, newStatus);
             return Ok();
         }
 

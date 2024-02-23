@@ -85,6 +85,8 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<JobOfferDto>> GetJobOffersByCompanyID(int companyID, string status)
         {
+            ValidateStatus(status);
+
             var dbAdvertisements = await FindByCompanyID(companyID);
 
             // map to jobofferDtos
@@ -147,11 +149,12 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task CloseAdvertisement(int id)
+        public async Task ChangeStatus(int id, string newStatus)
         {
+            ValidateStatus(newStatus);
             var advertisement = await FindById(id);
 
-            advertisement.current_status = "closed";
+            advertisement.current_status = newStatus;
             await _context.SaveChangesAsync();
         }
 
@@ -243,6 +246,16 @@ namespace FirstStep.Services
             }
 
             return adCardDtos;
+        }
+
+        private void ValidateStatus(string status)
+        {
+            var possibleStatuses = new List<string> { "active", "hold", "closed", "all" };
+
+            if (!possibleStatuses.Contains(status))
+            {
+                throw new Exception("Invalid status.");
+            }
         }
 
         // temp function

@@ -19,7 +19,7 @@ namespace FirstStep.Services
 
         Task Create(AddAdvertisementDto advertisement);
 
-        Task CloseAdvertisement(int id);
+        Task ChangeStatus(int id, string newStatus);
 
         Task Update(int jobID, UpdateAdvertisementDto advertisement);
 
