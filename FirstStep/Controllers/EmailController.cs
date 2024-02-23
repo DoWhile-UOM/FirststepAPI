@@ -2,36 +2,32 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Email_Test.DTOs;
-using Email_Test.EmailService;
+//using Email_Test.EmailService;
+using MimeKit;
+using MimeKit.Text;
+using System.Net.Mail;
+using MailKit.Security;
 
 namespace FirstStep.Controllers
 {
     public class EmailController : Controller
     {
-        // Specifying route and controller attributes for the API endpoint
-        [Route("api/[controller]")]
-        [ApiController]
-        public class EmailController : ControllerBase
+        [HttpPost]
+        public IActionResult SendEmail(string body)
         {
-            // Declaring a private readonly field to hold an instance of the email service
-            private readonly IEmailService emailService;
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse("rene.lang56@ethereal.email"));
+            email.To.Add(MailboxAddress.Parse("rene.lang56@ethereal.email"));
+            email.Subject = "Test Email Subject";
+            email.Body= new TextPart(TextFormat.Html) { Text =body};
 
-            // Constructor for the EmailController, injecting an instance of IEmailService
-            public EmailController(IEmailService emailService)
-            {
-                this.emailService = emailService;
-            }
+            using var smtp = new SmtpClient();
+            smtp.Connect("smtp.ethereal.email", 587, SecureSocketOptions.StartTls);
+            smtp.Authenticate("rene.lang56@ethereal.email", "Vj28jADTeWQ3GU2A6t");// username and password
+            smtp.Send(email);
+            smtp.Disconnect(true);
 
-            // HTTP POST endpoint for sending emails
-            [HttpPost("SendEmails")]
-            public ActionResult SendEmail(RequestDTO request)
-            {
-                // Calling the SendEmail method of the injected email service
-                var result = emailService.SendEmail(request);
-
-                // Returning an HTTP response indicating success with a message
-                return Ok("Mail sent!");
-            }
+            return Ok();
         }
     }
 }
