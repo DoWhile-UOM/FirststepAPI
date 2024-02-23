@@ -83,7 +83,7 @@ namespace FirstStep.Services
             return advertisementDto;
         }
 
-        public async Task<IEnumerable<JobOfferDto>> GetJobOffersByCompanyID(int companyID)
+        public async Task<IEnumerable<JobOfferDto>> GetJobOffersByCompanyID(int companyID, string status)
         {
             var dbAdvertisements = await FindByCompanyID(companyID);
 
@@ -93,6 +93,11 @@ namespace FirstStep.Services
             foreach (var ad in dbAdvertisements)
             {
                 var jobOfferDto = _mapper.Map<JobOfferDto>(ad);
+
+                if (status != "all" && ad.current_status != status)
+                {
+                    continue;
+                }
 
                 jobOfferDto.field_name = ad.job_Field!.field_name;
 
@@ -139,6 +144,14 @@ namespace FirstStep.Services
             newAdvertisement.professionKeywords = await IncludeProfessionKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
 
             _context.Advertisements.Add(newAdvertisement);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task CloseAdvertisement(int id)
+        {
+            var advertisement = await FindById(id);
+
+            advertisement.current_status = "closed";
             await _context.SaveChangesAsync();
         }
 
