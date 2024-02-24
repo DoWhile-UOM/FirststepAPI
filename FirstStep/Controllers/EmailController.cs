@@ -1,31 +1,27 @@
 ﻿using FirstStep.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
-using Email_Test.DTOs;
-//using Email_Test.EmailService;
 using MimeKit;
 using MimeKit.Text;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
 using MailKit.Security;
+using FirstStep.Services.EmailSevices;
+
+// this controller is built to have a breif idea on how to use the esnd email service
+// this controller is more like a temp sample controller
 
 namespace FirstStep.Controllers
 {
     public class EmailController : Controller
     {
+        private readonly IEmailService _emailService;
+        public EmailController(IEmailService emailService) {
+            _emailService = emailService;
+        }
         [HttpPost]
-        public IActionResult SendEmail(string body)
+        public IActionResult SendEmail(EmailDto request)
         {
-            var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse("rene.lang56@ethereal.email"));
-            email.To.Add(MailboxAddress.Parse("rene.lang56@ethereal.email"));
-            email.Subject = "Test Email Subject";
-            email.Body= new TextPart(TextFormat.Html) { Text =body};
-
-            using var smtp = new SmtpClient();
-            smtp.Connect("smtp.ethereal.email", 587, SecureSocketOptions.StartTls);
-            smtp.Authenticate("rene.lang56@ethereal.email", "Vj28jADTeWQ3GU2A6t");// username and password
-            smtp.Send(email);
-            smtp.Disconnect(true);
+            _emailService.SendEmail(request);
 
             return Ok();
         }

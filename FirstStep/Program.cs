@@ -1,6 +1,8 @@
 using FirstStep.Data;
 using FirstStep.Services;
+using FirstStep.Services.EmailSevices;
 using Microsoft.EntityFrameworkCore;
+using FirstStep.Models.DTOs;//added foe email DTo
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,7 @@ builder.Services.AddScoped<ISystemAdminService, SystemAdminService>();
 builder.Services.AddScoped<ISeekerService, SeekerService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IRevisionService, RevisionService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
