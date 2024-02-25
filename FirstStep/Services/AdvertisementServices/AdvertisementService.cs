@@ -171,11 +171,7 @@ namespace FirstStep.Services
             dbAdvertisement.is_experience_required = reqAdvertisement.is_experience_required;
             dbAdvertisement.salary = reqAdvertisement.salary;
             dbAdvertisement.submission_deadline = reqAdvertisement.submission_deadline;
-            dbAdvertisement.job_overview = reqAdvertisement.job_overview;
-            dbAdvertisement.job_responsibilities = reqAdvertisement.job_responsibilities;
-            dbAdvertisement.job_qualifications = reqAdvertisement.job_qualifications;
-            dbAdvertisement.job_benefits = reqAdvertisement.job_benefits;
-            dbAdvertisement.job_other_details = reqAdvertisement.job_other_details;
+            dbAdvertisement.job_description = reqAdvertisement.job_description;
             dbAdvertisement.field_id = reqAdvertisement.field_id;
 
             // update keywords in the advertisement
@@ -281,11 +277,7 @@ namespace FirstStep.Services
                     is_experience_required = random.Next(0, 1) == 1 ? true: false,
                     salary = random.Next(300000, 600000),
                     submission_deadline = DateTime.Now.AddDays(random.Next(25, 45)),
-                    job_overview = "We are looking for a software developer to join our team.",
-                    job_responsibilities = "Develop software applications.",
-                    job_qualifications = "Bachelor's degree in computer science.",
-                    job_benefits = "Health insurance, pension, and more.",
-                    job_other_details = "We are a company that values its employees.",
+                    job_description = "We are looking for a software developer to join our team. We are a company that values its employees.",
                     hrManager_id = 10, // under bistec
                     field_id = 1, // it and cs
                     keywords = new List<string>() 

@@ -30,15 +30,8 @@ namespace FirstStep.Models
 
         public required string current_status { get; set; }
 
-        public string? job_overview { get; set; }
-
-        public string? job_responsibilities { get; set; }
-
-        public string? job_qualifications { get; set; }
-
-        public string? job_benefits { get; set; }
-
-        public string? job_other_details { get; set; }
+        [MaxLength(2500)]
+        public string? job_description { get; set; }
 
 
         [JsonIgnore]
