@@ -2,7 +2,7 @@ using FirstStep.Data;
 using FirstStep.Services;
 using FirstStep.Services.EmailSevices;
 using Microsoft.EntityFrameworkCore;
-using FirstStep.Models.DTOs;//added foe email DTo
+using FirstStep.Models.DTOs;//added for email DTo
 
 var builder = WebApplication.CreateBuilder(args);
 
