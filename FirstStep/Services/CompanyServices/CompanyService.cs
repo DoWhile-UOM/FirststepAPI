@@ -58,7 +58,7 @@ namespace FirstStep.Services
             var advertisementCompanyDto = _mapper.Map<CompanyProfileDto>(dbCompany);
 
             // feed all advertisments under the company to DTO as an array of advertisementCardDtos
-            advertisementCompanyDto.advertisementUnderCompany = _advertisementService.MapAdsToCardDtos(dbAdvertisements);
+            advertisementCompanyDto.advertisementUnderCompany = await _advertisementService.MapAdsToCardDtos(dbAdvertisements);
             
             return advertisementCompanyDto;
         }

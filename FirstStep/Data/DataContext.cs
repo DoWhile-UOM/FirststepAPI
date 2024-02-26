@@ -53,10 +53,11 @@ namespace FirstStep.Data
                     .HasForeignKey(e => e.hrManager_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
 
+                /*
                 entity.HasOne(e => e.company)
                     .WithMany(e => e.advertisements)
                     .HasForeignKey(e => e.company_id)
-                    .OnDelete(DeleteBehavior.ClientCascade);
+                    .OnDelete(DeleteBehavior.ClientCascade);*/
 
                 entity.HasMany(e => e.professionKeywords)
                     .WithMany(e => e.advertisements)

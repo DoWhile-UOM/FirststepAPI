@@ -30,7 +30,7 @@ namespace FirstStep.Services
             return await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
-                .Include("company")
+                .Include("hrManager")
                 .ToListAsync();
         }
 
@@ -40,7 +40,7 @@ namespace FirstStep.Services
                 await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
-                .Include("company")
+                .Include("hrManager")
                 .FirstOrDefaultAsync(x => x.advertisement_id == id);
 
             if (advertisement is null)
@@ -56,7 +56,8 @@ namespace FirstStep.Services
             var advertisementList = await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
-                .Where(x => x.company_id == companyID)
+                .Include("hrManager")
+                .Where(x => x.hrManager!.company_id == companyID)
                 .ToListAsync();
 
             if (advertisementList is null)
@@ -69,7 +70,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> GetAll()
         {
-            return MapAdsToCardDtos(await FindAll());
+            return await MapAdsToCardDtos(await FindAll());
         }
 
         public async Task<AdvertisementDto> GetById(int id)
@@ -77,7 +78,7 @@ namespace FirstStep.Services
             var dbAdvertismeent = await FindById(id);
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
-            advertisementDto.company_name = dbAdvertismeent.company!.company_name;
+            advertisementDto.company_name = await GetCompanyName(dbAdvertismeent.hrManager_id);
             advertisementDto.field_name = dbAdvertismeent.job_Field!.field_name;
 
             return advertisementDto;
@@ -137,8 +138,10 @@ namespace FirstStep.Services
                 throw new Exception("HR Manager not found.");
             }
 
+            newAdvertisement.hrManager = hrManager;
+
             // set the company id
-            newAdvertisement.company_id = hrManager.company_id;
+            //newAdvertisement.company_id = hrManager.company_id;
 
             newAdvertisement.job_Field = await _jobFieldService.GetById(newAdvertisement.field_id);
 
@@ -224,7 +227,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of AdvertisementCardDtos
-        public IEnumerable<AdvertisementShortDto> MapAdsToCardDtos(IEnumerable<Advertisement> dbAds)
+        public async Task<IEnumerable<AdvertisementShortDto>> MapAdsToCardDtos(IEnumerable<Advertisement> dbAds)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
 
@@ -232,7 +235,8 @@ namespace FirstStep.Services
             {
                 var adDto = _mapper.Map<AdvertisementShortDto>(ad);
 
-                adDto.company_name = ad.company!.company_name;
+                adDto.company_name = await GetCompanyName(ad.hrManager_id);
+
                 adDto.field_name = ad.job_Field!.field_name;
 
                 // recheck this part
@@ -252,6 +256,27 @@ namespace FirstStep.Services
             {
                 throw new Exception("Invalid status.");
             }
+        }
+
+        private async Task<string> GetCompanyName(int hrManagerId)
+        {
+            var hrManager = await _context.HRManagers
+                .Include("company")
+                .FirstOrDefaultAsync(e => e.user_id == hrManagerId);
+
+            if (hrManager is null)
+            {
+                throw new Exception("HR Manager not found.");
+            }
+
+            string company_name = hrManager!.company!.company_name;
+
+            if (company_name is null)
+            {
+                throw new Exception("Company not found.");
+            }
+
+            return company_name;
         }
 
         // temp function
