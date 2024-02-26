@@ -236,6 +236,7 @@ namespace FirstStep.Services
                 var adDto = _mapper.Map<AdvertisementShortDto>(ad);
 
                 adDto.company_name = await GetCompanyName(ad.hrManager_id);
+                adDto.company_id = ad.hrManager!.company_id;
 
                 adDto.field_name = ad.job_Field!.field_name;
 
