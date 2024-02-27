@@ -7,6 +7,10 @@ using System.Text.RegularExpressions;
 using System.Text;
 using System;
 using FirstStep.Helpers;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Controllers
 {
@@ -21,22 +25,27 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost("authenticate")]
-        public async Task<IActionResult> Authenticate([FromBody] User userObj)
+        public async Task<IActionResult> Authenticate([FromBody] LoginRequest userObj)
         {
-            if (userObj == null)
-                return BadRequest();
+            /*
+            if (userObj is null)
+                return BadRequest();*/
 
             var user = await _authContext.Users.FirstOrDefaultAsync(x => x.email == userObj.email);
             if (user == null)
                 return NotFound(new { message = "Username Not Found" });
 
-            if (!PasswordHasher.VerifyPassword(userObj.password_hash, user.password_hash))
+            if (!PasswordHasher.VerifyPassword(userObj.password, user.password_hash))
                 return BadRequest(new { message = "Invalid Password" });
+
+
+            string token = CreateJwt(user);
 
 
             return Ok(
                 new
                 {
+                    token = token,
                     message = "Login Successfull",
                 });
 
@@ -89,10 +98,29 @@ namespace FirstStep.Controllers
             return sb.ToString();
         }
 
+        //JWT token generator
+        private string CreateJwt(User user)
+        {
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes("veryverysceret.....");
+            var identity = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.Role, user.user_type),
+                new Claim(ClaimTypes.Name,$"{user.email}")
+            });
 
+            var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
-
-
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = identity,
+                Expires = DateTime.Now.AddDays(1),
+                SigningCredentials = credentials
+            };
+            var token = jwtTokenHandler.CreateToken(tokenDescriptor);
+            return jwtTokenHandler.WriteToken(token);
+        }
+       
 
     }
 }

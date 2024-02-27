@@ -18,7 +18,8 @@ namespace FirstStep.Models
 
         public string? user_type { get; set; }
 
-        //public string Token { get; set; }
+        //public string token { get; set; }
+
         //public string Role { get; set; }
     }
 }
