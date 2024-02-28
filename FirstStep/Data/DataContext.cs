@@ -109,6 +109,14 @@ namespace FirstStep.Data
                     .WithMany(e => e.seekers)
                     .UsingEntity(e => e.ToTable("SeekerSkills"));
             });
+
+            modelBuilder.Entity<Application>(entity =>
+            {
+                entity.HasOne(e => e.advertisement)
+                    .WithMany(e => e.applications)
+                    .HasForeignKey(e => e.advertisement_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+            });
         }
     }
 }

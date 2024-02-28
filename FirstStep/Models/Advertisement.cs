@@ -47,6 +47,9 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
+        public virtual ICollection<Application>? applications { get; set; }
+
+        [JsonIgnore]
         public virtual ICollection<Seeker>? savedSeekers { get; set; }
 
         [JsonIgnore]
