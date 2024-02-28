@@ -11,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using FirstStep.Models.DTOs;
+using System.Security.AccessControl;
+using System.Security.Cryptography;
 
 namespace FirstStep.Controllers
 {
@@ -70,10 +72,15 @@ namespace FirstStep.Controllers
 
             userObj.password_hash = PasswordHasher.Hasher(userObj.password_hash);//Hash password before saving to database
             //userObj.Role = "User";
-            //userObj.Token = "";
+            userObj.token = CreateVerifyToken();
 
             _authContext.Users.Add(userObj);
             _authContext.SaveChanges();
+
+
+            //Send email verification link
+            //SendEmail(userObj.email, userObj.token);
+
             return Ok(
                 new
                 {
@@ -81,10 +88,44 @@ namespace FirstStep.Controllers
                 });
         }
 
+
+        [HttpGet("GetAllUsers")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _authContext.Users.ToListAsync();
+            return Ok(users);
+        }
+
+        //verify user 
+        [HttpGet("/verify")]
+        public async Task<IActionResult> Verify(string token)
+        {
+            var user = await _authContext.Users.FirstOrDefaultAsync(x => x.token == token);
+
+            if(user == null)
+            {
+                return BadRequest("Invalid or expired token");
+            }
+
+            user.token = (DateTime.Now).ToString("yyyy-MM-dd HH:mm");
+            await _authContext.SaveChangesAsync();
+
+            return Ok("User verified");
+        }
+
+
         private async Task<bool> CheckEmailExist(string Email)
         {
             return await _authContext.Users.AnyAsync(x => x.email == Email);
         }
+
+        //User verify
+        /*
+        private async Task<bool> VerifyUser(string token)
+        {
+            return false;
+        }   
+        */
 
         private static string PasswordStrengthCheck(string pass)
         {
@@ -97,6 +138,15 @@ namespace FirstStep.Controllers
                 sb.Append("Password should contain special charcter" + Environment.NewLine);
             return sb.ToString();
         }
+
+
+        private string CreateVerifyToken()
+        {
+            return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+        }
+
+
+
 
         //JWT token generator
         private string CreateJwt(User user)
