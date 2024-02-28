@@ -15,5 +15,6 @@
         public string? job_description { get; set; }
         public int field_id { get; set; }
         public ICollection<string>? keywords { get; set; }
+        public ICollection<string>? skills { get; set; }
     }
 }

@@ -12,17 +12,20 @@ namespace FirstStep.Services
         private readonly IMapper _mapper;
         private readonly IProfessionKeywordService _keywordService;
         private readonly IJobFieldService _jobFieldService;
+        private readonly ISkillService _skillService;
 
         public AdvertisementService(
             DataContext context, 
             IMapper mapper, 
             IProfessionKeywordService keywordService, 
-            IJobFieldService jobFieldService)
+            IJobFieldService jobFieldService,
+            ISkillService skillService)
         {
             _context = context;
             _mapper = mapper;
             _keywordService = keywordService;
             _jobFieldService = jobFieldService;
+            _skillService = skillService;
         }
 
         public async Task<IEnumerable<Advertisement>> FindAll()
@@ -139,14 +142,13 @@ namespace FirstStep.Services
             }
 
             newAdvertisement.hrManager = hrManager;
-
-            // set the company id
-            //newAdvertisement.company_id = hrManager.company_id;
-
             newAdvertisement.job_Field = await _jobFieldService.GetById(newAdvertisement.field_id);
 
             // add keywords to the advertisement
-            newAdvertisement.professionKeywords = await IncludeProfessionKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
+            newAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
+            
+            // add skills to the advertisement
+            newAdvertisement.skills = await IncludeSkillsToAdvertisement(advertisementDto.reqSkills);
 
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
@@ -178,7 +180,10 @@ namespace FirstStep.Services
             dbAdvertisement.field_id = reqAdvertisement.field_id;
 
             // update keywords in the advertisement
-            dbAdvertisement.professionKeywords = await IncludeProfessionKeywordsToAdvertisement(reqAdvertisement.keywords, dbAdvertisement.field_id);
+            dbAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(reqAdvertisement.keywords, dbAdvertisement.field_id);
+            
+            // update skills in the advertisement
+            dbAdvertisement.skills = await IncludeSkillsToAdvertisement(reqAdvertisement.skills);
 
             await _context.SaveChangesAsync();
         }
@@ -192,7 +197,7 @@ namespace FirstStep.Services
         }
 
         // Add keywords to the advertisement
-        private async Task<ICollection<ProfessionKeyword>?> IncludeProfessionKeywordsToAdvertisement(ICollection<string>? newKeywords, int fieldId)
+        private async Task<ICollection<ProfessionKeyword>?> IncludeKeywordsToAdvertisement(ICollection<string>? newKeywords, int fieldId)
         {
             if (newKeywords != null)
             {
@@ -221,6 +226,39 @@ namespace FirstStep.Services
                 }
 
                 return professionKeywords;
+            }
+
+            return null;
+        }
+
+        private async Task<ICollection<Skill>?> IncludeSkillsToAdvertisement(ICollection<string>? newSkills)
+        {
+            if (newSkills != null)
+            {
+                var skills = new List<Skill>();
+
+                foreach (var skill in newSkills)
+                {
+                    // check whether the skill exists in the database
+                    var dbSkill = await _skillService.GetByName(skill.ToLower());
+
+                    if (dbSkill != null)
+                    {
+                        // if it exists, add it to the advertisement's list of skills
+                        skills.Add(dbSkill);
+                    }
+                    else
+                    {
+                        // if it doesn't exist, create a new skill and add it to the advertisement's list of skills
+                        skills.Add(new Skill
+                        {
+                            skill_id = 0,
+                            skill_name = skill.ToLower()
+                        });
+                    }                    
+                }
+
+                return skills;
             }
 
             return null;
@@ -306,12 +344,18 @@ namespace FirstStep.Services
                     job_description = "We are looking for a software developer to join our team. We are a company that values its employees.",
                     hrManager_id = 10, // under bistec
                     field_id = 1, // it and cs
-                    keywords = new List<string>() 
+                    keywords = new List<string>(),
+                    reqSkills = new List<string>()
                 };
 
                 for (int j = 0; j < random.Next(4, 11); j++)
                 {
                     addAdvertisementDto.keywords.Add(keywordArray[random.Next(0, keywordArray.Count - 1)].ToLower());
+                }
+
+                for (int j = 0; j < random.Next(4, 11); j++)
+                {
+                    addAdvertisementDto.reqSkills.Add(keywordArray[random.Next(0, keywordArray.Count - 1)].ToLower());
                 }
 
                 await Create(addAdvertisementDto);

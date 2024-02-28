@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public class AddAdvertisementDto
+    public struct AddAdvertisementDto
     {
         public int? job_number { get; set; }
         public string? title { get; set; }
@@ -15,5 +15,6 @@
         public int? hrManager_id { get; set; }
         public int? field_id { get; set; }
         public ICollection<string>? keywords { get; set; }
+        public ICollection<string>? reqSkills { get; set; }
     }
 }

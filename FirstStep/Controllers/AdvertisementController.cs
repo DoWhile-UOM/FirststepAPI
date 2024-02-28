@@ -43,10 +43,11 @@ namespace FirstStep.Controllers
         [Route("AddAdvertisement")]
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
+            /*
             if (advertisementDto is null)
             {
                 return BadRequest("Advertisement cannot be null.");
-            }
+            }*/
 
             await _service.Create(advertisementDto);
             return Ok();
