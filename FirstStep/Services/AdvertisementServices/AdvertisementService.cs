@@ -34,6 +34,7 @@ namespace FirstStep.Services
                 .Include("professionKeywords")
                 .Include("job_Field")
                 .Include("hrManager")
+                .Include("skills")
                 .ToListAsync();
         }
 
@@ -44,6 +45,7 @@ namespace FirstStep.Services
                 .Include("professionKeywords")
                 .Include("job_Field")
                 .Include("hrManager")
+                .Include("skills")
                 .FirstOrDefaultAsync(x => x.advertisement_id == id);
 
             if (advertisement is null)
@@ -60,6 +62,7 @@ namespace FirstStep.Services
                 .Include("professionKeywords")
                 .Include("job_Field")
                 .Include("hrManager")
+                .Include("skills")
                 .Where(x => x.hrManager!.company_id == companyID)
                 .ToListAsync();
 
