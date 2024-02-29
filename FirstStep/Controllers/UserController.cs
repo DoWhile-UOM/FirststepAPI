@@ -13,6 +13,7 @@ using System.Security.Claims;
 using FirstStep.Models.DTOs;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FirstStep.Controllers
 {
@@ -88,8 +89,8 @@ namespace FirstStep.Controllers
                 });
         }
 
-
-        [HttpGet("GetAllUsers")]
+        [Authorize]
+        [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _authContext.Users.ToListAsync();
