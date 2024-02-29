@@ -38,6 +38,7 @@ namespace FirstStep.Services
                 .Include("job_Field")
                 .Include("hrManager")
                 .Include("skills")
+                .Include("savedSeekers")
                 .ToListAsync();
         }
 
@@ -49,6 +50,7 @@ namespace FirstStep.Services
                 .Include("job_Field")
                 .Include("hrManager")
                 .Include("skills")
+                .Include("savedSeekers")
                 .FirstOrDefaultAsync(x => x.advertisement_id == id);
 
             if (advertisement is null)
@@ -66,6 +68,7 @@ namespace FirstStep.Services
                 .Include("job_Field")
                 .Include("hrManager")
                 .Include("skills")
+                .Include("savedSeekers")
                 .Where(x => x.hrManager!.company_id == companyID)
                 .ToListAsync();
 
@@ -77,9 +80,9 @@ namespace FirstStep.Services
             return advertisementList;
         }
 
-        public async Task<IEnumerable<AdvertisementShortDto>> GetAll()
+        public async Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID)
         {
-            return await MapAdsToCardDtos(await FindAll());
+            return await MapAdsToCardDtos(await FindAll(), seekerID);
         }
 
         public async Task<AdvertisementDto> GetById(int id)
@@ -225,10 +228,11 @@ namespace FirstStep.Services
             var advertisement = await FindById(advertisementId);
 
             // check whether the advertisement is already saved
+            
             if (advertisement.savedSeekers is null)
             {
                 // no any saved seeker for the advertiement
-                return;
+                throw new Exception("Advertisement is not saved by any seeker.");
             }
 
             if (advertisement.savedSeekers.Contains(seeker))
@@ -333,7 +337,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of AdvertisementCardDtos
-        public async Task<IEnumerable<AdvertisementShortDto>> MapAdsToCardDtos(IEnumerable<Advertisement> dbAds)
+        public async Task<IEnumerable<AdvertisementShortDto>> MapAdsToCardDtos(IEnumerable<Advertisement> dbAds, int seekerID)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
 
@@ -346,8 +350,8 @@ namespace FirstStep.Services
 
                 adDto.field_name = ad.job_Field!.field_name;
 
-                // recheck this part
-                adDto.is_saved = false;
+                // check whether the advertisement is saved by the seeker
+                adDto.is_saved = await IsAdvertisementSaved(ad.advertisement_id, seekerID);
 
                 adCardDtos.Add(adDto);
             }

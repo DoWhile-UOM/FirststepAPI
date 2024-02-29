@@ -18,10 +18,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllAdvertisements")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisements()
+        [Route("GetAllAdvertisements/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisements(int seekerID)
         {
-            var advertisementList = await _service.GetAll();
+            var advertisementList = await _service.GetAll(seekerID);
             return advertisementList == null ? NotFound() : Ok(advertisementList);
         }
 

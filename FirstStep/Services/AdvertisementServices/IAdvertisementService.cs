@@ -11,7 +11,7 @@ namespace FirstStep.Services
 
         Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID);
 
-        Task<IEnumerable<AdvertisementShortDto>> GetAll();
+        Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID);
 
         Task<AdvertisementDto> GetById(int id);
 
@@ -29,7 +29,7 @@ namespace FirstStep.Services
 
         Task Delete(int id);
 
-        Task<IEnumerable<AdvertisementShortDto>> MapAdsToCardDtos(IEnumerable<Advertisement> advertisements);
+        Task<IEnumerable<AdvertisementShortDto>> MapAdsToCardDtos(IEnumerable<Advertisement> advertisements, int seekerID);
 
         Task SearchAds();
 
