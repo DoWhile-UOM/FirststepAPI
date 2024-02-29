@@ -36,7 +36,7 @@ namespace FirstStep.Controllers
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}")]
         public async Task<ActionResult<IEnumerable<JobOfferDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
         {
-            return Ok(await _service.GetJobOffersByCompanyID(companyID, status));
+            return Ok(await _service.GetAdvertisementsByCompanyID(companyID, status));
         }
 
         [HttpPost]

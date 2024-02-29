@@ -96,7 +96,7 @@ namespace FirstStep.Services
             return advertisementDto;
         }
 
-        public async Task<IEnumerable<JobOfferDto>> GetJobOffersByCompanyID(int companyID, string status)
+        public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompanyID(int companyID, string status)
         {
             ValidateStatus(status);
 
@@ -243,6 +243,23 @@ namespace FirstStep.Services
             }
         }
 
+        public async Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID)
+        {
+            var advertisements = await FindAll();
+
+            var savedAds = new List<Advertisement>();
+
+            foreach (var ad in advertisements)
+            {
+                if (ad.savedSeekers != null && ad.savedSeekers.Any(e => e.user_id == seekerID))
+                {
+                    savedAds.Add(ad);
+                }
+            }
+
+            return await MapAdsToCardDtos(savedAds, seekerID);
+        }
+
         private async Task<bool> IsAdvertisementSaved(int advertisementId, int seekerId)
         {
             // find the seeker
@@ -350,8 +367,17 @@ namespace FirstStep.Services
 
                 adDto.field_name = ad.job_Field!.field_name;
 
-                // check whether the advertisement is saved by the seeker
-                adDto.is_saved = await IsAdvertisementSaved(ad.advertisement_id, seekerID);
+                // when seekerID is 0, it means that the all advertisements are saved by the seeker
+                // from GetSavedAdvertisements method passed seekerID as 0
+                if (seekerID != 0)
+                {
+                    // check whether the advertisement is saved by the seeker
+                    adDto.is_saved = await IsAdvertisementSaved(ad.advertisement_id, seekerID);
+                }
+                else
+                {
+                    adDto.is_saved = true;
+                }
 
                 adCardDtos.Add(adDto);
             }
