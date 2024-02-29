@@ -23,6 +23,10 @@ namespace FirstStep.Services
 
         Task Update(int jobID, UpdateAdvertisementDto advertisement);
 
+        Task SaveAdvertisement(int advertisementId, int seekerId);
+
+        Task UnsaveAdvertisement(int advertisementId, int seekerId);
+
         Task Delete(int id);
 
         Task<IEnumerable<AdvertisementShortDto>> MapAdsToCardDtos(IEnumerable<Advertisement> advertisements);

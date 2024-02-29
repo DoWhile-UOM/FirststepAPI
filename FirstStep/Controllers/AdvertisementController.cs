@@ -43,12 +43,6 @@ namespace FirstStep.Controllers
         [Route("AddAdvertisement")]
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
-            /*
-            if (advertisementDto is null)
-            {
-                return BadRequest("Advertisement cannot be null.");
-            }*/
-
             await _service.Create(advertisementDto);
             return Ok();
         }
@@ -76,6 +70,22 @@ namespace FirstStep.Controllers
         public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
         {
             await _service.ChangeStatus(jobID, newStatus);
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("SaveAdvertisement/{advertisementId:int}/seekerId={seekerId:int}")]
+        public async Task<IActionResult> SaveAdvertisement(int advertisementId, int seekerId)
+        {
+            await _service.SaveAdvertisement(advertisementId, seekerId);
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("UnsaveAdvertisement/{advertisementId:int}/seekerId={seekerId:int}")]
+        public async Task<IActionResult> UnsaveAdvertisement(int advertisementId, int seekerId)
+        {
+            await _service.UnsaveAdvertisement(advertisementId, seekerId);
             return Ok();
         }
 

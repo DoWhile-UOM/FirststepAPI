@@ -13,19 +13,22 @@ namespace FirstStep.Services
         private readonly IProfessionKeywordService _keywordService;
         private readonly IJobFieldService _jobFieldService;
         private readonly ISkillService _skillService;
+        private readonly ISeekerService _seekerService;
 
         public AdvertisementService(
             DataContext context, 
-            IMapper mapper, 
-            IProfessionKeywordService keywordService, 
+            IMapper mapper,
+            IProfessionKeywordService keywordService,
             IJobFieldService jobFieldService,
-            ISkillService skillService)
+            ISkillService skillService,
+            ISeekerService seekerService)
         {
             _context = context;
             _mapper = mapper;
             _keywordService = keywordService;
             _jobFieldService = jobFieldService;
             _skillService = skillService;
+            _seekerService = seekerService;
         }
 
         public async Task<IEnumerable<Advertisement>> FindAll()
@@ -191,6 +194,67 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task SaveAdvertisement(int advertisementId, int seekerId)
+        {
+            // find the seeker
+            var seeker = await _seekerService.GetById(seekerId);
+
+            // find the advertisement
+            var advertisement = await FindById(advertisementId);
+
+            // check whether the advertisement is already saved
+            if (advertisement.savedSeekers is null)
+            {
+                advertisement.savedSeekers = new List<Seeker>();
+            }
+            
+            if (!advertisement.savedSeekers.Contains(seeker))
+            {
+                // add the seeker to the list of saved seekers
+                advertisement.savedSeekers.Add(seeker);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task UnsaveAdvertisement(int advertisementId, int seekerId)
+        {
+            // find the seeker
+            var seeker = await _seekerService.GetById(seekerId);
+
+            // find the advertisement
+            var advertisement = await FindById(advertisementId);
+
+            // check whether the advertisement is already saved
+            if (advertisement.savedSeekers is null)
+            {
+                // no any saved seeker for the advertiement
+                return;
+            }
+
+            if (advertisement.savedSeekers.Contains(seeker))
+            {
+                // remove the seeker from the list of saved seekers
+                advertisement.savedSeekers.Remove(seeker);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        private async Task<bool> IsAdvertisementSaved(int advertisementId, int seekerId)
+        {
+            // find the seeker
+            var seeker = await _seekerService.GetById(seekerId);
+
+            // find the advertisement
+            var advertisement = await FindById(advertisementId);
+
+            if (advertisement.savedSeekers is null || !advertisement.savedSeekers.Contains(seeker))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public async Task Delete(int id)
         {
             Advertisement advertisement = await FindById(id);
@@ -234,6 +298,7 @@ namespace FirstStep.Services
             return null;
         }
 
+        // Add skills to the advertisement
         private async Task<ICollection<Skill>?> IncludeSkillsToAdvertisement(ICollection<string>? newSkills)
         {
             if (newSkills != null)
@@ -290,6 +355,7 @@ namespace FirstStep.Services
             return adCardDtos;
         }
 
+        // validate status
         private void ValidateStatus(string status)
         {
             var possibleStatuses = new List<string> { "active", "hold", "closed", "all" };
@@ -300,6 +366,7 @@ namespace FirstStep.Services
             }
         }
 
+        // get company name
         private async Task<string> GetCompanyName(int hrManagerId)
         {
             var hrManager = await _context.HRManagers
