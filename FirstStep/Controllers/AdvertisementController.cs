@@ -39,6 +39,13 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetAdvertisementsByCompanyID(companyID, status));
         }
 
+        [HttpGet]
+        [Route("GetSavedAdvertisements/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetSavedAdvertisements(int seekerID)
+        {
+            return Ok(await _service.GetSavedAdvertisements(seekerID));
+        }
+
         [HttpPost]
         [Route("AddAdvertisement")]
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)

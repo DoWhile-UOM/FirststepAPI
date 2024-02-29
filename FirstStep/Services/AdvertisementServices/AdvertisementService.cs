@@ -257,7 +257,7 @@ namespace FirstStep.Services
                 }
             }
 
-            return await MapAdsToCardDtos(savedAds, seekerID);
+            return await MapAdsToCardDtos(savedAds, 0);
         }
 
         private async Task<bool> IsAdvertisementSaved(int advertisementId, int seekerId)
