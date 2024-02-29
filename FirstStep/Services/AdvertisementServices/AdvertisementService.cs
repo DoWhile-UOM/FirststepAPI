@@ -3,6 +3,8 @@ using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
+using KdTree;
+using KdTree.Math;
 
 namespace FirstStep.Services
 {
@@ -278,12 +280,35 @@ namespace FirstStep.Services
 
         public async Task SearchAds()
         {
-            await AddRandomAdvertisements(10);
+            //await AddRandomAdvertisements(10);
+
+            var advertisements = await _context.Advertisements.ToListAsync();
+
+            // convert into kdtree
+            var tree = new KdTree<float, Advertisement>(3, new FloatMath());
+
+            foreach (var ad in advertisements)
+            {
+                tree.Add(new[] { (float)ad.field_id, (float)ad.company_id }, ad);
+            }
+
+            // sample search
+            var nodes = tree.GetNearestNeighbours(new[] { 30.0f, 20.0f }, 1);
+
+            //var nodes = tree.GetNearestNeighbours(new[] { 30.0f, 20.0f }, 1);
+
+            foreach (var node in nodes)
+            {
+                Console.Out.WriteLine(node.Value);
+            }
         }
 
         private async Task<bool> isAdvertisementExists(AdvertisementDto dto)
         {
             var advertisements = await _context.Advertisements.ToListAsync();
+
+            //convert into kdtree
+            
 
             //return _context.Advertisements.Any(e => e.advertisement_id == id);
 
