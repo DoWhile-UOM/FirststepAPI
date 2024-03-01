@@ -1,6 +1,8 @@
 using FirstStep.Data;
 using FirstStep.Services;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +48,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+//folder are servable for the client applications
+app.UseCors("CorsPolicy");
+app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions()
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Resources")),
+    RequestPath = new PathString("/Resources")
+});
+//
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
@@ -53,3 +65,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
