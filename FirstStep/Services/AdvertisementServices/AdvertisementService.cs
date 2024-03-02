@@ -278,6 +278,13 @@ namespace FirstStep.Services
             }
         }
 
+        public async Task BasicSearch()
+        {
+            var advertisements = await FindAll();
+
+
+        }
+
         public async Task SearchAds()
         {
             //await AddRandomAdvertisements(10);
