@@ -13,7 +13,7 @@ namespace FirstStep.Services
 
         public Task<Company> GetById(int id);
 
-        public Task<CompanyProfileDto> GetCompanyProfile(int companyID);
+        public Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID);
 
         public Task Create(AddCompanyDto company);
 
