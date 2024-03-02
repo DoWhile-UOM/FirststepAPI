@@ -86,7 +86,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID)
         {
-            return await MapAdsToCardDtos(await FindAll(), seekerID);
+            return await MapAdsToDtos(await FindAll(), seekerID);
         }
 
         public async Task<AdvertisementDto> GetById(int id)
@@ -261,7 +261,7 @@ namespace FirstStep.Services
                 }
             }
 
-            return await MapAdsToCardDtos(savedAds, 0);
+            return await MapAdsToDtos(savedAds, 0);
         }
 
         private async Task<bool> IsAdvertisementSaved(int advertisementId, int seekerId)
@@ -358,7 +358,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of AdvertisementCardDtos
-        public async Task<IEnumerable<AdvertisementShortDto>> MapAdsToCardDtos(IEnumerable<Advertisement> dbAds, int seekerID)
+        public async Task<IEnumerable<AdvertisementShortDto>> MapAdsToDtos(IEnumerable<Advertisement> dbAds, int seekerID)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
 
@@ -468,17 +468,64 @@ namespace FirstStep.Services
             }
         }
 
-        public async Task<IEnumerable<Advertisement>> BasicSearch(SearchJobRequestDto requestAdsDto)
+        public async Task<IEnumerable<AdvertisementShortDto>> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID)
         {
-            var advertisements = await FindAll();
+            if (requestAdsDto == null)
+            {
+                throw new Exception("Request cannot be null.");
+            }
 
-            var filteredAdvertisements = advertisements.Where(ad =>
-                ad.country == requestAdsDto.country &&
-                ad.city == requestAdsDto.city &&
-                ad.arrangement == requestAdsDto.arrangement &&
-                ad.employeement_type == requestAdsDto.employeement_type);
+            var advertisements = await _context.Advertisements
+                .Include("professionKeywords")
+                .Include("job_Field")
+                .Include("skills")
+                .Include("savedSeekers")
+                .Where(ad =>
+                    ad.country == requestAdsDto.country &&
+                    ad.city == requestAdsDto.city &&
+                        (ad.arrangement == requestAdsDto.arrangement ||
+                        ad.employeement_type == requestAdsDto.employeement_type) &&
+                    ad.current_status == "active")
+                .ToListAsync();
 
-            return filteredAdvertisements;
+            if (requestAdsDto.title == null)
+            {
+                Console.Out.WriteLine($"Filtered advertisements: {advertisements.Count}");
+
+                return await MapAdsToDtos(advertisements, seekerID);
+            }
+
+            var filteredAdvertisements = new List<Advertisement> { };
+
+            var titles = requestAdsDto.title.Split(' ');
+
+            foreach (var title in titles)
+            {
+                filteredAdvertisements
+                    .AddRange(advertisements
+                        .Where(ad => ad.title.ToLower().Contains(title.ToLower()))
+                        .ToList());
+            }
+
+            foreach (var title in titles)
+            {
+                foreach (var ad in advertisements)
+                {
+                    if (!filteredAdvertisements.Contains(ad) && ad.professionKeywords != null)
+                    {
+                        var keywords = ad.professionKeywords.Select(e => e.profession_name).ToList();
+
+                        if (keywords.Contains(title.ToLower()))
+                        {
+                            filteredAdvertisements.Add(ad);
+                        }
+                    }
+                }
+            }
+
+            Console.Out.WriteLine($"Filtered advertisements: {filteredAdvertisements.Count}");  
+
+            return await MapAdsToDtos(filteredAdvertisements, seekerID);
         }
 
         public async Task SearchAds()

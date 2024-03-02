@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using FirstStep.Models;
+﻿using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
@@ -22,8 +21,7 @@ namespace FirstStep.Controllers
         [Route("GetAllAdvertisements/seekerID={seekerID:int}")]
         public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisements(int seekerID)
         {
-            var advertisementList = await _service.GetAll(seekerID);
-            return advertisementList == null ? NotFound() : Ok(advertisementList);
+            return Ok(await _service.GetAll(seekerID));
         }
 
         [HttpGet]
@@ -48,10 +46,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("SearchAdvertisementsBasic")]
-        public async Task<ActionResult<IEnumerable<Advertisement>>> SearchAdvertisements([FromQuery] SearchJobRequestDto requestDto)
+        [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisements(int seekerID, [FromQuery] SearchJobRequestDto requestDto)
         {
-            return Ok(await _service.BasicSearch(requestDto));
+            return Ok(await _service.BasicSearch(requestDto, seekerID));
         }
 
         [HttpPost]
@@ -89,18 +87,18 @@ namespace FirstStep.Controllers
         }
 
         [HttpPut]
-        [Route("SaveAdvertisement/{advertisementId:int}/seekerId={seekerId:int}")]
-        public async Task<IActionResult> SaveAdvertisement(int advertisementId, int seekerId)
+        [Route("SaveAdvertisement/{jobID:int}/seekerId={seekerId:int}")]
+        public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId)
         {
-            await _service.SaveAdvertisement(advertisementId, seekerId);
+            await _service.SaveAdvertisement(jobID, seekerId);
             return Ok();
         }
 
         [HttpPut]
-        [Route("UnsaveAdvertisement/{advertisementId:int}/seekerId={seekerId:int}")]
-        public async Task<IActionResult> UnsaveAdvertisement(int advertisementId, int seekerId)
+        [Route("UnsaveAdvertisement/{jobID:int}/seekerId={seekerId:int}")]
+        public async Task<IActionResult> UnsaveAdvertisement(int jobID, int seekerId)
         {
-            await _service.UnsaveAdvertisement(advertisementId, seekerId);
+            await _service.UnsaveAdvertisement(jobID, seekerId);
             return Ok();
         }
 
