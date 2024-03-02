@@ -35,12 +35,14 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Advertisement>> FindAll()
         {
+            // get all active advertisements
             return await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
                 .Include("hrManager")
                 .Include("skills")
                 .Include("savedSeekers")
+                .Where(x => x.current_status == "active")
                 .ToListAsync();
         }
 
@@ -466,11 +468,17 @@ namespace FirstStep.Services
             }
         }
 
-        public async Task BasicSearch()
+        public async Task<IEnumerable<Advertisement>> BasicSearch(SearchJobRequestDto requestAdsDto)
         {
             var advertisements = await FindAll();
 
+            var filteredAdvertisements = advertisements.Where(ad =>
+                ad.country == requestAdsDto.country &&
+                ad.city == requestAdsDto.city &&
+                ad.arrangement == requestAdsDto.arrangement &&
+                ad.employeement_type == requestAdsDto.employeement_type);
 
+            return filteredAdvertisements;
         }
 
         public async Task SearchAds()
@@ -484,7 +492,7 @@ namespace FirstStep.Services
 
             foreach (var ad in advertisements)
             {
-                tree.Add(new[] { (float)ad.field_id, (float)ad.company_id }, ad);
+                //tree.Add(new[] { (float)ad.field_id, (float)ad.company_id }, ad);
             }
 
             // sample search
@@ -496,18 +504,6 @@ namespace FirstStep.Services
             {
                 Console.Out.WriteLine(node.Value);
             }
-        }
-
-        private async Task<bool> isAdvertisementExists(AdvertisementDto dto)
-        {
-            var advertisements = await _context.Advertisements.ToListAsync();
-
-            //convert into kdtree
-            
-
-            //return _context.Advertisements.Any(e => e.advertisement_id == id);
-
-            return true;
         }
     }
 }

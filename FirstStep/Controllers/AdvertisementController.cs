@@ -1,4 +1,5 @@
-﻿using FirstStep.Models;
+﻿using Azure.Core;
+using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
@@ -44,6 +45,13 @@ namespace FirstStep.Controllers
         public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetSavedAdvertisements(int seekerID)
         {
             return Ok(await _service.GetSavedAdvertisements(seekerID));
+        }
+
+        [HttpGet]
+        [Route("SearchAdvertisementsBasic")]
+        public async Task<ActionResult<IEnumerable<Advertisement>>> SearchAdvertisements([FromQuery] SearchJobRequestDto requestDto)
+        {
+            return Ok(await _service.BasicSearch(requestDto));
         }
 
         [HttpPost]
@@ -101,16 +109,6 @@ namespace FirstStep.Controllers
         public async Task<IActionResult> DeleteAdvertisement(int jobID)
         {
             await _service.Delete(jobID);
-            return Ok();
-        }
-
-
-        // temporary function
-        [HttpGet]
-        [Route("SearchAds")]
-        public async Task<ActionResult<IEnumerable<Advertisement>>> SearchAds()
-        {
-            await _service.SearchAds();
             return Ok();
         }
     }

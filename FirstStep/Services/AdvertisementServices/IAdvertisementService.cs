@@ -29,7 +29,7 @@ namespace FirstStep.Services
 
         Task<IEnumerable<AdvertisementShortDto>> MapAdsToCardDtos(IEnumerable<Advertisement> advertisements, int seekerID);
 
-        Task SearchAds();
+        Task<IEnumerable<Advertisement>> BasicSearch(SearchJobRequestDto searchRequest);
 
         // IEnumerable<Advertisement> GetAdvertisementsByHRManagerId(int id);
     }
