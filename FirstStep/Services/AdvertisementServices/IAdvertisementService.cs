@@ -27,7 +27,7 @@ namespace FirstStep.Services
 
         Task Delete(int id);
 
-        Task<IEnumerable<AdvertisementShortDto>> MapAdsToDtos(IEnumerable<Advertisement> advertisements, int seekerID);
+        Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> advertisements, int seekerID);
 
         Task<IEnumerable<AdvertisementShortDto>> BasicSearch(SearchJobRequestDto searchRequest, int seekerID);
 

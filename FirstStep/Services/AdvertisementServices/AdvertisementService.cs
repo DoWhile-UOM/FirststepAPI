@@ -86,16 +86,13 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID)
         {
-            return await MapAdsToDtos(await FindAll(), seekerID);
+            return await CreateAdvertisementList(await FindAll(), seekerID);
         }
 
         public async Task<AdvertisementDto> GetById(int id)
         {
             var dbAdvertismeent = await FindById(id);
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
-
-            advertisementDto.company_name = await GetCompanyName(dbAdvertismeent.hrManager_id);
-            advertisementDto.field_name = dbAdvertismeent.job_Field!.field_name;
 
             return advertisementDto;
         }
@@ -261,7 +258,7 @@ namespace FirstStep.Services
                 }
             }
 
-            return await MapAdsToDtos(savedAds, 0);
+            return await CreateAdvertisementList(savedAds, 0);
         }
 
         private async Task<bool> IsAdvertisementSaved(int advertisementId, int seekerId)
@@ -357,19 +354,14 @@ namespace FirstStep.Services
             return null;
         }
 
-        // map the advertisements to a list of AdvertisementCardDtos
-        public async Task<IEnumerable<AdvertisementShortDto>> MapAdsToDtos(IEnumerable<Advertisement> dbAds, int seekerID)
+        // map the advertisements to a list of AdvertisementCardDtos and create advertisement list for the seeker
+        public async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
 
             foreach (var ad in dbAds)
             {
                 var adDto = _mapper.Map<AdvertisementShortDto>(ad);
-
-                adDto.company_name = await GetCompanyName(ad.hrManager_id);
-                adDto.company_id = ad.hrManager!.company_id;
-
-                adDto.field_name = ad.job_Field!.field_name;
 
                 // when seekerID is 0, it means that the all advertisements are saved by the seeker
                 // from GetSavedAdvertisements method passed seekerID as 0
@@ -392,34 +384,12 @@ namespace FirstStep.Services
         // validate status
         private void ValidateStatus(string status)
         {
-            var possibleStatuses = new List<string> { "active", "hold", "closed", "all" };
+            var possibleStatuses = new List<string> { "active", "closed", "all" };
 
             if (!possibleStatuses.Contains(status))
             {
                 throw new Exception("Invalid status.");
             }
-        }
-
-        // get company name
-        private async Task<string> GetCompanyName(int hrManagerId)
-        {
-            var hrManager = await _context.HRManagers
-                .Include("company")
-                .FirstOrDefaultAsync(e => e.user_id == hrManagerId);
-
-            if (hrManager is null)
-            {
-                throw new Exception("HR Manager not found.");
-            }
-
-            string company_name = hrManager!.company!.company_name;
-
-            if (company_name is null)
-            {
-                throw new Exception("Company not found.");
-            }
-
-            return company_name;
         }
 
         // temp function
@@ -500,7 +470,7 @@ namespace FirstStep.Services
             {
                 Console.Out.WriteLine($"Filtered advertisements: {advertisements.Count}");
 
-                return await MapAdsToDtos(advertisements, seekerID);
+                return await CreateAdvertisementList(advertisements, seekerID);
             }
 
             var filteredAdvertisements = new List<Advertisement> { };
@@ -533,7 +503,7 @@ namespace FirstStep.Services
 
             Console.Out.WriteLine($"Filtered advertisements: {filteredAdvertisements.Count}");  
 
-            return await MapAdsToDtos(filteredAdvertisements, seekerID);
+            return await CreateAdvertisementList(filteredAdvertisements, seekerID);
         }
 
         public async Task SearchAds()
