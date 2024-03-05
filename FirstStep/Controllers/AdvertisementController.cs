@@ -21,8 +21,7 @@ namespace FirstStep.Controllers
         [Route("GetAllAdvertisements/seekerID={seekerID:int}")]
         public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisements(int seekerID)
         {
-            var advertisementList = await _service.GetAll(seekerID);
-            return advertisementList == null ? NotFound() : Ok(advertisementList);
+            return Ok(await _service.GetAll(seekerID));
         }
 
         [HttpGet]
@@ -44,6 +43,13 @@ namespace FirstStep.Controllers
         public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetSavedAdvertisements(int seekerID)
         {
             return Ok(await _service.GetSavedAdvertisements(seekerID));
+        }
+
+        [HttpPost]
+        [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisements(int seekerID, SearchJobRequestDto requestDto)
+        {
+            return Ok(await _service.BasicSearch(requestDto, seekerID));
         }
 
         [HttpPost]
@@ -81,18 +87,18 @@ namespace FirstStep.Controllers
         }
 
         [HttpPut]
-        [Route("SaveAdvertisement/{advertisementId:int}/seekerId={seekerId:int}")]
-        public async Task<IActionResult> SaveAdvertisement(int advertisementId, int seekerId)
+        [Route("SaveAdvertisement/{jobID:int}/seekerId={seekerId:int}")]
+        public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId)
         {
-            await _service.SaveAdvertisement(advertisementId, seekerId);
+            await _service.SaveAdvertisement(jobID, seekerId);
             return Ok();
         }
 
         [HttpPut]
-        [Route("UnsaveAdvertisement/{advertisementId:int}/seekerId={seekerId:int}")]
-        public async Task<IActionResult> UnsaveAdvertisement(int advertisementId, int seekerId)
+        [Route("UnsaveAdvertisement/{jobID:int}/seekerId={seekerId:int}")]
+        public async Task<IActionResult> UnsaveAdvertisement(int jobID, int seekerId)
         {
-            await _service.UnsaveAdvertisement(advertisementId, seekerId);
+            await _service.UnsaveAdvertisement(jobID, seekerId);
             return Ok();
         }
 
@@ -101,16 +107,6 @@ namespace FirstStep.Controllers
         public async Task<IActionResult> DeleteAdvertisement(int jobID)
         {
             await _service.Delete(jobID);
-            return Ok();
-        }
-
-
-        // temporary function
-        [HttpGet]
-        [Route("SearchAds")]
-        public async Task<ActionResult<IEnumerable<Advertisement>>> SearchAds()
-        {
-            await _service.SearchAds();
             return Ok();
         }
     }

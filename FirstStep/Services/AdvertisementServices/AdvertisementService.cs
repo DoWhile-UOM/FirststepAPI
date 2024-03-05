@@ -3,6 +3,8 @@ using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
+using KdTree;
+using KdTree.Math;
 
 namespace FirstStep.Services
 {
@@ -33,12 +35,14 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Advertisement>> FindAll()
         {
+            // get all active advertisements
             return await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
                 .Include("hrManager")
                 .Include("skills")
                 .Include("savedSeekers")
+                .Where(x => x.current_status == "active")
                 .ToListAsync();
         }
 
@@ -82,7 +86,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID)
         {
-            return await MapAdsToCardDtos(await FindAll(), seekerID);
+            return await MapAdsToDtos(await FindAll(), seekerID);
         }
 
         public async Task<AdvertisementDto> GetById(int id)
@@ -257,7 +261,7 @@ namespace FirstStep.Services
                 }
             }
 
-            return await MapAdsToCardDtos(savedAds, 0);
+            return await MapAdsToDtos(savedAds, 0);
         }
 
         private async Task<bool> IsAdvertisementSaved(int advertisementId, int seekerId)
@@ -354,7 +358,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of AdvertisementCardDtos
-        public async Task<IEnumerable<AdvertisementShortDto>> MapAdsToCardDtos(IEnumerable<Advertisement> dbAds, int seekerID)
+        public async Task<IEnumerable<AdvertisementShortDto>> MapAdsToDtos(IEnumerable<Advertisement> dbAds, int seekerID)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
 
@@ -464,18 +468,97 @@ namespace FirstStep.Services
             }
         }
 
-        public async Task SearchAds()
+        public async Task<IEnumerable<AdvertisementShortDto>> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID)
         {
-            await AddRandomAdvertisements(10);
+            if (requestAdsDto == null)
+            {
+                throw new Exception("Request cannot be null.");
+            }
+            else
+            {
+                Console.Out.WriteLine($"Title: {requestAdsDto.title}");
+                Console.Out.WriteLine($"Country: {requestAdsDto.country}");
+                Console.Out.WriteLine($"City: {requestAdsDto.city}");
+                Console.Out.WriteLine($"Arrangement: {requestAdsDto.arrangement}");
+                Console.Out.WriteLine($"Employeement type: {requestAdsDto.employeement_type}");
+            }
+
+            var advertisements = await _context.Advertisements
+                .Include("professionKeywords")
+                .Include("job_Field")
+                .Include("skills")
+                .Include("savedSeekers")
+                .Where(ad =>
+                    ad.country == requestAdsDto.country &&
+                    ad.city == requestAdsDto.city &&
+                        (ad.arrangement == requestAdsDto.arrangement ||
+                        ad.employeement_type == requestAdsDto.employeement_type) &&
+                    ad.current_status == "active")
+                .ToListAsync();
+
+            if (requestAdsDto.title == null)
+            {
+                Console.Out.WriteLine($"Filtered advertisements: {advertisements.Count}");
+
+                return await MapAdsToDtos(advertisements, seekerID);
+            }
+
+            var filteredAdvertisements = new List<Advertisement> { };
+
+            var titles = requestAdsDto.title.Split(' ');
+
+            foreach (var title in titles)
+            {
+                filteredAdvertisements
+                    .AddRange(advertisements
+                        .Where(ad => ad.title.ToLower().Contains(title.ToLower()))
+                        .ToList());
+            }
+
+            foreach (var title in titles)
+            {
+                foreach (var ad in advertisements)
+                {
+                    if (!filteredAdvertisements.Contains(ad) && ad.professionKeywords != null)
+                    {
+                        var keywords = ad.professionKeywords.Select(e => e.profession_name).ToList();
+
+                        if (keywords.Contains(title.ToLower()))
+                        {
+                            filteredAdvertisements.Add(ad);
+                        }
+                    }
+                }
+            }
+
+            Console.Out.WriteLine($"Filtered advertisements: {filteredAdvertisements.Count}");  
+
+            return await MapAdsToDtos(filteredAdvertisements, seekerID);
         }
 
-        private async Task<bool> isAdvertisementExists(AdvertisementDto dto)
+        public async Task SearchAds()
         {
+            //await AddRandomAdvertisements(10);
+
             var advertisements = await _context.Advertisements.ToListAsync();
 
-            //return _context.Advertisements.Any(e => e.advertisement_id == id);
+            // convert into kdtree
+            var tree = new KdTree<float, Advertisement>(3, new FloatMath());
 
-            return true;
+            foreach (var ad in advertisements)
+            {
+                //tree.Add(new[] { (float)ad.field_id, (float)ad.company_id }, ad);
+            }
+
+            // sample search
+            var nodes = tree.GetNearestNeighbours(new[] { 30.0f, 20.0f }, 1);
+
+            //var nodes = tree.GetNearestNeighbours(new[] { 30.0f, 20.0f }, 1);
+
+            foreach (var node in nodes)
+            {
+                Console.Out.WriteLine(node.Value);
+            }
         }
     }
 }
