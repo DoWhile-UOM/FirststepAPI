@@ -474,6 +474,14 @@ namespace FirstStep.Services
             {
                 throw new Exception("Request cannot be null.");
             }
+            else
+            {
+                Console.Out.WriteLine($"Title: {requestAdsDto.title}");
+                Console.Out.WriteLine($"Country: {requestAdsDto.country}");
+                Console.Out.WriteLine($"City: {requestAdsDto.city}");
+                Console.Out.WriteLine($"Arrangement: {requestAdsDto.arrangement}");
+                Console.Out.WriteLine($"Employeement type: {requestAdsDto.employeement_type}");
+            }
 
             var advertisements = await _context.Advertisements
                 .Include("professionKeywords")

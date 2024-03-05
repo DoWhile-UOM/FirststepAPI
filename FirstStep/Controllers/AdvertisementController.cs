@@ -45,9 +45,9 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetSavedAdvertisements(seekerID));
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisements(int seekerID, [FromQuery] SearchJobRequestDto requestDto)
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisements(int seekerID, SearchJobRequestDto requestDto)
         {
             return Ok(await _service.BasicSearch(requestDto, seekerID));
         }
