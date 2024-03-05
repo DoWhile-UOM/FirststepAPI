@@ -22,6 +22,8 @@ namespace FirstStep.Data
 
         public DbSet<Employee> Employees { get; set; } = null!;
 
+        public DbSet<Document> Documents { get; set; } = null!;
+
         public DbSet<Seeker> Seekers { get; set; } = null!;
 
         public DbSet<HRManager> HRManagers { get; set; } = null!;
@@ -33,6 +35,7 @@ namespace FirstStep.Data
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
         public DbSet<Revision> Revisions { get; set; } = null!;
+      
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

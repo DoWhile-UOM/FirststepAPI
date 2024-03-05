@@ -31,6 +31,8 @@ builder.Services.AddScoped<ISystemAdminService, SystemAdminService>();
 builder.Services.AddScoped<ISeekerService, SeekerService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IRevisionService, RevisionService>();
+builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
+
 
 var app = builder.Build();
 
@@ -48,15 +50,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//folder are servable for the client applications
-app.UseCors("CorsPolicy");
-app.UseStaticFiles();
-app.UseStaticFiles(new StaticFileOptions()
-{
-    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Resources")),
-    RequestPath = new PathString("/Resources")
-});
-//
 
 app.UseHttpsRedirection();
 

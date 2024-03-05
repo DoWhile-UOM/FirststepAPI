@@ -142,14 +142,6 @@ namespace FirstStep.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("application_Id"));
 
-                    b.Property<string>("email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("phone_number")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -235,6 +227,42 @@ namespace FirstStep.Migrations
                     b.HasIndex("verified_system_admin_id");
 
                     b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("FirstStep.Models.Document", b =>
+                {
+                    b.Property<int>("document_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("document_id"));
+
+                    b.Property<string>("document_description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("document_extension")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("document_name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("document_path")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("document_size")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("document_type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("document_id");
+
+                    b.ToTable("Documents");
                 });
 
             modelBuilder.Entity("FirstStep.Models.JobField", b =>
