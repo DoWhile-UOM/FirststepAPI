@@ -33,7 +33,7 @@ namespace FirstStep.Services
             _seekerService = seekerService;
         }
 
-        enum AdvertisementStatus { Active, Closed }
+        enum AdvertisementStatus { active, closed }
 
         public async Task<IEnumerable<Advertisement>> FindAll()
         {
@@ -44,7 +44,7 @@ namespace FirstStep.Services
                 .Include("hrManager")
                 .Include("skills")
                 .Include("savedSeekers")
-                .Where(x => x.current_status == AdvertisementStatus.Active.ToString())
+                .Where(x => x.current_status == AdvertisementStatus.active.ToString())
                 .ToListAsync();
         }
 
@@ -160,7 +160,7 @@ namespace FirstStep.Services
             // add skills to the advertisement
             newAdvertisement.skills = await IncludeSkillsToAdvertisement(advertisementDto.reqSkills);
 
-            newAdvertisement.current_status = AdvertisementStatus.Active.ToString();
+            newAdvertisement.current_status = AdvertisementStatus.active.ToString();
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
         }
@@ -364,6 +364,7 @@ namespace FirstStep.Services
             {
                 var adDto = _mapper.Map<AdvertisementShortDto>(ad);
 
+                Console.Out.WriteLine(adDto.company_name);
                 // when seekerID is 0, it means that the all advertisements are saved by the seeker
                 // from GetSavedAdvertisements method passed seekerID as 0
                 if (seekerID != 0)
@@ -387,8 +388,8 @@ namespace FirstStep.Services
         {
             var possibleStatuses = new List<string> 
             { 
-                AdvertisementStatus.Active.ToString(), 
-                AdvertisementStatus.Closed.ToString(), 
+                AdvertisementStatus.active.ToString(), 
+                AdvertisementStatus.closed.ToString(), 
                 "all" 
             };
 
@@ -456,7 +457,7 @@ namespace FirstStep.Services
                     ad.city == requestAdsDto.city &&
                         (ad.arrangement == requestAdsDto.arrangement ||
                         ad.employeement_type == requestAdsDto.employeement_type) &&
-                    ad.current_status == AdvertisementStatus.Active.ToString())
+                    ad.current_status == AdvertisementStatus.active.ToString())
                 .ToListAsync();
 
             if (requestAdsDto.title == null)
