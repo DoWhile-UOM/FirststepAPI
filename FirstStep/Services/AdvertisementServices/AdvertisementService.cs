@@ -13,7 +13,6 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IProfessionKeywordService _keywordService;
-        private readonly IJobFieldService _jobFieldService;
         private readonly ISkillService _skillService;
         private readonly ISeekerService _seekerService;
 
@@ -21,17 +20,17 @@ namespace FirstStep.Services
             DataContext context, 
             IMapper mapper,
             IProfessionKeywordService keywordService,
-            IJobFieldService jobFieldService,
             ISkillService skillService,
             ISeekerService seekerService)
         {
             _context = context;
             _mapper = mapper;
             _keywordService = keywordService;
-            _jobFieldService = jobFieldService;
             _skillService = skillService;
             _seekerService = seekerService;
         }
+
+        enum AdvertisementStatus { active, closed }
 
         public async Task<IEnumerable<Advertisement>> FindAll()
         {
@@ -42,7 +41,7 @@ namespace FirstStep.Services
                 .Include("hrManager")
                 .Include("skills")
                 .Include("savedSeekers")
-                .Where(x => x.current_status == "active")
+                .Where(x => x.current_status == AdvertisementStatus.active.ToString())
                 .ToListAsync();
         }
 
@@ -86,7 +85,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID)
         {
-            return await MapAdsToDtos(await FindAll(), seekerID);
+            return await CreateAdvertisementList(await FindAll(), seekerID);
         }
 
         public async Task<AdvertisementDto> GetById(int id)
@@ -94,8 +93,7 @@ namespace FirstStep.Services
             var dbAdvertismeent = await FindById(id);
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
-            advertisementDto.company_name = await GetCompanyName(dbAdvertismeent.hrManager_id);
-            advertisementDto.field_name = dbAdvertismeent.job_Field!.field_name;
+            advertisementDto.company_name = _context.Companies.Find(dbAdvertismeent.hrManager!.company_id)!.company_name;
 
             return advertisementDto;
         }
@@ -140,22 +138,20 @@ namespace FirstStep.Services
 
         public async Task Create(AddAdvertisementDto advertisementDto)
         {
-            // map the AddAdvertisementDto to a Advertisement object
-            Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisementDto);
-
-            newAdvertisement.current_status = "active";
-
-            // find hrmanager
-            var hrManager = await _context.HRManagers.FirstOrDefaultAsync(e => e.user_id == advertisementDto.hrManager_id);
-
-            // validate hrmanager
-            if (hrManager == null)
+            // validate hrManagerID
+            if (await _context.HRManagers.FindAsync(advertisementDto.hrManager_id) is null)
             {
-                throw new Exception("HR Manager not found.");
+                throw new Exception("Invalid HR Manager ID.");
             }
 
-            newAdvertisement.hrManager = hrManager;
-            newAdvertisement.job_Field = await _jobFieldService.GetById(newAdvertisement.field_id);
+            // validate job field id
+            if (await _context.JobFields.FindAsync(advertisementDto.field_id) is null)
+            {
+                throw new Exception("Invalid job field ID.");
+            }
+            
+            // map the AddAdvertisementDto to a Advertisement object
+            Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisementDto);
 
             // add keywords to the advertisement
             newAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
@@ -163,6 +159,7 @@ namespace FirstStep.Services
             // add skills to the advertisement
             newAdvertisement.skills = await IncludeSkillsToAdvertisement(advertisementDto.reqSkills);
 
+            newAdvertisement.current_status = AdvertisementStatus.active.ToString();
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
         }
@@ -261,7 +258,7 @@ namespace FirstStep.Services
                 }
             }
 
-            return await MapAdsToDtos(savedAds, 0);
+            return await CreateAdvertisementList(savedAds, 0);
         }
 
         private async Task<bool> IsAdvertisementSaved(int advertisementId, int seekerId)
@@ -357,8 +354,8 @@ namespace FirstStep.Services
             return null;
         }
 
-        // map the advertisements to a list of AdvertisementCardDtos
-        public async Task<IEnumerable<AdvertisementShortDto>> MapAdsToDtos(IEnumerable<Advertisement> dbAds, int seekerID)
+        // map the advertisements to a list of AdvertisementCardDtos and create advertisement list for the seeker
+        public async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
 
@@ -366,11 +363,7 @@ namespace FirstStep.Services
             {
                 var adDto = _mapper.Map<AdvertisementShortDto>(ad);
 
-                adDto.company_name = await GetCompanyName(ad.hrManager_id);
-                adDto.company_id = ad.hrManager!.company_id;
-
-                adDto.field_name = ad.job_Field!.field_name;
-
+                adDto.company_name = _context.Companies.Find(ad.hrManager!.company_id)!.company_name;
                 // when seekerID is 0, it means that the all advertisements are saved by the seeker
                 // from GetSavedAdvertisements method passed seekerID as 0
                 if (seekerID != 0)
@@ -392,34 +385,17 @@ namespace FirstStep.Services
         // validate status
         private void ValidateStatus(string status)
         {
-            var possibleStatuses = new List<string> { "active", "hold", "closed", "all" };
+            var possibleStatuses = new List<string> 
+            { 
+                AdvertisementStatus.active.ToString(), 
+                AdvertisementStatus.closed.ToString(), 
+                "all" 
+            };
 
             if (!possibleStatuses.Contains(status))
             {
                 throw new Exception("Invalid status.");
             }
-        }
-
-        // get company name
-        private async Task<string> GetCompanyName(int hrManagerId)
-        {
-            var hrManager = await _context.HRManagers
-                .Include("company")
-                .FirstOrDefaultAsync(e => e.user_id == hrManagerId);
-
-            if (hrManager is null)
-            {
-                throw new Exception("HR Manager not found.");
-            }
-
-            string company_name = hrManager!.company!.company_name;
-
-            if (company_name is null)
-            {
-                throw new Exception("Company not found.");
-            }
-
-            return company_name;
         }
 
         // temp function
@@ -470,19 +446,6 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID)
         {
-            if (requestAdsDto == null)
-            {
-                throw new Exception("Request cannot be null.");
-            }
-            else
-            {
-                Console.Out.WriteLine($"Title: {requestAdsDto.title}");
-                Console.Out.WriteLine($"Country: {requestAdsDto.country}");
-                Console.Out.WriteLine($"City: {requestAdsDto.city}");
-                Console.Out.WriteLine($"Arrangement: {requestAdsDto.arrangement}");
-                Console.Out.WriteLine($"Employeement type: {requestAdsDto.employeement_type}");
-            }
-
             var advertisements = await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
@@ -493,14 +456,14 @@ namespace FirstStep.Services
                     ad.city == requestAdsDto.city &&
                         (ad.arrangement == requestAdsDto.arrangement ||
                         ad.employeement_type == requestAdsDto.employeement_type) &&
-                    ad.current_status == "active")
+                    ad.current_status == AdvertisementStatus.active.ToString())
                 .ToListAsync();
 
             if (requestAdsDto.title == null)
             {
                 Console.Out.WriteLine($"Filtered advertisements: {advertisements.Count}");
 
-                return await MapAdsToDtos(advertisements, seekerID);
+                return await CreateAdvertisementList(advertisements, seekerID);
             }
 
             var filteredAdvertisements = new List<Advertisement> { };
@@ -533,32 +496,47 @@ namespace FirstStep.Services
 
             Console.Out.WriteLine($"Filtered advertisements: {filteredAdvertisements.Count}");  
 
-            return await MapAdsToDtos(filteredAdvertisements, seekerID);
+            return await CreateAdvertisementList(filteredAdvertisements, seekerID);
         }
 
-        public async Task SearchAds()
+        public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)
         {
-            //await AddRandomAdvertisements(10);
+            var advertisements = await FindAll();
 
-            var advertisements = await _context.Advertisements.ToListAsync();
-
-            // convert into kdtree
-            var tree = new KdTree<float, Advertisement>(3, new FloatMath());
+            // convert advertisements into kdtree
+            var tree = new KdTree<float, Advertisement>(5, new FloatMath());
 
             foreach (var ad in advertisements)
             {
-                //tree.Add(new[] { (float)ad.field_id, (float)ad.company_id }, ad);
+                // Add each advertisement to the k-d tree
+                var key = new[]
+                {
+                    (float)ad.title.GetHashCode(),
+                    (float)ad.country.GetHashCode(),
+                    (float)ad.city.GetHashCode(),
+                    (float)ad.employeement_type.GetHashCode(),
+                    (float)ad.arrangement.GetHashCode()
+                };
+
+                tree.Add(key, ad);
             }
-
-            // sample search
-            var nodes = tree.GetNearestNeighbours(new[] { 30.0f, 20.0f }, 1);
-
-            //var nodes = tree.GetNearestNeighbours(new[] { 30.0f, 20.0f }, 1);
-
-            foreach (var node in nodes)
+            
+            var userRequest = new[]
             {
-                Console.Out.WriteLine(node.Value);
-            }
+                (float)requestAdsDto.title!.GetHashCode(),
+                (float)requestAdsDto.country!.GetHashCode(),
+                (float)requestAdsDto.city!.GetHashCode(),
+                (float)requestAdsDto.employeement_type!.GetHashCode(),
+                (float)requestAdsDto.arrangement!.GetHashCode()
+            };
+
+            var nearestAds = tree.GetNearestNeighbours(userRequest, 10);
+
+            //var closestAd = nearestAds.FirstOrDefault()?.Value;
+
+            var filteredAdvertisements = nearestAds.Select(e => e.Value).ToList();
+
+            return await CreateAdvertisementList(filteredAdvertisements, seekerID);
         }
     }
 }
