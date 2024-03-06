@@ -13,9 +13,9 @@ namespace FirstStep.Models
         public required string document_path { get; set; }
         public string? document_description { get; set; }
 
-        /*public DateTime Date { get; set; } = DateTime.Now;*/
+        public DateTime Date { get; set; } = DateTime.Now;
 
-        /*public IFormFile formFile { get; set; }*/
+        public IFormFile formFile { get; set; }
 
 
     }

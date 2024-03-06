@@ -9,16 +9,22 @@ namespace FirstStep.Controllers
     [ApiController]
     public class DocumentController : ControllerBase
     {
+        
         public IAzureBlobService _azureBlobService;
 
         public DocumentController(IAzureBlobService service)
         {
-            _azureBlobService = service;
+             _azureBlobService = service;
+            
+
         }
 
         [HttpPost]
         public async Task<IActionResult> UploadBlobs(List<IFormFile> files)
         {
+            //if no files are provided, return a bad request
+            if (files == null || files.Count == 0)
+                return BadRequest("No files provided");
             var response = await _azureBlobService.UploadFiles(files);
             return Ok(response);
         }
@@ -29,5 +35,7 @@ namespace FirstStep.Controllers
             var response = await _azureBlobService.GetUploadedBlobs();
             return Ok(response);
         }
+        
     }
+
 }
