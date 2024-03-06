@@ -13,7 +13,6 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IProfessionKeywordService _keywordService;
-        private readonly IJobFieldService _jobFieldService;
         private readonly ISkillService _skillService;
         private readonly ISeekerService _seekerService;
 
@@ -21,17 +20,17 @@ namespace FirstStep.Services
             DataContext context, 
             IMapper mapper,
             IProfessionKeywordService keywordService,
-            IJobFieldService jobFieldService,
             ISkillService skillService,
             ISeekerService seekerService)
         {
             _context = context;
             _mapper = mapper;
             _keywordService = keywordService;
-            _jobFieldService = jobFieldService;
             _skillService = skillService;
             _seekerService = seekerService;
         }
+
+        enum AdvertisementStatus { Active, Closed }
 
         public async Task<IEnumerable<Advertisement>> FindAll()
         {
@@ -42,7 +41,7 @@ namespace FirstStep.Services
                 .Include("hrManager")
                 .Include("skills")
                 .Include("savedSeekers")
-                .Where(x => x.current_status == "active")
+                .Where(x => x.current_status == AdvertisementStatus.Active.ToString())
                 .ToListAsync();
         }
 
@@ -137,22 +136,20 @@ namespace FirstStep.Services
 
         public async Task Create(AddAdvertisementDto advertisementDto)
         {
-            // map the AddAdvertisementDto to a Advertisement object
-            Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisementDto);
-
-            newAdvertisement.current_status = "active";
-
-            // find hrmanager
-            var hrManager = await _context.HRManagers.FirstOrDefaultAsync(e => e.user_id == advertisementDto.hrManager_id);
-
-            // validate hrmanager
-            if (hrManager == null)
+            // validate hrManagerID
+            if (await _context.HRManagers.FindAsync(advertisementDto.hrManager_id) is null)
             {
-                throw new Exception("HR Manager not found.");
+                throw new Exception("Invalid HR Manager ID.");
             }
 
-            newAdvertisement.hrManager = hrManager;
-            newAdvertisement.job_Field = await _jobFieldService.GetById(newAdvertisement.field_id);
+            // validate job field id
+            if (await _context.JobFields.FindAsync(advertisementDto.field_id) is null)
+            {
+                throw new Exception("Invalid job field ID.");
+            }
+            
+            // map the AddAdvertisementDto to a Advertisement object
+            Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisementDto);
 
             // add keywords to the advertisement
             newAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
@@ -160,6 +157,7 @@ namespace FirstStep.Services
             // add skills to the advertisement
             newAdvertisement.skills = await IncludeSkillsToAdvertisement(advertisementDto.reqSkills);
 
+            newAdvertisement.current_status = AdvertisementStatus.Active.ToString();
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
         }
@@ -384,7 +382,12 @@ namespace FirstStep.Services
         // validate status
         private void ValidateStatus(string status)
         {
-            var possibleStatuses = new List<string> { "active", "closed", "all" };
+            var possibleStatuses = new List<string> 
+            { 
+                AdvertisementStatus.Active.ToString(), 
+                AdvertisementStatus.Closed.ToString(), 
+                "all" 
+            };
 
             if (!possibleStatuses.Contains(status))
             {
