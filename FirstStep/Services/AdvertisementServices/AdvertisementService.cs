@@ -5,6 +5,9 @@ using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using KdTree;
 using KdTree.Math;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FirstStep.Services
 {
@@ -496,6 +499,47 @@ namespace FirstStep.Services
             return await CreateAdvertisementList(filteredAdvertisements, seekerID);
         }
 
+        public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)
+        {
+            var advertisements = await FindAll();
+
+            // convert advertisements into kdtree
+            var tree = new KdTree<float, Advertisement>(5, new FloatMath());
+
+            foreach (var ad in advertisements)
+            {
+                // Add each advertisement to the k-d tree
+                var key = new[]
+                {
+                    (float)ad.title.GetHashCode(),
+                    (float)ad.country.GetHashCode(),
+                    (float)ad.city.GetHashCode(),
+                    (float)ad.employeement_type.GetHashCode(),
+                    (float)ad.arrangement.GetHashCode()
+                };
+
+                tree.Add(key, ad);
+            }
+            
+            var userRequest = new[]
+            {
+                (float)requestAdsDto.title!.GetHashCode(),
+                (float)requestAdsDto.country!.GetHashCode(),
+                (float)requestAdsDto.city!.GetHashCode(),
+                (float)requestAdsDto.employeement_type!.GetHashCode(),
+                (float)requestAdsDto.arrangement!.GetHashCode()
+            };
+
+            var nearestAds = tree.GetNearestNeighbours(userRequest, 10);
+
+            //var closestAd = nearestAds.FirstOrDefault()?.Value;
+
+            var filteredAdvertisements = nearestAds.Select(e => e.Value).ToList();
+
+            return await CreateAdvertisementList(filteredAdvertisements, seekerID);
+        }
+        
+
         public async Task SearchAds()
         {
             //await AddRandomAdvertisements(10);
@@ -520,5 +564,7 @@ namespace FirstStep.Services
                 Console.Out.WriteLine(node.Value);
             }
         }
+
+
     }
 }

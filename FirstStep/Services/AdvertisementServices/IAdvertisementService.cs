@@ -31,6 +31,8 @@ namespace FirstStep.Services
 
         Task<IEnumerable<AdvertisementShortDto>> BasicSearch(SearchJobRequestDto searchRequest, int seekerID);
 
+        Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID);
+
         // IEnumerable<Advertisement> GetAdvertisementsByHRManagerId(int id);
     }
 }
