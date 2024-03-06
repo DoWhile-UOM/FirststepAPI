@@ -443,19 +443,6 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID)
         {
-            if (requestAdsDto == null)
-            {
-                throw new Exception("Request cannot be null.");
-            }
-            else
-            {
-                Console.Out.WriteLine($"Title: {requestAdsDto.title}");
-                Console.Out.WriteLine($"Country: {requestAdsDto.country}");
-                Console.Out.WriteLine($"City: {requestAdsDto.city}");
-                Console.Out.WriteLine($"Arrangement: {requestAdsDto.arrangement}");
-                Console.Out.WriteLine($"Employeement type: {requestAdsDto.employeement_type}");
-            }
-
             var advertisements = await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
@@ -466,7 +453,7 @@ namespace FirstStep.Services
                     ad.city == requestAdsDto.city &&
                         (ad.arrangement == requestAdsDto.arrangement ||
                         ad.employeement_type == requestAdsDto.employeement_type) &&
-                    ad.current_status == "active")
+                    ad.current_status == AdvertisementStatus.Active.ToString())
                 .ToListAsync();
 
             if (requestAdsDto.title == null)
