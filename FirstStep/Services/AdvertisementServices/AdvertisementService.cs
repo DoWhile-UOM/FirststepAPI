@@ -5,9 +5,6 @@ using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using KdTree;
 using KdTree.Math;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace FirstStep.Services
 {
@@ -95,6 +92,8 @@ namespace FirstStep.Services
         {
             var dbAdvertismeent = await FindById(id);
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
+
+            advertisementDto.company_name = _context.Companies.Find(dbAdvertismeent.hrManager!.company_id)!.company_name;
 
             return advertisementDto;
         }
@@ -364,7 +363,7 @@ namespace FirstStep.Services
             {
                 var adDto = _mapper.Map<AdvertisementShortDto>(ad);
 
-                Console.Out.WriteLine(adDto.company_name);
+                adDto.company_name = _context.Companies.Find(ad.hrManager!.company_id)!.company_name;
                 // when seekerID is 0, it means that the all advertisements are saved by the seeker
                 // from GetSavedAdvertisements method passed seekerID as 0
                 if (seekerID != 0)
@@ -539,33 +538,5 @@ namespace FirstStep.Services
 
             return await CreateAdvertisementList(filteredAdvertisements, seekerID);
         }
-        
-
-        public async Task SearchAds()
-        {
-            //await AddRandomAdvertisements(10);
-
-            var advertisements = await _context.Advertisements.ToListAsync();
-
-            // convert into kdtree
-            var tree = new KdTree<float, Advertisement>(3, new FloatMath());
-
-            foreach (var ad in advertisements)
-            {
-                //tree.Add(new[] { (float)ad.field_id, (float)ad.company_id }, ad);
-            }
-
-            // sample search
-            var nodes = tree.GetNearestNeighbours(new[] { 30.0f, 20.0f }, 1);
-
-            //var nodes = tree.GetNearestNeighbours(new[] { 30.0f, 20.0f }, 1);
-
-            foreach (var node in nodes)
-            {
-                Console.Out.WriteLine(node.Value);
-            }
-        }
-
-
     }
 }
