@@ -18,8 +18,8 @@ namespace FirstStep.Models
 
         public string? user_type { get; set; }
 
-        //public bool verify_state { get; set; }
+        public string? refresh_token { get; set; }
 
-        public string token { get; set; }
+        public DateTime refresh_token_expiry { get; set; }
     }
 }

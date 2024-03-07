@@ -73,7 +73,7 @@ namespace FirstStep.Controllers
 
             userObj.password_hash = PasswordHasher.Hasher(userObj.password_hash);//Hash password before saving to database
             //userObj.Role = "User";
-            userObj.token = CreateVerifyToken();
+            //userObj.token = CreateVerifyToken();
 
             _authContext.Users.Add(userObj);
             _authContext.SaveChanges();
@@ -98,6 +98,7 @@ namespace FirstStep.Controllers
         }
 
         //verify user 
+        /*
         [HttpGet("/verify")]
         public async Task<IActionResult> Verify(string token)
         {
@@ -113,7 +114,7 @@ namespace FirstStep.Controllers
 
             return Ok("User verified");
         }
-
+        */
 
         private async Task<bool> CheckEmailExist(string Email)
         {
@@ -171,7 +172,46 @@ namespace FirstStep.Controllers
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             return jwtTokenHandler.WriteToken(token);
         }
-       
+
+        //Refresh token generator
+        private string CreateRefreshToken()
+        {
+            var tokenBytes = RandomNumberGenerator.GetBytes(64);
+            var refreshToken = Convert.ToBase64String(tokenBytes);
+
+            var tokenInUser = _authContext.Users
+                .Any(a => a.refresh_token == refreshToken);
+            if (tokenInUser)//If refresh token exist generate new one otherwise return
+            {
+                return CreateRefreshToken();
+            }
+            return refreshToken;
+        }
+
+        //Fetch user prinicipals from the expired access token
+        private ClaimsPrincipal GetPrincipleFromExpiredToken(string token)
+        {
+            var key = Encoding.ASCII.GetBytes("veryverysceret.....");
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateLifetime = false
+            };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            SecurityToken securityToken;
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                throw new SecurityTokenException("This is Invalid Token");
+            return principal;
+
+        }
+
+
+
 
     }
 }
