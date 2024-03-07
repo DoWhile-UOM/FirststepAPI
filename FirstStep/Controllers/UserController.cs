@@ -42,14 +42,17 @@ namespace FirstStep.Controllers
                 return BadRequest(new { message = "Invalid Password" });
 
 
-            string token = CreateJwt(user);
-
+            user.token = CreateJwt(user); //create access token for session
+            var newAccessToken = user.token; 
+            var newRefreshToken = CreateRefreshToken(); //create refresh token
+            user.refresh_token= newRefreshToken;
+            await _authContext.SaveChangesAsync();// save changes to database
 
             return Ok(
-                new
+                new TokenApiDto()
                 {
-                    token = token,
-                    message = "Login Successfull",
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken
                 });
 
         }
