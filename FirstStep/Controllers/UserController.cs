@@ -28,7 +28,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost("authenticate")]
-        public async Task<IActionResult> Authenticate([FromBody] LoginRequest userObj)
+        public async Task<IActionResult> Authenticate([FromBody] LoginRequestDto userObj)
         {
             /*
             if (userObj is null)
@@ -58,7 +58,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] User userObj)
+        public async Task<IActionResult> Register([FromBody] UserRegRequestDto userObj)
         {
             if (userObj == null)
                 return BadRequest();
@@ -78,10 +78,19 @@ namespace FirstStep.Controllers
             //userObj.Role = "User";
             //userObj.token = CreateVerifyToken();
 
-            _authContext.Users.Add(userObj);
+            User userNewObj = new User
+            {
+                email = userObj.email,
+                password_hash = userObj.password_hash,
+                first_name = userObj.first_name,
+                last_name = userObj.last_name,
+                user_type = "User",
+                token =null,
+                refresh_token = null
+            };  
+
+            _authContext.Users.Add(userNewObj);
             _authContext.SaveChanges();
-
-
             //Send email verification link
             //SendEmail(userObj.email, userObj.token);
 
@@ -161,7 +170,8 @@ namespace FirstStep.Controllers
             var identity = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.Role, user.user_type),
-                new Claim(ClaimTypes.Name,$"{user.email}")
+                new Claim(ClaimTypes.Name,$"{user.first_name} {user.last_name}"),
+                new Claim(ClaimTypes.Email, user.email)
             });
 
             var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
@@ -213,6 +223,32 @@ namespace FirstStep.Controllers
 
         }
 
+        //Refresh Token
+        
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] TokenApiDto tokenApiDto)
+        {
+            if (tokenApiDto is null)
+                return BadRequest("Invalid Client Request");
+            string accessToken = tokenApiDto.AccessToken;
+            string refreshToken = tokenApiDto.RefreshToken;
+            var principal = GetPrincipleFromExpiredToken(accessToken);
+            var username = principal.Identity.Name;
+
+            var user = await _authContext.Users.FirstOrDefaultAsync(u => u.email == username);
+            if (user is null || user.refresh_token != refreshToken || user.refresh_token_expiry <= DateTime.Now)
+                return BadRequest("Invalid Request");
+            var newAccessToken = CreateJwt(user);
+            var newRefreshToken = CreateRefreshToken();
+            user.refresh_token = newRefreshToken;
+            await _authContext.SaveChangesAsync();
+            return Ok(new TokenApiDto()
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+            });
+        }
+        
 
 
 
