@@ -5,7 +5,7 @@ namespace FirstStep.Services
 {
     public interface ISkillService
     {
-        public Task<IEnumerable<Skill>> GetAll();
+        public Task<IEnumerable<string>> GetAll();
 
         public Task<Skill> GetById(int id);
 

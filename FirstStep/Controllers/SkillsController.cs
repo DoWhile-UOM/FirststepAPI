@@ -20,7 +20,7 @@ namespace FirstStep.Controllers
         [HttpGet]
         [Route("GetAllSkills")]
 
-        public async Task<ActionResult<IEnumerable<Skill>>> GetSkills()
+        public async Task<ActionResult<IEnumerable<string>>> GetSkills()
         {
             return Ok(await _service.GetAll());
         }

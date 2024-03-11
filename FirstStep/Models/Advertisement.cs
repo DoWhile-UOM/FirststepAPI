@@ -30,15 +30,8 @@ namespace FirstStep.Models
 
         public required string current_status { get; set; }
 
-        public string? job_overview { get; set; }
-
-        public string? job_responsibilities { get; set; }
-
-        public string? job_qualifications { get; set; }
-
-        public string? job_benefits { get; set; }
-
-        public string? job_other_details { get; set; }
+        [MaxLength(2500)]
+        public string? job_description { get; set; }
 
 
         [JsonIgnore]
@@ -46,21 +39,23 @@ namespace FirstStep.Models
 
         public required int hrManager_id { get; set; }
 
-        
+
         [JsonIgnore]
-        public virtual Company? company { get; set; }
-
-        public required int company_id { get; set; }
-
-
         public virtual JobField? job_Field { get; set; }
 
         public required int field_id { get; set; }
 
 
         [JsonIgnore]
+        public virtual ICollection<Application>? applications { get; set; }
+
+        [JsonIgnore]
         public virtual ICollection<Seeker>? savedSeekers { get; set; }
-        
+
+        [JsonIgnore]
         public virtual ICollection<ProfessionKeyword>? professionKeywords { get; set; }
+
+        [JsonIgnore]
+        public virtual ICollection<Skill>? skills { get; set; }
     }
 }
