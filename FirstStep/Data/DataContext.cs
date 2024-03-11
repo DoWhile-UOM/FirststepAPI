@@ -22,7 +22,7 @@ namespace FirstStep.Data
 
         public DbSet<Employee> Employees { get; set; } = null!;
 
-        public DbSet<Document> Documents { get; set; } = null!;
+    
 
         public DbSet<Seeker> Seekers { get; set; } = null!;
 
