@@ -1,4 +1,6 @@
-﻿using FirstStep.Data;
+﻿using System.ComponentModel.Design;
+using AutoMapper;
+using FirstStep.Data;
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,10 +9,14 @@ namespace FirstStep.Services
     public class ApplicationService : IApplicationService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
+        private readonly IAdvertisementService _advertisementService;
 
-        public ApplicationService(DataContext context)
+        public ApplicationService(DataContext context, IAdvertisementService advertisementService, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
+            _advertisementService = advertisementService;
         }
 
         public async Task Create(Application application) //task=>await _context
@@ -34,6 +40,9 @@ namespace FirstStep.Services
             return await _context.Applications.ToListAsync();
         }
 
+       
+      
+
         public async Task<Application> GetById(int id)
         {
             Application? application = await _context.Applications.FindAsync(id);
@@ -45,6 +54,8 @@ namespace FirstStep.Services
             return application;
         }
 
+     
+    
         public async Task Update(Application application)
         {
             Application dbApplication = await GetById(application.application_Id);
@@ -56,6 +67,10 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();           
         }
+
+      
+
+       
 
         // Nethma do these tasks
 
