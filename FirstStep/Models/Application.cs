@@ -18,13 +18,8 @@ namespace FirstStep.Models
         public required int advertisement_id { get; set; }
 
         [JsonIgnore]
-
         public virtual Seeker? seeker { get; set; }//one to many
 
         public required int user_id { get; set; }
-
-
-       
-       
     }
 }
