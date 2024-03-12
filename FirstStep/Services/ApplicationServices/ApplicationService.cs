@@ -1,4 +1,5 @@
-﻿using FirstStep.Data;
+﻿using System.ComponentModel.Design;
+using FirstStep.Data;
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,8 @@ namespace FirstStep.Services
         {
             _context = context;
         }
+
+        enum AdvertisementStatus { Evaluated, NotEvaluated, Accepted, Rejected }
 
         public async Task Create(Application application) //task=>await _context
         {
@@ -45,17 +48,70 @@ namespace FirstStep.Services
             return application;
         }
 
+
+        public async Task<IEnumerable<Application>> GetByAdvertisementId(int id)
+        {
+            ICollection<Application> applications = await _context.Applications.Where(a => a.advertisement_id == id).ToListAsync();
+            if (applications is null)
+            {
+                throw new Exception("There are no applications under the advertisement");
+            }
+            return applications;
+        }
+
+        public async Task<IEnumerable<Application>> GetBySeekerId(int id)
+        {
+            ICollection<Application> applications = await _context.Applications.Where(a => a.user_id == id).ToListAsync();
+            if (applications is null)
+            {
+                throw new Exception("There are no applications under the seeker");
+            }
+            return applications;
+        }
+
+
         public async Task Update(Application application)
         {
             Application dbApplication = await GetById(application.application_Id);
 
-            dbApplication.email = application.email;
             dbApplication.status = application.status;
-            dbApplication.phone_number = application.phone_number;
             dbApplication.submitted_date = application.submitted_date;
 
             await _context.SaveChangesAsync();           
         }
+
+        public async Task<int> TotalEvaluatedApplications(int id)
+        {
+            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
+            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.Evaluated.ToString()).CountAsync();
+            return TolaEvaluatedApplications;
+
+        }
+
+        public async Task<int> TotalNotEvaluatedApplications(int id)
+        {
+            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
+            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.NotEvaluated.ToString()).CountAsync();
+            return TolaEvaluatedApplications;
+
+        }
+
+        public async Task<int> AcceptedApplications(int id)
+        {
+
+            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
+            int AcceptedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.Accepted.ToString()).CountAsync();
+            return AcceptedApplications;
+        }
+
+        public async Task<int> RejectedApplications(int id)
+        {
+            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
+            int AcceptedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.Rejected.ToString()).CountAsync();
+            return AcceptedApplications;
+        }
+
+
 
         // Nethma do these tasks
 
@@ -70,6 +126,8 @@ namespace FirstStep.Services
         // create a method to calculate all accepted applications by advertisement id
 
         // create a method to calculate all rejected applications by advertisement id
+
+        // make a seeker Dto in including appliacation details
 
     }
 }
