@@ -13,5 +13,8 @@ namespace FirstStep.Models
 
         [JsonIgnore]
         public virtual ICollection<Seeker>? seekers { get; set; }
+
+        [JsonIgnore]
+        public virtual ICollection<Advertisement>? advertisements { get; set; }
     }
 }

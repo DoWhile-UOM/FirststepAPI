@@ -46,10 +46,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetCompanyProfile/{companyID:int}")]
-        public async Task<ActionResult<CompanyProfileDto>> GetAdvertisementsByCompany(int companyID)
+        [Route("GetCompanyProfile/{companyID:int}/seekerID={seekerID:int}")]
+        public async Task<ActionResult<CompanyProfileDto>> GetCompanyProfile(int companyID, int seekerID)
         {
-            return Ok(await _service.GetCompanyProfile(companyID));
+            return Ok(await _service.GetCompanyProfile(companyID, seekerID));
         }
 
         [HttpPost]

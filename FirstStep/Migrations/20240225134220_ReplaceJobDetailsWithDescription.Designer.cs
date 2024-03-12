@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240225134220_ReplaceJobDetailsWithDescription")]
+    partial class ReplaceJobDetailsWithDescription
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,21 +55,6 @@ namespace FirstStep.Migrations
                     b.ToTable("AdvertisementSeekers", (string)null);
                 });
 
-            modelBuilder.Entity("AdvertisementSkill", b =>
-                {
-                    b.Property<int>("advertisementsadvertisement_id")
-                        .HasColumnType("int");
-
-                    b.Property<int>("skillsskill_id")
-                        .HasColumnType("int");
-
-                    b.HasKey("advertisementsadvertisement_id", "skillsskill_id");
-
-                    b.HasIndex("skillsskill_id");
-
-                    b.ToTable("AdvertisementSkills", (string)null);
-                });
-
             modelBuilder.Entity("FirstStep.Models.Advertisement", b =>
                 {
                     b.Property<int>("advertisement_id")
@@ -82,6 +70,9 @@ namespace FirstStep.Migrations
                     b.Property<string>("city")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("company_id")
+                        .HasColumnType("int");
 
                     b.Property<string>("country")
                         .IsRequired()
@@ -126,6 +117,8 @@ namespace FirstStep.Migrations
 
                     b.HasKey("advertisement_id");
 
+                    b.HasIndex("company_id");
+
                     b.HasIndex("field_id");
 
                     b.HasIndex("hrManager_id");
@@ -140,9 +133,6 @@ namespace FirstStep.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("application_Id"));
-
-                    b.Property<int>("advertisement_id")
-                        .HasColumnType("int");
 
                     b.Property<string>("email")
                         .IsRequired()
@@ -160,8 +150,6 @@ namespace FirstStep.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("application_Id");
-
-                    b.HasIndex("advertisement_id");
 
                     b.ToTable("Applications");
                 });
@@ -344,15 +332,6 @@ namespace FirstStep.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("refresh_token")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("refresh_token_expiry")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("token")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("user_type")
                         .HasColumnType("nvarchar(max)");
 
@@ -477,23 +456,14 @@ namespace FirstStep.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("AdvertisementSkill", b =>
-                {
-                    b.HasOne("FirstStep.Models.Advertisement", null)
-                        .WithMany()
-                        .HasForeignKey("advertisementsadvertisement_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FirstStep.Models.Skill", null)
-                        .WithMany()
-                        .HasForeignKey("skillsskill_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("FirstStep.Models.Advertisement", b =>
                 {
+                    b.HasOne("FirstStep.Models.Company", "company")
+                        .WithMany("advertisements")
+                        .HasForeignKey("company_id")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
                     b.HasOne("FirstStep.Models.JobField", "job_Field")
                         .WithMany("advertisements")
                         .HasForeignKey("field_id")
@@ -506,20 +476,11 @@ namespace FirstStep.Migrations
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
+                    b.Navigation("company");
+
                     b.Navigation("hrManager");
 
                     b.Navigation("job_Field");
-                });
-
-            modelBuilder.Entity("FirstStep.Models.Application", b =>
-                {
-                    b.HasOne("FirstStep.Models.Advertisement", "advertisement")
-                        .WithMany("applications")
-                        .HasForeignKey("advertisement_id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.Navigation("advertisement");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
@@ -626,13 +587,10 @@ namespace FirstStep.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FirstStep.Models.Advertisement", b =>
-                {
-                    b.Navigation("applications");
-                });
-
             modelBuilder.Entity("FirstStep.Models.Company", b =>
                 {
+                    b.Navigation("advertisements");
+
                     b.Navigation("employees");
                 });
 

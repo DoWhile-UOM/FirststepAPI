@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240226170118_AddSkillAdvertisementRelationship")]
+    partial class AddSkillAdvertisementRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,9 +144,6 @@ namespace FirstStep.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("application_Id"));
 
-                    b.Property<int>("advertisement_id")
-                        .HasColumnType("int");
-
                     b.Property<string>("email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -160,8 +160,6 @@ namespace FirstStep.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("application_Id");
-
-                    b.HasIndex("advertisement_id");
 
                     b.ToTable("Applications");
                 });
@@ -344,15 +342,6 @@ namespace FirstStep.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("refresh_token")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("refresh_token_expiry")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("token")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("user_type")
                         .HasColumnType("nvarchar(max)");
 
@@ -511,17 +500,6 @@ namespace FirstStep.Migrations
                     b.Navigation("job_Field");
                 });
 
-            modelBuilder.Entity("FirstStep.Models.Application", b =>
-                {
-                    b.HasOne("FirstStep.Models.Advertisement", "advertisement")
-                        .WithMany("applications")
-                        .HasForeignKey("advertisement_id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.Navigation("advertisement");
-                });
-
             modelBuilder.Entity("FirstStep.Models.Company", b =>
                 {
                     b.HasOne("FirstStep.Models.HRManager", "company_admin")
@@ -624,11 +602,6 @@ namespace FirstStep.Migrations
                         .HasForeignKey("FirstStep.Models.HRManager", "user_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("FirstStep.Models.Advertisement", b =>
-                {
-                    b.Navigation("applications");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
