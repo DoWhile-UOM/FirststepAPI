@@ -100,7 +100,7 @@ namespace FirstStep.Controllers
                     message = "Registration Succesfull!"
                 });
         }
-
+        //Test comments
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
