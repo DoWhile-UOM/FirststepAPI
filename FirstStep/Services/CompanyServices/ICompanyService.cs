@@ -11,9 +11,7 @@ namespace FirstStep.Services
 
         public Task<IEnumerable<Company>> GetAllRegisteredCompanies();
 
-        public Task<Company> FindByID(int id);
-
-        public Task<CompanyProfileDetailsDto> GetById(int id);
+        public Task<Company> GetById(int id);
 
         public Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID);
 
