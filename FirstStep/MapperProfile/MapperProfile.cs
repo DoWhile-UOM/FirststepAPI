@@ -23,6 +23,7 @@ namespace FirstStep.MapperProfile
             CreateMap<AddEmployeeDto, HRManager>();
             CreateMap<AddEmployeeDto, HRAssistant>();
             CreateMap<Company, CompanyProfileDetailsDto>();
+            CreateMap<Company, ViewCompanyListDto>();
 
         }
     }

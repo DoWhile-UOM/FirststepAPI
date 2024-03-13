@@ -69,6 +69,14 @@ namespace FirstStep.Services
             
             return advertisementCompanyDto;
         }
+        
+        //get company list for system admin
+        public async Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList()
+        {
+            IEnumerable<Company> companies = await GetAll();
+            IEnumerable<ViewCompanyListDto> companyDtos = _mapper.Map<IEnumerable<ViewCompanyListDto>>(companies);
+            return companyDtos;
+        }
 
         public async Task Create(AddCompanyDto newCompanyDto)
         {
