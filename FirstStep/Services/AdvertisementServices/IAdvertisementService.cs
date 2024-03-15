@@ -11,7 +11,9 @@ namespace FirstStep.Services
 
         Task<AdvertisementDto> GetById(int id);
 
-        Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompanyID(int companyID, string status);
+        Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status);
+
+        Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status, string title);
 
         Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID);
 

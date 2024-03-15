@@ -98,42 +98,40 @@ namespace FirstStep.Services
             return advertisementDto;
         }
 
-        public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompanyID(int companyID, string status)
+        public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status, string title)
+        {
+            ValidateStatus(status);
+
+            var dbAdvertisements = await FindByCompanyID(companyID);
+            List<Advertisement> filteredAdvertisementsList = new List<Advertisement> { };
+
+            if (title != null)
+            {
+                List<string> titleSubParts = title.Split(' ').ToList();
+                foreach (string subPart in titleSubParts)
+                {
+                    var filteredAdvertisements = dbAdvertisements.Where(x => x.title.ToLower().Contains(subPart.ToLower())).ToList();
+
+                    foreach (var ad in filteredAdvertisements)
+                    {
+                        if (!filteredAdvertisementsList.Contains(ad))
+                        {
+                            filteredAdvertisementsList.Add(ad);
+                        }
+                    }
+                }
+            }
+
+            return CreateAdvertisementList(filteredAdvertisementsList, status);
+        }
+
+        public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status)
         {
             ValidateStatus(status);
 
             var dbAdvertisements = await FindByCompanyID(companyID);
 
-            // map to jobofferDtos
-            var jobOfferDtos = new List<JobOfferDto>();
-
-            foreach (var ad in dbAdvertisements)
-            {
-                var jobOfferDto = _mapper.Map<JobOfferDto>(ad);
-
-                if (status != "all" && ad.current_status != status)
-                {
-                    continue;
-                }
-
-                jobOfferDto.field_name = ad.job_Field!.field_name;
-
-                // search number of applications
-                jobOfferDto.no_of_applications = 0;
-
-                // search number of evaluated applications
-                jobOfferDto.no_of_evaluated_applications = 0;
-
-                // search number if accepted applications
-                jobOfferDto.no_of_accepted_applications = 0;
-
-                // search number of rejected applications
-                jobOfferDto.no_of_rejected_applications = 0;
-
-                jobOfferDtos.Add(jobOfferDto);
-            }
-
-            return jobOfferDtos;
+            return CreateAdvertisementList(dbAdvertisements, status);
         }
 
         public async Task Create(AddAdvertisementDto advertisementDto)
@@ -382,6 +380,41 @@ namespace FirstStep.Services
             return adCardDtos;
         }
 
+        // map the advertisements to a list of JobOfferDtos and create advertisement list for the company
+        public IEnumerable<JobOfferDto> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        {
+            // map to jobofferDtos
+            var jobOfferDtos = new List<JobOfferDto>();
+
+            foreach (var ad in dbAds)
+            {
+                var jobOfferDto = _mapper.Map<JobOfferDto>(ad);
+
+                if (status != "all" && ad.current_status != status)
+                {
+                    continue;
+                }
+
+                jobOfferDto.field_name = ad.job_Field!.field_name;
+
+                // search number of applications
+                jobOfferDto.no_of_applications = 0;
+
+                // search number of evaluated applications
+                jobOfferDto.no_of_evaluated_applications = 0;
+
+                // search number if accepted applications
+                jobOfferDto.no_of_accepted_applications = 0;
+
+                // search number of rejected applications
+                jobOfferDto.no_of_rejected_applications = 0;
+
+                jobOfferDtos.Add(jobOfferDto);
+            }
+
+            return jobOfferDtos;
+        }
+
         // validate status
         private void ValidateStatus(string status)
         {
@@ -450,6 +483,7 @@ namespace FirstStep.Services
                 .Include("professionKeywords")
                 .Include("job_Field")
                 .Include("skills")
+                .Include("hrManager")
                 .Include("savedSeekers")
                 .Where(ad =>
                     ad.country == requestAdsDto.country &&
