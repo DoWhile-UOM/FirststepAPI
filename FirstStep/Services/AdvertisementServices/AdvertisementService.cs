@@ -106,27 +106,24 @@ namespace FirstStep.Services
             {
 
                 var dbAdvertisements = await FindByCompanyID(companyID);
-
-                /*
+                
+                // filter advertisements by title
+                var filteredAdvertisements = dbAdvertisements.Where(x => x.title.ToLower().Contains(title.ToLower())).ToList();
+                
+                // split title into sub parts and filter advertisements by each sub part
                 List<string> titleSubParts = title.Split(' ').ToList();
                 foreach (string subPart in titleSubParts)
                 {
-                    var filteredAdvertisements = dbAdvertisements.Where(x => x.title.ToLower().Contains(subPart.ToLower())).ToList();
-
-                    foreach (var ad in filteredAdvertisements)
+                    foreach (var ad in dbAdvertisements.Where(x => x.title.ToLower().Contains(subPart.ToLower())).ToList())
                     {
-                        if (!filteredAdvertisementsList.Contains(ad))
+                        if (!filteredAdvertisements.Contains(ad))
                         {
-                            filteredAdvertisementsList.Add(ad);
+                            filteredAdvertisements.Add(ad);
                         }
                     }
                 }
-                */
 
-                
-                var filteredAdvertisementsList = dbAdvertisements.Where(x => x.title.ToLower().Contains(title.ToLower())).ToList();
-
-                return CreateAdvertisementList(filteredAdvertisementsList, status);
+                return CreateAdvertisementList(filteredAdvertisements, status);
             }
             else
             {
