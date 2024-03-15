@@ -102,11 +102,12 @@ namespace FirstStep.Services
         {
             ValidateStatus(status);
 
-            var dbAdvertisements = await FindByCompanyID(companyID);
-            List<Advertisement> filteredAdvertisementsList = new List<Advertisement> { };
-
             if (title != null)
             {
+
+                var dbAdvertisements = await FindByCompanyID(companyID);
+
+                /*
                 List<string> titleSubParts = title.Split(' ').ToList();
                 foreach (string subPart in titleSubParts)
                 {
@@ -120,9 +121,17 @@ namespace FirstStep.Services
                         }
                     }
                 }
-            }
+                */
 
-            return CreateAdvertisementList(filteredAdvertisementsList, status);
+                
+                var filteredAdvertisementsList = dbAdvertisements.Where(x => x.title.ToLower().Contains(title.ToLower())).ToList();
+
+                return CreateAdvertisementList(filteredAdvertisementsList, status);
+            }
+            else
+            {
+                return await GetAdvertisementsByCompany(companyID, status);
+            }
         }
 
         public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status)
