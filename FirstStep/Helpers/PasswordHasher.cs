@@ -4,7 +4,7 @@ namespace FirstStep.Helpers
 {
     public class PasswordHasher
     {
-        private static RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
+        //private static RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
         private static readonly int SaltSize = 16;
         private static readonly int HashSize = 20;
         private static readonly int Iterations = 10000;
@@ -12,9 +12,15 @@ namespace FirstStep.Helpers
         public static string Hasher(string password)
         {
             byte[] salt;
-            rngCsp.GetBytes(salt = new byte[SaltSize]);
 
-            var key = new Rfc2898DeriveBytes(password, salt, Iterations);
+            using (var rngCsp = RandomNumberGenerator.Create()) // Use RandomNumberGenerator
+            {
+                rngCsp.GetBytes(salt = new byte[SaltSize]);
+            }
+
+            //rngCsp.GetBytes(salt = new byte[SaltSize]);
+
+            var key = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256);
             var hash = key.GetBytes(HashSize);
 
             var hashBytes = new byte[SaltSize + HashSize];
@@ -33,7 +39,7 @@ namespace FirstStep.Helpers
             var salt = new byte[SaltSize];
             Array.Copy(hashBytes, 0, salt, 0, SaltSize);
 
-            var key = new Rfc2898DeriveBytes(password, salt, Iterations);
+            var key = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256);
             byte[] hash = key.GetBytes(HashSize);
 
             for (var i = 0; i < HashSize; i++)
