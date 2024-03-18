@@ -5,7 +5,7 @@
 namespace FirstStep.Migrations
 {
     /// <inheritdoc />
-    public partial class userverfiystateaded : Migration
+    public partial class Uerverfiystateaded : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

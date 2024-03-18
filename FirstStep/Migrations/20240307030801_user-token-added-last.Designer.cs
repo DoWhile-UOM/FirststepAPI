@@ -13,7 +13,7 @@ namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
     [Migration("20240307030801_user-token-added-last")]
-    partial class usertokenaddedlast
+    partial class Uertokenaddedlast
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

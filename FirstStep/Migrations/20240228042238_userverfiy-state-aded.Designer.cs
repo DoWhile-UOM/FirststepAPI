@@ -13,7 +13,7 @@ namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
     [Migration("20240228042238_userverfiy-state-aded")]
-    partial class userverfiystateaded
+    partial class Uerverfiystateaded
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

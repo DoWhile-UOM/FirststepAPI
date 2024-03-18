@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FirstStep.Migrations
 {
     /// <inheritdoc />
-    public partial class refreshtokenadded : Migration
+    public partial class Rereshtokenadded : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

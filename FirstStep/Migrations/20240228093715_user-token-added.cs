@@ -5,7 +5,7 @@
 namespace FirstStep.Migrations
 {
     /// <inheritdoc />
-    public partial class usertokenadded : Migration
+    public partial class Uertokenadded : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

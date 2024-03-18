@@ -13,7 +13,7 @@ namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
     [Migration("20240306174500_refreshtoken-added")]
-    partial class refreshtokenadded
+    partial class Rereshtokenadded
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
