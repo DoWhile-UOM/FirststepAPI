@@ -1,6 +1,4 @@
 ﻿using FirstStep.Models.DTOs;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using MailKit.Security;
 using MimeKit.Text;
 using MimeKit;
