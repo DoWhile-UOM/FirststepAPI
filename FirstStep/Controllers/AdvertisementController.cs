@@ -101,18 +101,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpPut]
-        [Route("SaveAdvertisement/{jobID:int}/seekerId={seekerId:int}")]
-        public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId)
+        [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
+        public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {
-            await _service.SaveAdvertisement(jobID, seekerId);
-            return Ok();
-        }
-
-        [HttpPut]
-        [Route("UnsaveAdvertisement/{jobID:int}/seekerId={seekerId:int}")]
-        public async Task<IActionResult> UnsaveAdvertisement(int jobID, int seekerId)
-        {
-            await _service.UnsaveAdvertisement(jobID, seekerId);
+            await _service.SaveAdvertisement(jobID, seekerId, isSave);
             return Ok();
         }
 

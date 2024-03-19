@@ -23,9 +23,7 @@ namespace FirstStep.Services
 
         Task Update(int jobID, UpdateAdvertisementDto advertisement);
 
-        Task SaveAdvertisement(int advertisementId, int seekerId);
-
-        Task UnsaveAdvertisement(int advertisementId, int seekerId);
+        Task SaveAdvertisement(int advertisementId, int seekerId, bool isSave);
 
         Task Delete(int id);
 

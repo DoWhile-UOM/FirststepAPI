@@ -202,7 +202,7 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task SaveAdvertisement(int advertisementId, int seekerId)
+        public async Task SaveAdvertisement(int advertisementId, int seekerId, bool isSave)
         {
             // find the seeker
             var seeker = await _seekerService.GetById(seekerId);
@@ -216,31 +216,13 @@ namespace FirstStep.Services
                 advertisement.savedSeekers = new List<Seeker>();
             }
             
-            if (!advertisement.savedSeekers.Contains(seeker))
+            if (!advertisement.savedSeekers.Contains(seeker) && isSave)
             {
                 // add the seeker to the list of saved seekers
                 advertisement.savedSeekers.Add(seeker);
                 await _context.SaveChangesAsync();
             }
-        }
-
-        public async Task UnsaveAdvertisement(int advertisementId, int seekerId)
-        {
-            // find the seeker
-            var seeker = await _seekerService.GetById(seekerId);
-
-            // find the advertisement
-            var advertisement = await FindById(advertisementId);
-
-            // check whether the advertisement is already saved
-            
-            if (advertisement.savedSeekers is null)
-            {
-                // no any saved seeker for the advertiement
-                throw new Exception("Advertisement is not saved by any seeker.");
-            }
-
-            if (advertisement.savedSeekers.Contains(seeker))
+            else if (advertisement.savedSeekers.Contains(seeker) && !isSave)
             {
                 // remove the seeker from the list of saved seekers
                 advertisement.savedSeekers.Remove(seeker);
