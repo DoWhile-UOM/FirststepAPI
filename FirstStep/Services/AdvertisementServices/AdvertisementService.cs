@@ -98,6 +98,17 @@ namespace FirstStep.Services
             return advertisementDto;
         }
 
+        public async Task<AddAdvertisementDto> GetByIdWithKeywords(int id)
+        {
+            var dbAdvertismeent = await FindById(id);
+            var advertisementDto = _mapper.Map<AddAdvertisementDto>(dbAdvertismeent);
+
+            advertisementDto.reqSkills = dbAdvertismeent.skills!.Select(e => e.skill_name).ToList();
+            advertisementDto.keywords = dbAdvertismeent.professionKeywords!.Select(e => e.profession_name).ToList();
+
+            return advertisementDto;
+        }
+
         public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status, string title)
         {
             ValidateStatus(status);
