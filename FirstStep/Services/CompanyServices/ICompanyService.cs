@@ -18,6 +18,8 @@ namespace FirstStep.Services
         
         //get comapny list for system Admin
         public Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList();
+        //get company application
+        public Task<CompanyApplicationDto> GetCompanyApplicationById(int companyID);
         
         public Task<CompanyProfileDto> GetCompanyProfile(int companyID);
 

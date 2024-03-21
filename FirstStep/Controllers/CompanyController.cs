@@ -37,6 +37,13 @@ namespace FirstStep.Controllers
         {
             return (IEnumerable<ViewCompanyListDto>)Ok(await _service.GetAllCompanyList());
         }
+        //company application by id in system admin portal
+        [HttpGet]
+        [Route("GetCompanyApplicationById/{companyId:int}")]
+        public async Task<ActionResult<CompanyApplicationDto>> GetCompanyApplicationById(int companyID)
+        {
+            return Ok(await _service.GetCompanyApplicationById(companyID));
+        }
 
         [HttpGet]
         [Route("GetAllUnregisteredCompanies")]

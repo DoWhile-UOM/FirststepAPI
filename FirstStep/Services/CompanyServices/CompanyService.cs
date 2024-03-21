@@ -77,7 +77,14 @@ namespace FirstStep.Services
             IEnumerable<ViewCompanyListDto> companyDtos = _mapper.Map<IEnumerable<ViewCompanyListDto>>(companies);
             return companyDtos;
         }
+        //get company application by id
+        public async Task<CompanyApplicationDto> GetCompanyApplicationById(int companyID)
+        {
 
+            Company company = await FindByID(companyID);
+            CompanyApplicationDto companydto = _mapper.Map<CompanyApplicationDto>(company);
+            return companydto;
+        }
         public async Task Create(AddCompanyDto newCompanyDto)
         {
             var company = _mapper.Map<Company>(newCompanyDto);
