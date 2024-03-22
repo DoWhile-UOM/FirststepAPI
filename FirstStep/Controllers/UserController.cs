@@ -167,11 +167,11 @@ namespace FirstStep.Controllers
             var identity = new ClaimsIdentity(new Claim[]
             {
                 //new Claim(ClaimTypes., user.user_type),
-                new Claim(ClaimTypes.Role, user.user_type),
-                new Claim(ClaimTypes.GivenName,$"{user.first_name}"),
-                new Claim(ClaimTypes.Surname,$"{user.last_name}"),
-                new Claim(ClaimTypes.Email, user.email),
-                new Claim(ClaimTypes.Name, user.email)
+                new Claim(ClaimTypes.Role, user.user_type),//Store role in JWT Token (Seeker ,Admin ,HRMgr ,HRAssnt, CmpAdmin )
+                new Claim(ClaimTypes.GivenName, user.first_name),
+                new Claim(ClaimTypes.Surname,user.last_name),
+                //new Claim(ClaimTypes.Email, user.email),
+                new Claim(ClaimTypes.Webpage, user.organization) //Webpage refers to the Organization user belongs, for companies role=company name, seekers=seeker admin=Admin
             });
 
             var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);

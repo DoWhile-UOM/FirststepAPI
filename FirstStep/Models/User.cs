@@ -18,7 +18,7 @@ namespace FirstStep.Models
 
         public string? token { get; set; }
 
-        public string? user_type { get; set; }
+        public string? user_type { get; set; } //User role (Seeker ,Admin ,HRMgr ,HRAssnt, CmpAdmin )
 
         public string? refresh_token { get; set; }
 
