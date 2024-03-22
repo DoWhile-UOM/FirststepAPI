@@ -14,7 +14,7 @@
         public DateTime submission_deadline { get; set; }
         public string? job_description { get; set; }
         public int field_id { get; set; }
-        public ICollection<string>? keywords { get; set; }
-        public ICollection<string>? skills { get; set; }
+        public ICollection<string>? reqKeywords { get; set; }
+        public ICollection<string>? reqSkills { get; set; }
     }
 }

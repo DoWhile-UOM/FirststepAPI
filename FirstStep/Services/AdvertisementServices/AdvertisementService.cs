@@ -98,15 +98,16 @@ namespace FirstStep.Services
             return advertisementDto;
         }
 
-        public async Task<AddAdvertisementDto> GetByIdWithKeywords(int id)
+        // fill the advertisement form when updating an advertisement
+        public async Task<UpdateAdvertisementDto> GetByIdWithKeywords(int id)
         {
             var dbAdvertismeent = await FindById(id);
-            var advertisementDto = _mapper.Map<AddAdvertisementDto>(dbAdvertismeent);
+            var currentAdData = _mapper.Map<UpdateAdvertisementDto>(dbAdvertismeent);
 
-            advertisementDto.reqSkills = dbAdvertismeent.skills!.Select(e => e.skill_name).ToList();
-            advertisementDto.keywords = dbAdvertismeent.professionKeywords!.Select(e => e.profession_name).ToList();
+            currentAdData.reqSkills = dbAdvertismeent.skills!.Select(e => e.skill_name).ToList();
+            currentAdData.reqKeywords = dbAdvertismeent.professionKeywords!.Select(e => e.profession_name).ToList();
 
-            return advertisementDto;
+            return currentAdData;
         }
 
         public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status, string title)
@@ -205,10 +206,10 @@ namespace FirstStep.Services
             dbAdvertisement.field_id = reqAdvertisement.field_id;
 
             // update keywords in the advertisement
-            dbAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(reqAdvertisement.keywords, dbAdvertisement.field_id);
+            dbAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(reqAdvertisement.reqKeywords, dbAdvertisement.field_id);
             
             // update skills in the advertisement
-            dbAdvertisement.skills = await IncludeSkillsToAdvertisement(reqAdvertisement.skills);
+            dbAdvertisement.skills = await IncludeSkillsToAdvertisement(reqAdvertisement.reqSkills);
 
             await _context.SaveChangesAsync();
         }

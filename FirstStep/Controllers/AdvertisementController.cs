@@ -32,8 +32,8 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementByIdWithKeywords/{jobID:int}")]
-        public async Task<ActionResult<AddAdvertisementDto>> GetAdvertisementByIdWithKeywords(int jobID)
+        [Route("GetAdvertisementById/update/{jobID:int}")]
+        public async Task<ActionResult<UpdateAdvertisementDto>> GetAdvertisementByIdWithKeywords(int jobID)
         {
             return Ok(await _service.GetByIdWithKeywords(jobID));
         }
