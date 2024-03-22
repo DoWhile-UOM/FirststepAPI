@@ -166,7 +166,8 @@ namespace FirstStep.Controllers
             var key = Encoding.ASCII.GetBytes("veryverysceret.....");
             var identity = new ClaimsIdentity(new Claim[]
             {
-                //new Claim(ClaimTypes., user.user_type),
+
+                new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
                 new Claim(ClaimTypes.Role, user.user_type),//Store role in JWT Token (Seeker ,Admin ,HRMgr ,HRAssnt, CmpAdmin )
                 new Claim(ClaimTypes.GivenName, user.first_name),
                 new Claim(ClaimTypes.Surname,user.last_name),
