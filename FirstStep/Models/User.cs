@@ -23,5 +23,7 @@ namespace FirstStep.Models
         public string? refresh_token { get; set; }
 
         public DateTime refresh_token_expiry { get; set; }
+
+        public string? organization { get; set; } //Organization of user for companies=company name, for seekers=seeker admin=Admin
     }
 }

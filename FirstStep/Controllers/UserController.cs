@@ -30,9 +30,6 @@ namespace FirstStep.Controllers
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] LoginRequestDto userObj)
         {
-            /*
-            if (userObj is null)
-                return BadRequest();*/
 
             var user = await _authContext.Users.FirstOrDefaultAsync(x => x.email == userObj.email);
             if (user == null)
@@ -169,9 +166,12 @@ namespace FirstStep.Controllers
             var key = Encoding.ASCII.GetBytes("veryverysceret.....");
             var identity = new ClaimsIdentity(new Claim[]
             {
+                //new Claim(ClaimTypes., user.user_type),
                 new Claim(ClaimTypes.Role, user.user_type),
-                new Claim(ClaimTypes.Name,$"{user.first_name} {user.last_name}"),
-                new Claim(ClaimTypes.Email, user.email)
+                new Claim(ClaimTypes.GivenName,$"{user.first_name}"),
+                new Claim(ClaimTypes.Surname,$"{user.last_name}"),
+                new Claim(ClaimTypes.Email, user.email),
+                new Claim(ClaimTypes.Name, user.email)
             });
 
             var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
