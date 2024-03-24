@@ -1,12 +1,6 @@
-﻿using FirstStep.Models.DTOs;
-using MailKit.Security;
-using MimeKit.Text;
-using MimeKit;
-using MailKit.Net.Smtp;
-
-
-using Azure;
+﻿using Azure;
 using Azure.Communication.Email;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services.EmailSevices
 {
