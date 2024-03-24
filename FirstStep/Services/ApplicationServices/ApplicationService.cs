@@ -26,7 +26,7 @@ namespace FirstStep.Services
 
         public async Task Delete(int id)
         {
-            Application application = await GetById(id);
+            Application application = await FindById(id);
             
             _context.Applications.Remove(application);
             await _context.SaveChangesAsync();
@@ -37,7 +37,7 @@ namespace FirstStep.Services
             return await _context.Applications.ToListAsync();
         }
 
-        public async Task<Application> GetById(int id)
+        public async Task<Application> FindById(int id)
         {
             Application? application = await _context.Applications.FindAsync(id);
             if (application is null)
@@ -48,10 +48,9 @@ namespace FirstStep.Services
             return application;
         }
 
-
-        public async Task<IEnumerable<Application>> GetByAdvertisementId(int id)
+        public async Task<IEnumerable<Application>> FindByJobId(int advertisementId)
         {
-            ICollection<Application> applications = await _context.Applications.Where(a => a.advertisement_id == id).ToListAsync();
+            ICollection<Application> applications = await _context.Applications.Where(a => a.advertisement_id == advertisementId).ToListAsync();
             if (applications is null)
             {
                 throw new Exception("There are no applications under the advertisement");
@@ -59,9 +58,9 @@ namespace FirstStep.Services
             return applications;
         }
 
-        public async Task<IEnumerable<Application>> GetBySeekerId(int id)
+        public async Task<IEnumerable<Application>> GetBySeekerId(int seekerId)
         {
-            ICollection<Application> applications = await _context.Applications.Where(a => a.user_id == id).ToListAsync();
+            ICollection<Application> applications = await _context.Applications.Where(a => a.user_id == seekerId).ToListAsync();
             if (applications is null)
             {
                 throw new Exception("There are no applications under the seeker");
@@ -69,10 +68,9 @@ namespace FirstStep.Services
             return applications;
         }
 
-
         public async Task Update(Application application)
         {
-            Application dbApplication = await GetById(application.application_Id);
+            Application dbApplication = await FindById(application.application_Id);
 
             dbApplication.status = application.status;
             dbApplication.submitted_date = application.submitted_date;
@@ -80,33 +78,33 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();           
         }
 
-        public async Task<int> TotalEvaluatedApplications(int id)
+        public async Task<int> TotalEvaluatedApplications(int advertisementId)
         {
-            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
+            IEnumerable<Application> allapplications = await FindByJobId(advertisementId);
             int TolaEvaluatedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.Evaluated.ToString()).CountAsync();
             return TolaEvaluatedApplications;
 
         }
 
-        public async Task<int> TotalNotEvaluatedApplications(int id)
+        public async Task<int> TotalNotEvaluatedApplications(int advertisementId)
         {
-            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
+            IEnumerable<Application> allapplications = await FindByJobId(advertisementId);
             int TolaEvaluatedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.NotEvaluated.ToString()).CountAsync();
             return TolaEvaluatedApplications;
 
         }
 
-        public async Task<int> AcceptedApplications(int id)
+        public async Task<int> AcceptedApplications(int advertisementId)
         {
 
-            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
+            IEnumerable<Application> allapplications = await FindByJobId(advertisementId);
             int AcceptedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.Accepted.ToString()).CountAsync();
             return AcceptedApplications;
         }
 
-        public async Task<int> RejectedApplications(int id)
+        public async Task<int> RejectedApplications(int advertisementId)
         {
-            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
+            IEnumerable<Application> allapplications = await FindByJobId(advertisementId);
             int AcceptedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.Rejected.ToString()).CountAsync();
             return AcceptedApplications;
         }
