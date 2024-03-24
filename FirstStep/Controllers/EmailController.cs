@@ -39,8 +39,6 @@ namespace FirstStep.Controllers
                     builder.HtmlBody = SourceReader.ReadToEnd();
                 }
 
-
-
                 request.To = email;
                 request.Subject = "FirstStep Verification OTP";
                 builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp.ToString());

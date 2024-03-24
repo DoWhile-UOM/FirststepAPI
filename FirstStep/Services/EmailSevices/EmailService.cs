@@ -4,6 +4,10 @@ using MimeKit.Text;
 using MimeKit;
 using MailKit.Net.Smtp;
 
+
+using Azure;
+using Azure.Communication.Email;
+
 namespace FirstStep.Services.EmailSevices
 {
     public class EmailService : IEmailService
@@ -17,30 +21,52 @@ namespace FirstStep.Services.EmailSevices
             _logger = logger;
         }
 
-        public void SendEmail(EmailDto request)
+        public async void SendEmail(EmailDto request)
         {
+            // This code demonstrates how to fetch your connection string
+            // from an environment variable.
+
+
+            var subject = request.Subject;
+            var htmlContent = request.Body;
+            var sender = "DoNotReply@6e8e40e7-e2d3-4f38-952f-d6dd1bbc9bca.azurecomm.net";
+            var recipient =request.To;
+
+
             try
             {
-                _logger.LogInformation("Sending email");
-                var email = new MimeMessage();
-                email.From.Add(MailboxAddress.Parse(_config.GetSection("EmailUserName").Value));
-                email.To.Add(MailboxAddress.Parse(request.To));
-                email.Subject = request.Subject;
-                email.Body = new TextPart(TextFormat.Html) { Text = request.Body };
+                /*
+                string connectionString = Environment.GetEnvironmentVariable("COMMUNICATION_SERVICES_CONNECTION_STRING");
 
-                using var smtp = new SmtpClient();
-                smtp.Connect(_config.GetSection("EmailHost").Value, 587, SecureSocketOptions.StartTls);
-                smtp.Authenticate(_config.GetSection("EmailUserName").Value, _config.GetSection("EmailPassword").Value);// username and password
-                smtp.Send(email);
-                smtp.Disconnect(true);
-                _logger.LogInformation("Emal Sent");
-                _logger.LogInformation(request.To);
+                if (connectionString == null)
+                {
+                    // Handle the case where the environment variable is not set
+                    Console.WriteLine("Error: COMMUNICATION_SERVICES_CONNECTION_STRING environment variable is not set.");
+                    return; // or throw an exception
+                }
+                */
+                EmailClient emailClient = new EmailClient("endpoint=https://firsstepcom.unitedstates.communication.azure.com/;accesskey=BBgT2UTVnfRfWet5z9if14CDBjoKJdjA1VWjvRWi4jbAC6y46gZaBA0mZHbtrRDAodhVPXjWZ+yd2G119BuQzA==");
+
+
+                Console.WriteLine("Sending email...");
+                EmailSendOperation emailSendOperation = await emailClient.SendAsync(
+                    Azure.WaitUntil.Completed,
+                    sender,
+                    recipient,
+                    subject,
+                    htmlContent);
+                EmailSendResult statusMonitor = emailSendOperation.Value;
+
+                Console.WriteLine($"Email Sent. Status = {emailSendOperation.Value.Status}");
+
+                /// Get the OperationId so that it can be used for tracking the message for troubleshooting
+                string operationId = emailSendOperation.Id;
+                Console.WriteLine($"Email operation id = {operationId}");
             }
-            catch (Exception ex)
+            catch (RequestFailedException ex)
             {
-                // Log the error
-                _logger.LogInformation("Error Occured");
-                _logger.LogError(ex, "An error occurred while sending email: {ErrorMessage}", ex.Message);
+                /// OperationID is contained in the exception message and can be used for troubleshooting purposes
+                Console.WriteLine($"Email send operation failed with error code: {ex.ErrorCode}, message: {ex.Message}");
             }
         }
     }
