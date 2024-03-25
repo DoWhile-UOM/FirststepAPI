@@ -27,7 +27,7 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetCompanyById/{companyId:int}")]
-        public async Task<ActionResult<CompanyProfileDetailsDto>> GetCompanyById(int companyId)
+        public async Task<ActionResult<Company>> GetCompanyById(int companyId)
         {
             return Ok(await _service.GetById(companyId));
         }

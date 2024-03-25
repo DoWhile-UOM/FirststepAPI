@@ -6,6 +6,8 @@ namespace FirstStep.Models.DTOs
     {
         public required int company_id { get; set; }
 
+        public required int business_reg_no { get; set; }
+
         public required string company_name { get; set; }
 
         [EmailAddress]

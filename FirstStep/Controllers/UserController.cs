@@ -1,19 +1,16 @@
-﻿using FirstStep.Data;
-using FirstStep.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 using System.Text;
-using System;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using FirstStep.Models.DTOs;
-using System.Security.AccessControl;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using FirstStep.Helper;
+using FirstStep.Data;
+using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Controllers
 {
@@ -51,7 +48,6 @@ namespace FirstStep.Controllers
                     AccessToken = newAccessToken,
                     RefreshToken = newRefreshToken
                 });
-
         }
 
         [HttpPost("register")]
@@ -270,9 +266,5 @@ namespace FirstStep.Controllers
                 RefreshToken = newRefreshToken,
             });
         }
-        
-
-
-
     }
 }

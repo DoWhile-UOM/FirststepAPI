@@ -344,15 +344,6 @@ namespace FirstStep.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("refresh_token")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("refresh_token_expiry")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("token")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("user_type")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

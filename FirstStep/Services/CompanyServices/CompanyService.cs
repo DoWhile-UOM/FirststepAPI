@@ -24,7 +24,7 @@ namespace FirstStep.Services
             return await _context.Companies.ToListAsync();
         }
 
-        public async Task<Company> FindByID(int id)
+        public async Task<Company> GetById(int id)
         {
             Company? company = await _context.Companies.FindAsync(id);
             if (company is null)
@@ -33,13 +33,6 @@ namespace FirstStep.Services
             }
 
             return company;
-        }
-
-        public async Task<CompanyProfileDetailsDto> GetById(int id)
-        {
-            Company company = await FindByID(id);
-            CompanyProfileDetailsDto companydto = _mapper.Map<CompanyProfileDetailsDto>(company);
-            return companydto;
         }
 
         public async Task<IEnumerable<Company>> GetAllUnregisteredCompanies()
@@ -119,7 +112,7 @@ namespace FirstStep.Services
 
         public async Task Delete(int id)
         {
-            Company company = await FindByID(id);
+            Company company = await GetById(id);
 
             _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
@@ -127,7 +120,7 @@ namespace FirstStep.Services
 
         public async Task UpdateCompanyVerification(int companyID, CompanyRegInfoDto companyRegInfo)
         {
-            var unRegCompany = await FindByID(companyID);
+            var unRegCompany = await GetById(companyID);
 
             unRegCompany.verification_status = companyRegInfo.verification_status;
             unRegCompany.company_registered_date = companyRegInfo.company_registered_date;
@@ -139,7 +132,7 @@ namespace FirstStep.Services
 
         public async Task RegisterCompany(int companyID, AddDetailsCompanyDto company)
         {
-            var unRegCompany = await FindByID(companyID);
+            var unRegCompany = await GetById(companyID);
 
             unRegCompany.company_logo = company.company_logo;
             unRegCompany.company_description = company.company_description;
@@ -152,7 +145,7 @@ namespace FirstStep.Services
 
         public async Task UpdateUnregisteredCompany(int companyID, UpdateUnRegCompanyDto company)
         {
-            Company dbCompany = await FindByID(companyID);
+            Company dbCompany = await GetById(companyID);
 
             if (dbCompany.verification_status)
             {
@@ -174,7 +167,7 @@ namespace FirstStep.Services
 
         public async Task UpdateRegisteredCompany(int companyID, UpdateCompanyDto company)
         {
-            Company dbCompany = await FindByID(companyID);
+            Company dbCompany = await GetById(companyID);
 
             if (!dbCompany.verification_status)
             {
@@ -183,6 +176,7 @@ namespace FirstStep.Services
 
             dbCompany.company_name = company.company_name;
             dbCompany.company_email = company.company_email;
+            dbCompany.business_reg_no = company.business_reg_no;
             dbCompany.company_website = company.company_website;
             dbCompany.company_phone_number = company.company_phone_number;
             dbCompany.company_logo = company.company_logo;
@@ -196,7 +190,7 @@ namespace FirstStep.Services
 
         public async Task<bool> IsRegistered(int companyID)
         {
-            Company company = await FindByID(companyID);
+            Company company = await GetById(companyID);
 
             return company.verification_status;
         }
