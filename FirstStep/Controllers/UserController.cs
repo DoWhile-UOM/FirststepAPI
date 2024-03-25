@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 using System.Text;
 using System;
-using FirstStep.Helpers;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,6 +13,7 @@ using FirstStep.Models.DTOs;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authorization;
+using FirstStep.Helper;
 
 namespace FirstStep.Controllers
 {
@@ -21,17 +21,17 @@ namespace FirstStep.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly DataContext _authContext;
+        private readonly DataContext _context;
         public UserController(DataContext authContext)
         {
-            _authContext = authContext;
+            _context = authContext;
         }
 
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] LoginRequestDto userObj)
         {
 
-            var user = await _authContext.Users.FirstOrDefaultAsync(x => x.email == userObj.email);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.email == userObj.email);
             if (user == null)
                 return NotFound(new { message = "Username Not Found" });
 
@@ -39,11 +39,11 @@ namespace FirstStep.Controllers
                 return BadRequest(new { message = "Invalid Password" });
 
 
-            user.token = CreateJwt(user); //create access token for session
+            user.token = await CreateJwtAsync(user); //create access token for session
             var newAccessToken = user.token; 
             var newRefreshToken = CreateRefreshToken(); //create refresh token
             user.refresh_token= newRefreshToken;
-            await _authContext.SaveChangesAsync();// save changes to database
+            await _context.SaveChangesAsync();// save changes to database
 
             return Ok(
                 new TokenApiDto()
@@ -86,8 +86,8 @@ namespace FirstStep.Controllers
                 refresh_token = null
             };  
 
-            _authContext.Users.Add(userNewObj);
-            _authContext.SaveChanges();
+            _context.Users.Add(userNewObj);
+            _context.SaveChanges();
             //Send email verification link
             //SendEmail(userObj.email, userObj.token);
 
@@ -97,12 +97,13 @@ namespace FirstStep.Controllers
                     message = "Registration Succesfull!"
                 });
         }
+
         //Test comments
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _authContext.Users.ToListAsync();
+            var users = await _context.Users.ToListAsync();
             return Ok(users);
         }
 
@@ -111,7 +112,7 @@ namespace FirstStep.Controllers
         [HttpGet("/verify")]
         public async Task<IActionResult> Verify(string token)
         {
-            var user = await _authContext.Users.FirstOrDefaultAsync(x => x.token == token);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.token == token);
 
             if(user == null)
             {
@@ -119,7 +120,7 @@ namespace FirstStep.Controllers
             }
 
             user.token = (DateTime.Now).ToString("yyyy-MM-dd HH:mm");
-            await _authContext.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return Ok("User verified");
         }
@@ -127,7 +128,7 @@ namespace FirstStep.Controllers
 
         private async Task<bool> CheckEmailExist(string Email)
         {
-            return await _authContext.Users.AnyAsync(x => x.email == Email);
+            return await _context.Users.AnyAsync(x => x.email == Email);
         }
 
         //User verify
@@ -156,24 +157,44 @@ namespace FirstStep.Controllers
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
         }
 
-
-
-
         //JWT token generator
-        private string CreateJwt(User user)
+        private async Task<string> CreateJwtAsync(User user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes("veryverysceret.....");
             var identity = new ClaimsIdentity(new Claim[]
             {
-
                 new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
-                new Claim(ClaimTypes.Role, user.user_type),//Store role in JWT Token (Seeker ,Admin ,HRMgr ,HRAssnt, CmpAdmin )
+                new Claim(ClaimTypes.Role, user.user_type),//Store role in JWT Token (seeker ,sa ,HRM ,HRA, ca)
                 new Claim(ClaimTypes.GivenName, user.first_name),
                 new Claim(ClaimTypes.Surname,user.last_name),
-                //new Claim(ClaimTypes.Email, user.email),
-                new Claim(ClaimTypes.Webpage, user.organization) //Webpage refers to the Organization user belongs, for companies role=company name, seekers=seeker admin=Admin
             });
+
+            Employee? employee = await _context.Employees.Include("company").FirstOrDefaultAsync(e => e.user_id == user.user_id);
+
+            if (employee == null)
+            {
+                if (user.user_type == "seeker" || user.user_type == "sa")
+                {
+                    identity.AddClaim(new Claim(ClaimTypes.Webpage, user.user_type));
+                }
+                else
+                {
+                    throw new Exception("Invalid user!");
+                }
+            }
+            else
+            {
+                string? company_name = employee.company?.company_name;
+                if (company_name != null)
+                {
+                    identity.AddClaim(new Claim(ClaimTypes.Webpage, company_name));
+                }
+                else 
+                {
+                    throw new Exception("Company name is null");
+                }
+            }
 
             var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
@@ -193,7 +214,7 @@ namespace FirstStep.Controllers
             var tokenBytes = RandomNumberGenerator.GetBytes(64);
             var refreshToken = Convert.ToBase64String(tokenBytes);
 
-            var tokenInUser = _authContext.Users
+            var tokenInUser = _context.Users
                 .Any(a => a.refresh_token == refreshToken);
             if (tokenInUser)//If refresh token exist generate new one otherwise return
             {
@@ -234,18 +255,18 @@ namespace FirstStep.Controllers
             string accessToken = tokenApiDto.AccessToken;
             string refreshToken = tokenApiDto.RefreshToken;
             var principal = GetPrincipleFromExpiredToken(accessToken);
-            var username = principal.Identity.Name;
+            var username = principal.Identity?.Name;
 
-            var user = await _authContext.Users.FirstOrDefaultAsync(u => u.email == username);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.email == username);
             if (user is null || user.refresh_token != refreshToken || user.refresh_token_expiry <= DateTime.Now)
                 return BadRequest("Invalid Request");
-            var newAccessToken = CreateJwt(user);
+            var newAccessToken = CreateJwtAsync(user);
             var newRefreshToken = CreateRefreshToken();
             user.refresh_token = newRefreshToken;
-            await _authContext.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return Ok(new TokenApiDto()
             {
-                AccessToken = newAccessToken,
+                AccessToken = await newAccessToken,
                 RefreshToken = newRefreshToken,
             });
         }

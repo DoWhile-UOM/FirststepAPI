@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace FirstStep.Helpers
+namespace FirstStep.Helper
 {
     public class PasswordHasher
     {
