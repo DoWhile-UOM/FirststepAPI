@@ -54,7 +54,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id)
         {
-            ICollection<HRManager> hrManagers = await _context.HRManagers.Where(e => e.company_id == company_Id).ToListAsync();
+            ICollection<Employee> hrManagers = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type == "HRM").ToListAsync();
             if (hrManagers is null)
             {
                 throw new Exception("There are no HR Managers under the company");

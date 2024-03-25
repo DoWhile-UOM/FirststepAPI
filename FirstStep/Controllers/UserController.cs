@@ -147,7 +147,6 @@ namespace FirstStep.Controllers
             return sb.ToString();
         }
 
-
         private string CreateVerifyToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));

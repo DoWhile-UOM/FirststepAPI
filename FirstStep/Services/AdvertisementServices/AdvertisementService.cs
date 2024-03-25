@@ -15,19 +15,22 @@ namespace FirstStep.Services
         private readonly IProfessionKeywordService _keywordService;
         private readonly ISkillService _skillService;
         private readonly ISeekerService _seekerService;
+        private readonly IApplicationService _applicationService;
 
         public AdvertisementService(
             DataContext context, 
             IMapper mapper,
             IProfessionKeywordService keywordService,
             ISkillService skillService,
-            ISeekerService seekerService)
+            ISeekerService seekerService,
+            IApplicationService applicationService)
         {
             _context = context;
             _mapper = mapper;
             _keywordService = keywordService;
             _skillService = skillService;
             _seekerService = seekerService;
+            _applicationService = applicationService;
         }
 
         enum AdvertisementStatus { active, closed }
@@ -135,7 +138,7 @@ namespace FirstStep.Services
                     }
                 }
 
-                return CreateAdvertisementList(filteredAdvertisements, status);
+                return await CreateAdvertisementList(filteredAdvertisements, status);
             }
             else
             {
@@ -149,7 +152,7 @@ namespace FirstStep.Services
 
             var dbAdvertisements = await FindByCompanyID(companyID);
 
-            return CreateAdvertisementList(dbAdvertisements, status);
+            return await CreateAdvertisementList(dbAdvertisements, status);
         }
 
         public async Task Create(AddAdvertisementDto advertisementDto)
@@ -381,7 +384,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of JobOfferDtos and create advertisement list for the company
-        public IEnumerable<JobOfferDto> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        public async Task<IEnumerable<JobOfferDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
         {
             // map to jobofferDtos
             var jobOfferDtos = new List<JobOfferDto>();
@@ -398,16 +401,16 @@ namespace FirstStep.Services
                 jobOfferDto.field_name = ad.job_Field!.field_name;
 
                 // search number of applications
-                jobOfferDto.no_of_applications = 0;
+                jobOfferDto.no_of_applications = await _applicationService.NumberOfApplicationsByAdvertisementId(ad.advertisement_id);
 
                 // search number of evaluated applications
-                jobOfferDto.no_of_evaluated_applications = 0;
+                jobOfferDto.no_of_evaluated_applications = await _applicationService.TotalNotEvaluatedApplications(ad.advertisement_id);
 
                 // search number if accepted applications
-                jobOfferDto.no_of_accepted_applications = 0;
+                jobOfferDto.no_of_accepted_applications = await _applicationService.AcceptedApplications(ad.advertisement_id);
 
                 // search number of rejected applications
-                jobOfferDto.no_of_rejected_applications = 0;
+                jobOfferDto.no_of_rejected_applications = await _applicationService.RejectedApplications(ad.advertisement_id);
 
                 jobOfferDtos.Add(jobOfferDto);
             }
