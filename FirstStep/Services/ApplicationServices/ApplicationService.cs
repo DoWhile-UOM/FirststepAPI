@@ -56,5 +56,20 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();           
         }
+
+        // Nethma do these tasks
+
+        // create a method to get all applications by advertisement id
+
+        // create a methos to get all applications by seeker id
+
+        // create a method to calculate all evaluated applications by advertisement id
+
+        // create a method to calculate all un-evaluated applications by advertisement id
+
+        // create a method to calculate all accepted applications by advertisement id
+
+        // create a method to calculate all rejected applications by advertisement id
+
     }
 }

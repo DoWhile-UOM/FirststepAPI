@@ -30,6 +30,25 @@ builder.Services.AddScoped<ISeekerService, SeekerService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IRevisionService, RevisionService>();
 
+//JWT Authentication
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("veryverysceret.....")),
+        ValidateAudience = false,
+        ValidateIssuer = false,
+        //ClockSkew = TimeSpan.Zero
+    };
+});
+
 var app = builder.Build();
 
 app.UseCors(options =>
