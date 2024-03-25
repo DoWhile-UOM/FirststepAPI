@@ -66,7 +66,7 @@ namespace FirstStep.Services.EmailSevices
         }
 
         // sending email in company registration process 
-        public async void SendEmailCompanyRegistration(string email, int type,string company_name)
+        public async void SendEmailCompanyRegistration(string email, int type,string company_name, string applicationEvaluationStatusLink)
         {
             if (type == 0)
             {
@@ -99,6 +99,7 @@ namespace FirstStep.Services.EmailSevices
                 request.To = email;
                 request.Subject = "Application was successfully sent";
                 builder.HtmlBody = builder.HtmlBody.Replace("{Company Name}", company_name);
+                builder.HtmlBody = builder.HtmlBody.Replace("{evaluation_link}", applicationEvaluationStatusLink); // here this applicationEvaluationStautsLink will direct company to a page where the company can see its regirataion application evaluation status.
                 request.Body = builder.HtmlBody;
 
 
