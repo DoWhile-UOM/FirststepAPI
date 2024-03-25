@@ -66,28 +66,10 @@ namespace FirstStep.Services.EmailSevices
         }
 
         // sending email in company registration process 
-        public async void SendEmailCompanyRegistration(string email, int type,string company_name, string applicationEvaluationStatusLink)
+        public async void SendEmailCompanyRegistration(string email,string company_name, string applicationEvaluationStatusLink)
         {
-            if (type == 0)
-            {
-                //OTP email
-                EmailDto request = new();
-                var builder = new BodyBuilder();
-                Random random = new Random();
-                int otp = random.Next(100000, 999999);
-                using (StreamReader SourceReader = System.IO.File.OpenText("Template/OTPEmailService.html"))
-                {
-                    builder.HtmlBody = SourceReader.ReadToEnd();
-                }
-                request.To = email;
-                request.Subject = "FirstStep Verification OTP";
-                builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp.ToString());
-                request.Body = builder.HtmlBody;
-
-                this.SendEmail(request);
-            }
-            else if (type == 1)
-            {
+            
+            
                 // Registration Email
                 //
                 EmailDto request = new();
@@ -105,44 +87,30 @@ namespace FirstStep.Services.EmailSevices
 
 
                 this.SendEmail(request);
-            }
+            
 
             
         }
 
-        public async void OTPRequestSignUp(EmailDto request, string email, string firstName)
+        
+
+       
+
+        public async void OTP(EmailDto request, string reciever, string email, string message)
         {
             EmailDto otpBody = new();
             var builder = new BodyBuilder();
             Random random = new Random();
             int otp = random.Next(100000, 999999);
-            using (StreamReader SourceReader = System.IO.File.OpenText("Template/SeekerSignUpOTP.html"))
+            using (StreamReader SourceReader = System.IO.File.OpenText("Template/CommonOTPEmailTemplate.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
             otpBody.To = email;
             otpBody.Subject = "FirstStep Verification OTP";
             builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp.ToString());
-            builder.HtmlBody = builder.HtmlBody.Replace("{username}", firstName);
-            otpBody.Body = builder.HtmlBody;
-
-            this.SendEmail(otpBody);
-        }
-
-        public async void OTPVerificationPasswordChange(EmailDto request, string firstName, string email)
-        {
-            EmailDto otpBody = new();
-            var builder = new BodyBuilder();
-            Random random = new Random();
-            int otp = random.Next(100000, 999999);
-            using (StreamReader SourceReader = System.IO.File.OpenText("Template/roleEditPasswordVerificationOTP.html"))
-            {
-                builder.HtmlBody = SourceReader.ReadToEnd();
-            }
-            otpBody.To = email;
-            otpBody.Subject = "FirstStep Verification OTP";
-            builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp.ToString());
-            builder.HtmlBody = builder.HtmlBody.Replace("{username}", firstName);
+            builder.HtmlBody = builder.HtmlBody.Replace("{name}", reciever);//reciever= seeker's firstName / company name / Employee firstName
+            builder.HtmlBody = builder.HtmlBody.Replace("{message}", message);//message = "to proceed with the registration." / "to proceed with the changing password process"
             otpBody.Body = builder.HtmlBody;
 
             this.SendEmail(otpBody);
