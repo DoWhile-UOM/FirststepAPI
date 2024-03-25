@@ -69,9 +69,8 @@ namespace FirstStep.Services.EmailSevices
         public async void SendEmailCompanyRegistration(string email,string company_name, string applicationEvaluationStatusLink)
         {
             
-            
                 // Registration Email
-                //
+                
                 EmailDto request = new();
                 var builder = new BodyBuilder();
                 using (StreamReader SourceReader = System.IO.File.OpenText("Template/CompanyRegustrationSuccessfulTemplate.html"))
@@ -91,11 +90,6 @@ namespace FirstStep.Services.EmailSevices
 
             
         }
-
-        
-
-       
-
         public async void OTP(EmailDto request, string reciever, string email, string message)
         {
             EmailDto otpBody = new();
@@ -114,6 +108,27 @@ namespace FirstStep.Services.EmailSevices
             otpBody.Body = builder.HtmlBody;
 
             this.SendEmail(otpBody);
+        }
+
+        public async void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName, string jobAdvertisementTitle, string jobApplicationEvaluationStatusLink)
+        {
+            EmailDto emailBody = new();
+            var builder = new BodyBuilder();
+            using (StreamReader SourceReader = System.IO.File.OpenText("Template/JobApplicationSuccessfullySent.html"))
+            {
+                builder.HtmlBody = SourceReader.ReadToEnd();
+            }
+            emailBody.To = email;
+            emailBody.Subject = "Job Application was successfully sent";
+            builder.HtmlBody = builder.HtmlBody.Replace("{jobseeker}", jobseekerFName);//jobseekerFName= job seeker's first name
+            builder.HtmlBody = builder.HtmlBody.Replace("{applicationtitle}", jobAdvertisementTitle); // jobAdvertisementTitle= title of the advertisement
+            builder.HtmlBody = builder.HtmlBody.Replace("{companyName}", companyName);//companyName= comapny that offers that advertisement
+            builder.HtmlBody = builder.HtmlBody.Replace("{evaluation_link}", jobApplicationEvaluationStatusLink);//jobApplicationEvaluationStatusLink= the link that directs job seekers to the page where she can see the status of the application evaluation
+            emailBody.Body = builder.HtmlBody;
+
+
+
+            this.SendEmail(emailBody);
         }
     }
 }
