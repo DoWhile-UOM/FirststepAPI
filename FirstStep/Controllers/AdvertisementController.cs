@@ -3,7 +3,6 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace FirstStep.Controllers
 {
@@ -19,11 +18,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllAdvertisements")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisements()
+        [Route("GetAllAdvertisements/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisements(int seekerID)
         {
-            var advertisementList = await _service.GetAll();
-            return advertisementList == null ? NotFound() : Ok(advertisementList);
+            return Ok(await _service.GetAll(seekerID));
         }
 
         [HttpGet]
@@ -34,21 +32,37 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementsByCompanyID/{companyID:int}")]
-        public async Task<ActionResult<IEnumerable<JobOfferDto>>> GetAdvertisementsByCompanyID(int companyID)
+        [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}")]
+        public async Task<ActionResult<IEnumerable<JobOfferDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
         {
-            return Ok(await _service.GetJobOffersByCompanyID(companyID));
+            return Ok(await _service.GetAdvertisementsByCompanyID(companyID, status));
+        }
+
+        [HttpGet]
+        [Route("GetSavedAdvertisements/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetSavedAdvertisements(int seekerID)
+        {
+            return Ok(await _service.GetSavedAdvertisements(seekerID));
+        }
+
+        [HttpPost]
+        [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisementsBasic(int seekerID, SearchJobRequestDto requestDto)
+        {
+            return Ok(await _service.BasicSearch(requestDto, seekerID));
+        }
+
+        [HttpPost]
+        [Route("SearchAdvertisementsAdvance/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisementsAdvanced(int seekerID, SearchJobRequestDto requestDto)
+        {
+            return Ok(await _service.AdvanceSearch(requestDto, seekerID));
         }
 
         [HttpPost]
         [Route("AddAdvertisement")]
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
-            if (advertisementDto is null)
-            {
-                return BadRequest("Advertisement cannot be null.");
-            }
-
             await _service.Create(advertisementDto);
             return Ok();
         }
@@ -71,21 +85,35 @@ namespace FirstStep.Controllers
             return Ok();
         }
 
+        [HttpPut]
+        [Route("ChangeStatus/{jobID:int}/status={newStatus}")]
+        public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
+        {
+            await _service.ChangeStatus(jobID, newStatus);
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("SaveAdvertisement/{jobID:int}/seekerId={seekerId:int}")]
+        public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId)
+        {
+            await _service.SaveAdvertisement(jobID, seekerId);
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("UnsaveAdvertisement/{jobID:int}/seekerId={seekerId:int}")]
+        public async Task<IActionResult> UnsaveAdvertisement(int jobID, int seekerId)
+        {
+            await _service.UnsaveAdvertisement(jobID, seekerId);
+            return Ok();
+        }
+
         [HttpDelete]
         [Route("DeleteAdvertisement/{jobID:int}")]
         public async Task<IActionResult> DeleteAdvertisement(int jobID)
         {
             await _service.Delete(jobID);
-            return Ok();
-        }
-
-
-        // temporary function
-        [HttpGet]
-        [Route("SearchAds")]
-        public async Task<ActionResult<IEnumerable<Advertisement>>> SearchAds()
-        {
-            await _service.SearchAds();
             return Ok();
         }
     }

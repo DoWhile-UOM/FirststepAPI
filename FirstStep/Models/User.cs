@@ -16,6 +16,12 @@ namespace FirstStep.Models
 
         public required string last_name { get; set; }
 
-        public string? user_type { get; set; }
+        public required string user_type { get; set; } //User role (Seeker ,SA ,HRM ,HRA, CA )
+
+        public string? token { get; set; }
+       
+        public string? refresh_token { get; set; }
+
+        public DateTime refresh_token_expiry { get; set; }
     }
 }
