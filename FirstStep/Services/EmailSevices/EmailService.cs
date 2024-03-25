@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.Communication.Email;
 using FirstStep.Models.DTOs;
+using MimeKit;
 
 namespace FirstStep.Services.EmailSevices
 {
@@ -62,6 +63,50 @@ namespace FirstStep.Services.EmailSevices
                 /// OperationID is contained in the exception message and can be used for troubleshooting purposes
                 Console.WriteLine($"Email send operation failed with error code: {ex.ErrorCode}, message: {ex.Message}");
             }
+        }
+
+        // sending email in company registration process 
+        public async void SendEmailCompanyRegistration(string email, int type,string company_name)
+        {
+            if (type == 0)
+            {
+                //OTP email
+                EmailDto request = new();
+                var builder = new BodyBuilder();
+                Random random = new Random();
+                int otp = random.Next(100000, 999999);
+                using (StreamReader SourceReader = System.IO.File.OpenText("Template/OTPEmailService.html"))
+                {
+                    builder.HtmlBody = SourceReader.ReadToEnd();
+                }
+                request.To = email;
+                request.Subject = "FirstStep Verification OTP";
+                builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp.ToString());
+                request.Body = builder.HtmlBody;
+
+                this.SendEmail(request);
+            }
+            else if (type == 1)
+            {
+                // Registration Email
+                //
+                EmailDto request = new();
+                var builder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText("Template/CompanyRegustrationSuccessfulTemplate.html"))
+                {
+                    builder.HtmlBody = SourceReader.ReadToEnd();
+                }
+                request.To = email;
+                request.Subject = "Application was successfully sent";
+                builder.HtmlBody = builder.HtmlBody.Replace("{Company Name}", company_name);
+                request.Body = builder.HtmlBody;
+
+
+
+                this.SendEmail(request);
+            }
+
+            
         }
     }
 }
