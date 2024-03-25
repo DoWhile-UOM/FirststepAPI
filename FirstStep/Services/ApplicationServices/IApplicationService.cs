@@ -6,9 +6,9 @@ namespace FirstStep.Services
     {
         public Task<IEnumerable<Application>> GetAll();
 
-        public Task<Application> FindById(int id);
+        public Task<Application> GetById(int id);
 
-        public Task<IEnumerable<Application>> FindByJobId(int advertisementID);
+        public Task<IEnumerable<Application>> GetByAdvertisementId(int id);
 
         public Task<IEnumerable<Application>> GetBySeekerId(int id);
 
@@ -18,12 +18,12 @@ namespace FirstStep.Services
 
         public Task Delete(int id);
 
-        public Task<int> TotalEvaluatedApplications(int advertisementId);
+        public Task<int>TotalEvaluatedApplications(int id);
 
-        public Task<int> TotalNotEvaluatedApplications(int advertisementId);
+        public Task<int>TotalNotEvaluatedApplications(int id);
 
-        public Task<int> AcceptedApplications(int advertisementId);
+        public Task<int> AcceptedApplications(int id);
 
-        public Task<int> RejectedApplications(int advertisementId);
+        public Task<int> RejectedApplications(int id);
     }
 }
