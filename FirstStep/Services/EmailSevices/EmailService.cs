@@ -109,5 +109,24 @@ namespace FirstStep.Services.EmailSevices
 
             
         }
+
+        public async void OTPRequestSignUp(EmailDto request, string email, string firstName)
+        {
+            EmailDto otpBody = new();
+            var builder = new BodyBuilder();
+            Random random = new Random();
+            int otp = random.Next(100000, 999999);
+            using (StreamReader SourceReader = System.IO.File.OpenText("Template/OTPEmailService.html"))
+            {
+                builder.HtmlBody = SourceReader.ReadToEnd();
+            }
+            otpBody.To = email;
+            otpBody.Subject = "FirstStep Verification OTP";
+            builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp.ToString());
+            builder.HtmlBody = builder.HtmlBody.Replace("{username}", firstName);
+            otpBody.Body = builder.HtmlBody;
+
+            this.SendEmail(otpBody);
+        }
     }
 }
