@@ -130,5 +130,43 @@ namespace FirstStep.Services.EmailSevices
 
             this.SendEmail(emailBody);
         }
+
+        public async void EvaluatedCompanyRegistraionApplicationEmail(EmailDto request, string email, bool HasAccepted, string comment, string link, string company_name)
+        {
+      
+            EmailDto emailBody = new();
+            var builder = new BodyBuilder();
+            using (StreamReader SourceReader = System.IO.File.OpenText("Template/EvaluatedCompanyRegistrationApplicationTemplate.html"))
+            {
+                builder.HtmlBody = SourceReader.ReadToEnd();
+            }
+            emailBody.To = email;
+            builder.HtmlBody = builder.HtmlBody.Replace("{company}", company_name);
+            if (HasAccepted == true)
+            {
+                emailBody.Subject = "Company is successfully registered in the FirstStep Platform";
+                builder.HtmlBody = builder.HtmlBody.Replace("{acceptedStatus}", "Your company has got successfully registered in the FirstStep job matching platform");
+                builder.HtmlBody = builder.HtmlBody.Replace("{message}", "Use the link provided below to get started with First Step job matching platform.");
+                builder.HtmlBody = builder.HtmlBody.Replace("{comment}", "");
+                builder.HtmlBody = builder.HtmlBody.Replace("{link_here}", link);// link to company Admin dashboard
+                builder.HtmlBody = builder.HtmlBody.Replace("{link_text}", link+" Please click this link");// link to company Admin dashboard
+
+            }
+            else
+            {
+                emailBody.Subject = "Company registration request got denied.";
+                builder.HtmlBody = builder.HtmlBody.Replace("{acceptedStatus}", "Company registration request for FirstStep job matching platform got denied. ");
+                builder.HtmlBody = builder.HtmlBody.Replace("{message}", "Use the link provided below to get started with First Step job matching platform. The following section provides the reasoning to registration request to get denined.");
+                builder.HtmlBody = builder.HtmlBody.Replace("{comment}", comment);//comment that has been entered when rejecting an company registration application
+                builder.HtmlBody = builder.HtmlBody.Replace("{link_here}", link);// link to document submission page
+                builder.HtmlBody = builder.HtmlBody.Replace("{link_text}", link+" refer this link to start the registration process all over again.");
+            }
+            emailBody.Body = builder.HtmlBody;
+
+
+
+            this.SendEmail(emailBody);
+
+        }
     }
 }
