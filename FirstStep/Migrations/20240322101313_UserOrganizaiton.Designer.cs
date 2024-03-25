@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240322101313_UserOrganizaiton")]
+    partial class UserOrganizaiton
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,8 +147,13 @@ namespace FirstStep.Migrations
                     b.Property<int>("advertisement_id")
                         .HasColumnType("int");
 
-                    b.Property<int?>("seekeruser_id")
-                        .HasColumnType("int");
+                    b.Property<string>("email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("phone_number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("status")
                         .IsRequired()
@@ -154,14 +162,9 @@ namespace FirstStep.Migrations
                     b.Property<DateTime>("submitted_date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("user_id")
-                        .HasColumnType("int");
-
                     b.HasKey("application_Id");
 
                     b.HasIndex("advertisement_id");
-
-                    b.HasIndex("seekeruser_id");
 
                     b.ToTable("Applications");
                 });
@@ -340,12 +343,23 @@ namespace FirstStep.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("organization")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("password_hash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("refresh_token")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("refresh_token_expiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("token")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("user_type")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("user_id");
@@ -511,13 +525,7 @@ namespace FirstStep.Migrations
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("FirstStep.Models.Seeker", "seeker")
-                        .WithMany("applications")
-                        .HasForeignKey("seekeruser_id");
-
                     b.Navigation("advertisement");
-
-                    b.Navigation("seeker");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
@@ -641,11 +649,6 @@ namespace FirstStep.Migrations
                     b.Navigation("professionKeywords");
 
                     b.Navigation("seekers");
-                });
-
-            modelBuilder.Entity("FirstStep.Models.Seeker", b =>
-                {
-                    b.Navigation("applications");
                 });
 
             modelBuilder.Entity("FirstStep.Models.SystemAdmin", b =>

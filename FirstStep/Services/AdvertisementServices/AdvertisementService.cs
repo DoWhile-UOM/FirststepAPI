@@ -98,42 +98,58 @@ namespace FirstStep.Services
             return advertisementDto;
         }
 
-        public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompanyID(int companyID, string status)
+        // fill the advertisement form when updating an advertisement
+        public async Task<UpdateAdvertisementDto> GetByIdWithKeywords(int id)
+        {
+            var dbAdvertismeent = await FindById(id);
+            var currentAdData = _mapper.Map<UpdateAdvertisementDto>(dbAdvertismeent);
+
+            currentAdData.reqSkills = dbAdvertismeent.skills!.Select(e => e.skill_name).ToList();
+            currentAdData.reqKeywords = dbAdvertismeent.professionKeywords!.Select(e => e.profession_name).ToList();
+
+            return currentAdData;
+        }
+
+        public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status, string title)
+        {
+            ValidateStatus(status);
+
+            if (title != null)
+            {
+
+                var dbAdvertisements = await FindByCompanyID(companyID);
+                
+                // filter advertisements by title
+                var filteredAdvertisements = dbAdvertisements.Where(x => x.title.ToLower().Contains(title.ToLower())).ToList();
+                
+                // split title into sub parts and filter advertisements by each sub part
+                List<string> titleSubParts = title.Split(' ').ToList();
+                foreach (string subPart in titleSubParts)
+                {
+                    foreach (var ad in dbAdvertisements.Where(x => x.title.ToLower().Contains(subPart.ToLower())).ToList())
+                    {
+                        if (!filteredAdvertisements.Contains(ad))
+                        {
+                            filteredAdvertisements.Add(ad);
+                        }
+                    }
+                }
+
+                return CreateAdvertisementList(filteredAdvertisements, status);
+            }
+            else
+            {
+                return await GetAdvertisementsByCompany(companyID, status);
+            }
+        }
+
+        public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status)
         {
             ValidateStatus(status);
 
             var dbAdvertisements = await FindByCompanyID(companyID);
 
-            // map to jobofferDtos
-            var jobOfferDtos = new List<JobOfferDto>();
-
-            foreach (var ad in dbAdvertisements)
-            {
-                var jobOfferDto = _mapper.Map<JobOfferDto>(ad);
-
-                if (status != "all" && ad.current_status != status)
-                {
-                    continue;
-                }
-
-                jobOfferDto.field_name = ad.job_Field!.field_name;
-
-                // search number of applications
-                jobOfferDto.no_of_applications = 0;
-
-                // search number of evaluated applications
-                jobOfferDto.no_of_evaluated_applications = 0;
-
-                // search number if accepted applications
-                jobOfferDto.no_of_accepted_applications = 0;
-
-                // search number of rejected applications
-                jobOfferDto.no_of_rejected_applications = 0;
-
-                jobOfferDtos.Add(jobOfferDto);
-            }
-
-            return jobOfferDtos;
+            return CreateAdvertisementList(dbAdvertisements, status);
         }
 
         public async Task Create(AddAdvertisementDto advertisementDto)
@@ -190,15 +206,15 @@ namespace FirstStep.Services
             dbAdvertisement.field_id = reqAdvertisement.field_id;
 
             // update keywords in the advertisement
-            dbAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(reqAdvertisement.keywords, dbAdvertisement.field_id);
+            dbAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(reqAdvertisement.reqKeywords, dbAdvertisement.field_id);
             
             // update skills in the advertisement
-            dbAdvertisement.skills = await IncludeSkillsToAdvertisement(reqAdvertisement.skills);
+            dbAdvertisement.skills = await IncludeSkillsToAdvertisement(reqAdvertisement.reqSkills);
 
             await _context.SaveChangesAsync();
         }
 
-        public async Task SaveAdvertisement(int advertisementId, int seekerId)
+        public async Task SaveAdvertisement(int advertisementId, int seekerId, bool isSave)
         {
             // find the seeker
             var seeker = await _seekerService.GetById(seekerId);
@@ -212,31 +228,13 @@ namespace FirstStep.Services
                 advertisement.savedSeekers = new List<Seeker>();
             }
             
-            if (!advertisement.savedSeekers.Contains(seeker))
+            if (!advertisement.savedSeekers.Contains(seeker) && isSave)
             {
                 // add the seeker to the list of saved seekers
                 advertisement.savedSeekers.Add(seeker);
                 await _context.SaveChangesAsync();
             }
-        }
-
-        public async Task UnsaveAdvertisement(int advertisementId, int seekerId)
-        {
-            // find the seeker
-            var seeker = await _seekerService.GetById(seekerId);
-
-            // find the advertisement
-            var advertisement = await FindById(advertisementId);
-
-            // check whether the advertisement is already saved
-            
-            if (advertisement.savedSeekers is null)
-            {
-                // no any saved seeker for the advertiement
-                throw new Exception("Advertisement is not saved by any seeker.");
-            }
-
-            if (advertisement.savedSeekers.Contains(seeker))
+            else if (advertisement.savedSeekers.Contains(seeker) && !isSave)
             {
                 // remove the seeker from the list of saved seekers
                 advertisement.savedSeekers.Remove(seeker);
@@ -382,6 +380,41 @@ namespace FirstStep.Services
             return adCardDtos;
         }
 
+        // map the advertisements to a list of JobOfferDtos and create advertisement list for the company
+        public IEnumerable<JobOfferDto> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        {
+            // map to jobofferDtos
+            var jobOfferDtos = new List<JobOfferDto>();
+
+            foreach (var ad in dbAds)
+            {
+                var jobOfferDto = _mapper.Map<JobOfferDto>(ad);
+
+                if (status != "all" && ad.current_status != status)
+                {
+                    continue;
+                }
+
+                jobOfferDto.field_name = ad.job_Field!.field_name;
+
+                // search number of applications
+                jobOfferDto.no_of_applications = 0;
+
+                // search number of evaluated applications
+                jobOfferDto.no_of_evaluated_applications = 0;
+
+                // search number if accepted applications
+                jobOfferDto.no_of_accepted_applications = 0;
+
+                // search number of rejected applications
+                jobOfferDto.no_of_rejected_applications = 0;
+
+                jobOfferDtos.Add(jobOfferDto);
+            }
+
+            return jobOfferDtos;
+        }
+
         // validate status
         private void ValidateStatus(string status)
         {
@@ -450,6 +483,7 @@ namespace FirstStep.Services
                 .Include("professionKeywords")
                 .Include("job_Field")
                 .Include("skills")
+                .Include("hrManager")
                 .Include("savedSeekers")
                 .Where(ad =>
                     ad.country == requestAdsDto.country &&
