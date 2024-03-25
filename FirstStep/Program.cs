@@ -1,8 +1,9 @@
 using FirstStep.Data;
 using FirstStep.Services;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,6 @@ builder.Services.AddScoped<ISeekerService, SeekerService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IRevisionService, RevisionService>();
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
-
 
 //JWT Authentication
 builder.Services.AddAuthentication(x =>
