@@ -32,10 +32,24 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
+        [Route("GetAdvertisementById/update/{jobID:int}")]
+        public async Task<ActionResult<UpdateAdvertisementDto>> GetAdvertisementByIdWithKeywords(int jobID)
+        {
+            return Ok(await _service.GetByIdWithKeywords(jobID));
+        }
+
+        [HttpGet]
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}")]
         public async Task<ActionResult<IEnumerable<JobOfferDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
         {
-            return Ok(await _service.GetAdvertisementsByCompanyID(companyID, status));
+            return Ok(await _service.GetAdvertisementsByCompany(companyID, status));
+        }
+
+        [HttpGet]
+        [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}/title={title}")]
+        public async Task<ActionResult<IEnumerable<JobOfferDto>>> GetAdvertisementsByCompanyID(int companyID, string status, string title)
+        {
+            return Ok(await _service.GetAdvertisementsByCompany(companyID, status, title));
         }
 
         [HttpGet]
@@ -94,18 +108,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpPut]
-        [Route("SaveAdvertisement/{jobID:int}/seekerId={seekerId:int}")]
-        public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId)
+        [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
+        public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {
-            await _service.SaveAdvertisement(jobID, seekerId);
-            return Ok();
-        }
-
-        [HttpPut]
-        [Route("UnsaveAdvertisement/{jobID:int}/seekerId={seekerId:int}")]
-        public async Task<IActionResult> UnsaveAdvertisement(int jobID, int seekerId)
-        {
-            await _service.UnsaveAdvertisement(jobID, seekerId);
+            await _service.SaveAdvertisement(jobID, seekerId, isSave);
             return Ok();
         }
 

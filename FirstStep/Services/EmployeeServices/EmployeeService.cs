@@ -76,7 +76,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllEmployees(int company_Id)
         {
-            ICollection<Employee> employees = await _context.Employees.Where(e => e.company_id == company_Id).ToListAsync();
+            ICollection<Employee> employees = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type != "CA").ToListAsync();
             if (employees is null)
             {
                 throw new Exception("There are no employees under the company");

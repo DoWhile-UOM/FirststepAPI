@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
