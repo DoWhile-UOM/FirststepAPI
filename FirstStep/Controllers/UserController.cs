@@ -36,7 +36,7 @@ namespace FirstStep.Controllers
                 return BadRequest(new { message = "Invalid Password" });
 
 
-            user.token = CreateJwt(user); //create access token for session
+            user.token = await CreateJwt(user); //create access token for session
             var newAccessToken = user.token; 
             var newRefreshToken = CreateRefreshToken(); //create refresh token
             user.refresh_token= newRefreshToken;
@@ -153,26 +153,34 @@ namespace FirstStep.Controllers
         }
 
         //JWT token generator
-        private string CreateJwt(User user)
+        private async Task<string> CreateJwt(User user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes("AshanMatheeshaSecretKeythisisSecret");
+
+            User? dbUser = await _context.Users.FirstOrDefaultAsync(u => u.user_id == user.user_id);
+
+            if (dbUser == null)
+            {
+                throw new Exception("User not found");
+            }
+
             var identity = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
-                new Claim(ClaimTypes.Role, user.user_type),//Store role in JWT Token (seeker ,sa ,HRM ,HRA, ca)
+                new Claim(ClaimTypes.Role, dbUser.user_type),//Store role in JWT Token (seeker ,sa ,HRM ,HRA, ca)
                 new Claim(ClaimTypes.GivenName, user.first_name),
                 new Claim(ClaimTypes.Surname,user.last_name),
                 new Claim(ClaimTypes.Webpage, user.first_name)
             });
-            /*
-            Employee? employee = _context.Employees.Include("company").FirstOrDefaultAsync(e => e.user_id == user.user_id);
+            
+            Employee? employee = await _context.Employees.Include("company").FirstOrDefaultAsync(e => e.user_id == user.user_id);
 
             if (employee == null)
             {
                 if (user.user_type == "seeker" || user.user_type == "sa")
                 {
-                    identity.AddClaim(new Claim(ClaimTypes.Webpage, user.user_type));
+                    identity.AddClaim(new Claim(ClaimTypes.Webpage, dbUser.user_type));
                 }
                 else
                 {
@@ -191,7 +199,7 @@ namespace FirstStep.Controllers
                     throw new Exception("Company name is null");
                 }
             }
-            */
+            
             
             var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
@@ -263,7 +271,7 @@ namespace FirstStep.Controllers
             await _context.SaveChangesAsync();
             return Ok(new TokenApiDto()
             {
-                AccessToken =  newAccessToken,
+                AccessToken =  await newAccessToken,
                 RefreshToken = newRefreshToken,
             });
         }
