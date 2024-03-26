@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FirstStep.Models
 {
-    [PrimaryKey(nameof(email), nameof(otp))]
+    [PrimaryKey(nameof(email))]
     public class OTPRequests  //Email address and OTP stores in here
     {
         [EmailAddress]

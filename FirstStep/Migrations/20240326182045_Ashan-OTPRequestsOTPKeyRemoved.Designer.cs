@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240326182045_Ashan-OTPRequestsOTPKeyRemoved")]
+    partial class AshanOTPRequestsOTPKeyRemoved
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -260,8 +263,7 @@ namespace FirstStep.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("otp")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("otp_expiry_date")
                         .HasColumnType("datetime2");
@@ -269,7 +271,7 @@ namespace FirstStep.Migrations
                     b.Property<bool>("status")
                         .HasColumnType("bit");
 
-                    b.HasKey("email");
+                    b.HasKey("email", "otp");
 
                     b.ToTable("OTPRequests");
                 });

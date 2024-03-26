@@ -24,7 +24,7 @@ namespace FirstStep.Controllers
         public IActionResult OTPSend(string email,string fname)
         {
             _emailService.OTP(email, fname, "This is the OTP to verfiy you Email");
-            return Ok();
+            return Ok(new { message = "OTP send succesfully"});
         }
 
         [HttpPost]
@@ -33,10 +33,10 @@ namespace FirstStep.Controllers
         {
             if(_emailService.VerifyOTP(new EmailVerifyDto { email = email, otp = otp }))
             {
-                return Ok();
+                return Ok(new { message = "OTP is Valid" });
             }
 
-            return BadRequest(new { message = "Invalid OTP" });
+            return BadRequest(new { message = "Expired or Invalid OTP" });
         }
     }
 }
