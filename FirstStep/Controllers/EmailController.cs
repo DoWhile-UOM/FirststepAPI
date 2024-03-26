@@ -20,48 +20,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("SendEmail")]
-        public IActionResult SendEmail(string email, int type)
+        [Route("EmailVerify")]
+        public IActionResult SendEmail(string email,string fname)
         {
-            if (type == 0)
-            {
-                // OTP Email
-                EmailDto request = new();
-                var builder = new BodyBuilder();
-                Random random = new Random();
-                int otp = random.Next(100000, 999999);
-                using (StreamReader SourceReader = System.IO.File.OpenText("Template/OTPEmailService.html"))
-                {
-                    builder.HtmlBody = SourceReader.ReadToEnd();
-                }
-
-                request.To = email;
-                request.Subject = "FirstStep Verification OTP";
-                builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp.ToString());
-                request.Body = builder.HtmlBody;
-
-                _emailService.SendEmail(request);
-            }
-            else if (type == 1)
-            {
-                // Registration Email
-                //
-                EmailDto request = new();
-                var builder = new BodyBuilder();
-                using (StreamReader SourceReader = System.IO.File.OpenText("Template/ApplicationSentEmail.html"))
-                {
-                    builder.HtmlBody = SourceReader.ReadToEnd();
-                }
-                request.To = email;
-                request.Subject = "Application was successfully sent";
-                builder.HtmlBody = builder.HtmlBody.Replace("{username}", email);
-                request.Body = builder.HtmlBody;
-
-
-
-                _emailService.SendEmail(request);
-            }
-
+            _emailService.OTP(email, fname, "This is the OTP to verfiy you Email");
             return Ok();
         }
     }

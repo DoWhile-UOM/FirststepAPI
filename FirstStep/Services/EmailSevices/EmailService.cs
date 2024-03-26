@@ -66,7 +66,7 @@ namespace FirstStep.Services.EmailSevices
         }
 
         // sending email in company registration process 
-        public async void SendEmailCompanyRegistration(string email,string company_name, string applicationEvaluationStatusLink)
+        public void SendEmailCompanyRegistration(string email,string company_name, string applicationEvaluationStatusLink)
         {
             
                 // Registration Email
@@ -90,7 +90,7 @@ namespace FirstStep.Services.EmailSevices
 
             
         }
-        public async void OTP(EmailDto request, string reciever, string email, string message)
+        public void OTP(string email, string recieverName, string message)
         {
             EmailDto otpBody = new();
             var builder = new BodyBuilder();
@@ -103,14 +103,14 @@ namespace FirstStep.Services.EmailSevices
             otpBody.To = email;
             otpBody.Subject = "FirstStep Verification OTP";
             builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp.ToString());
-            builder.HtmlBody = builder.HtmlBody.Replace("{name}", reciever);//reciever= seeker's firstName / company name / Employee firstName
+            builder.HtmlBody = builder.HtmlBody.Replace("{name}", recieverName);//reciever= seeker's firstName / company name / Employee firstName
             builder.HtmlBody = builder.HtmlBody.Replace("{message}", message);//message = "to proceed with the registration." / "to proceed with the changing password process"
             otpBody.Body = builder.HtmlBody;
 
             this.SendEmail(otpBody);
         }
 
-        public async void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName, string jobAdvertisementTitle, string jobApplicationEvaluationStatusLink)
+        public void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName, string jobAdvertisementTitle, string jobApplicationEvaluationStatusLink)
         {
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
@@ -131,7 +131,7 @@ namespace FirstStep.Services.EmailSevices
             this.SendEmail(emailBody);
         }
 
-        public async void EvaluatedCompanyRegistraionApplicationEmail(EmailDto request, string email, bool HasAccepted, string comment, string link, string company_name)
+        public void EvaluatedCompanyRegistraionApplicationEmail(EmailDto request, string email, bool HasAccepted, string comment, string link, string company_name)
         {
       
             EmailDto emailBody = new();
