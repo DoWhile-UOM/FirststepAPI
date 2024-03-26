@@ -21,7 +21,15 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("EmailVerify")]
-        public IActionResult SendEmail(string email,string fname)
+        public IActionResult OTPSend(string email,string fname)
+        {
+            _emailService.OTP(email, fname, "This is the OTP to verfiy you Email");
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("EmailOTPCheck")]
+        public IActionResult OTPCheck(string email, string fname)
         {
             _emailService.OTP(email, fname, "This is the OTP to verfiy you Email");
             return Ok();
