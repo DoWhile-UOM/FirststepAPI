@@ -36,7 +36,7 @@ namespace FirstStep.Controllers
                 return BadRequest(new { message = "Invalid Password" });
 
 
-            user.token = await CreateJwtAsync(user); //create access token for session
+            user.token = CreateJwt(user); //create access token for session
             var newAccessToken = user.token; 
             var newRefreshToken = CreateRefreshToken(); //create refresh token
             user.refresh_token= newRefreshToken;
@@ -153,19 +153,20 @@ namespace FirstStep.Controllers
         }
 
         //JWT token generator
-        private async Task<string> CreateJwtAsync(User user)
+        private string CreateJwt(User user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("veryverysceret.....");
+            var key = Encoding.ASCII.GetBytes("AshanMatheeshaSecretKeythisisSecret");
             var identity = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
                 new Claim(ClaimTypes.Role, user.user_type),//Store role in JWT Token (seeker ,sa ,HRM ,HRA, ca)
                 new Claim(ClaimTypes.GivenName, user.first_name),
                 new Claim(ClaimTypes.Surname,user.last_name),
+                new Claim(ClaimTypes.Webpage, user.first_name)
             });
-
-            Employee? employee = await _context.Employees.Include("company").FirstOrDefaultAsync(e => e.user_id == user.user_id);
+            /*
+            Employee? employee = _context.Employees.Include("company").FirstOrDefaultAsync(e => e.user_id == user.user_id);
 
             if (employee == null)
             {
@@ -190,7 +191,8 @@ namespace FirstStep.Controllers
                     throw new Exception("Company name is null");
                 }
             }
-
+            */
+            
             var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -221,7 +223,7 @@ namespace FirstStep.Controllers
         //Fetch user prinicipals from the expired access token
         private ClaimsPrincipal GetPrincipleFromExpiredToken(string token)
         {
-            var key = Encoding.ASCII.GetBytes("veryverysceret.....");
+            var key = Encoding.ASCII.GetBytes("AshanMatheeshaSecretKeythisisSecret");
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateAudience = false,
@@ -255,13 +257,13 @@ namespace FirstStep.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.email == username);
             if (user is null || user.refresh_token != refreshToken || user.refresh_token_expiry <= DateTime.Now)
                 return BadRequest("Invalid Request");
-            var newAccessToken = CreateJwtAsync(user);
+            var newAccessToken = CreateJwt(user);
             var newRefreshToken = CreateRefreshToken();
             user.refresh_token = newRefreshToken;
             await _context.SaveChangesAsync();
             return Ok(new TokenApiDto()
             {
-                AccessToken = await newAccessToken,
+                AccessToken =  newAccessToken,
                 RefreshToken = newRefreshToken,
             });
         }
