@@ -1,6 +1,9 @@
 ﻿using Azure;
 using Azure.Communication.Email;
+using FirstStep.Data;
+using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
 using MimeKit;
 
 namespace FirstStep.Services.EmailSevices
@@ -9,24 +12,23 @@ namespace FirstStep.Services.EmailSevices
     {
         private readonly IConfiguration _config;
         private readonly ILogger<EmailService> _logger;
+        private readonly DataContext _context;
 
-        public EmailService(IConfiguration config, ILogger<EmailService> logger)
+        public EmailService(IConfiguration config, ILogger<EmailService> logger, DataContext context)
         {
             _config = config;
             _logger = logger;
+            _context = context;
         }
 
         public async void SendEmail(EmailDto request)
         {
-            // This code demonstrates how to fetch your connection string
-            // from an environment variable.
 
-
+            //Email details
             var subject = request.Subject;
             var htmlContent = request.Body;
             var sender = "DoNotReply@6e8e40e7-e2d3-4f38-952f-d6dd1bbc9bca.azurecomm.net";
             var recipient =request.To;
-
 
             try
             {
@@ -90,12 +92,18 @@ namespace FirstStep.Services.EmailSevices
 
             
         }
-        public void OTP(string email, string recieverName, string message)
+        public void OTP(string email, string recieverName, string message) //Send OTP to the email
         {
             EmailDto otpBody = new();
+
             var builder = new BodyBuilder();
-            Random random = new Random();
-            int otp = random.Next(100000, 999999);
+
+            int otp = GenerateOTP();
+
+            string otpStr=otp.ToString();
+
+            CreateOTPRequestRecord(email, otpStr);
+
             using (StreamReader SourceReader = System.IO.File.OpenText("Template/CommonOTPEmailTemplate.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
@@ -109,6 +117,73 @@ namespace FirstStep.Services.EmailSevices
 
             this.SendEmail(otpBody);
         }
+
+        public void CreateOTPRequestRecord(string emailIn,string otpIn) //Create Email OTP Request Record
+        {
+            var emailCheck = _context.OTPRequests.FirstOrDefault(x => x.email == emailIn);
+
+            if (emailCheck is not null)
+            {
+                emailCheck.otp = otpIn;
+                emailCheck.otp_expiry_date = DateTime.Now.AddMinutes(5);
+                _context.SaveChanges();
+            }
+            else
+            {
+                OTPRequests otpNewRequestObj = new OTPRequests
+                {
+                    email = emailIn,
+                    otp = otpIn,
+                    status = false,
+                    otp_expiry_date = DateTime.Now.AddMinutes(5)
+
+                };
+                _context.OTPRequests.Add(otpNewRequestObj);
+                _context.SaveChanges();
+
+            }
+
+
+        }
+
+
+
+        public int GenerateOTP()//Generate OTP code to store
+        {
+            Random random = new Random();
+            return random.Next(100000, 999999);
+        }
+
+
+
+        public bool VerifyOTP(EmailVerifyDto request) //Check Email with OTP if available return true
+        {
+            var otpRequest = _context.OTPRequests.FirstOrDefault(x => x.email == request.email && x.otp == request.otp && x.status == false && x.otp_expiry_date > DateTime.Now);
+
+            if (otpRequest == null)
+            {
+                return false;
+            }
+            else
+            {
+                otpRequest.status = true;
+                _context.SaveChanges();
+                return true;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         public void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName, string jobAdvertisementTitle, string jobApplicationEvaluationStatusLink)
         {

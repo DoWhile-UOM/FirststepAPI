@@ -20,7 +20,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("EmailVerify")]
+        [Route("OTPRequest")]
         public IActionResult OTPSend(string email,string fname)
         {
             _emailService.OTP(email, fname, "This is the OTP to verfiy you Email");
@@ -29,10 +29,14 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("EmailOTPCheck")]
-        public IActionResult OTPCheck(string email, string fname)
+        public IActionResult OTPCheck(string email, string otp)
         {
-            _emailService.OTP(email, fname, "This is the OTP to verfiy you Email");
-            return Ok();
+            if(_emailService.VerifyOTP(new EmailVerifyDto { email = email, otp = otp }))
+            {
+                return Ok();
+            }
+
+            return BadRequest(new { message = "Invalid OTP" });
         }
     }
 }

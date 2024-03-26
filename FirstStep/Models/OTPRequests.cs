@@ -11,7 +11,7 @@ namespace FirstStep.Models
 
         public required string otp { get; set; }
 
-        public required string status { get; set; }
+        public required bool status { get; set; }
 
         public required DateTime otp_expiry_date { get; set; }
     }
