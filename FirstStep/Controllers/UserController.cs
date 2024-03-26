@@ -174,6 +174,9 @@ namespace FirstStep.Controllers
                 new Claim(ClaimTypes.Webpage, user.first_name)
             });
             
+            identity.AddClaim(new Claim(ClaimTypes.Webpage, dbUser.user_type));
+
+/*
             Employee? employee = await _context.Employees.Include("company").FirstOrDefaultAsync(e => e.user_id == user.user_id);
 
             if (employee == null)
@@ -198,7 +201,7 @@ namespace FirstStep.Controllers
                 {
                     throw new Exception("Company name is null");
                 }
-            }
+            }*/
             
             
             var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
