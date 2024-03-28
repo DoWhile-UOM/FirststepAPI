@@ -3,6 +3,7 @@ using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace FirstStep.Services
 {
@@ -11,6 +12,10 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IAdvertisementService _advertisementService;
+
+        // Random ID generation
+        private static readonly Random random = new Random();
+        private static readonly HashSet<string> seenIds = new HashSet<string>();
 
         public CompanyService(DataContext context, IMapper mapper, IAdvertisementService advertisementService)
         {
@@ -93,6 +98,38 @@ namespace FirstStep.Services
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
         }
+
+        //Company Resgistration State Check ID Generation Starts here
+        public static string GenerateUniqueStringId(int inputInteger)
+        {
+            while (true)
+            {
+                // Generate a random string of 10 characters (customize length as needed)
+                string idString = GenerateRandomString(10);
+
+                // Check if the string with the integer appended is unique
+                string idWithInteger = idString + inputInteger.ToString();
+                if (!seenIds.Contains(idWithInteger))
+                {
+                    seenIds.Add(idWithInteger); // Store generated ID for uniqueness check
+                    return idString;
+                }
+            }
+        }
+
+        private static string GenerateRandomString(int length)
+        {
+            const string charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            return new string(Enumerable.Repeat(charset, length)
+                          .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        //Company Resgistration State Check ID Generation Ends here
+
+
+
+
+
 
         public class EmailAlreadyExistsException : Exception
         {
