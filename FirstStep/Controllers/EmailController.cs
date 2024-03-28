@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MimeKit;
 using FirstStep.Services.EmailSevices;
 
-// this controller is built to have a breif idea on how to use the esnd email service
-// this controller is more like a temp sample controller
+/*Controller for Email Service*/
 
 namespace FirstStep.Controllers
 {
@@ -20,7 +19,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("OTPRequest")]
+        [Route("OTPRequest")]// Request OTP
         public IActionResult OTPSend(string email,string fname)
         {
             _emailService.OTP(email, fname, "This is the OTP to verfiy you Email");
@@ -28,7 +27,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("EmailOTPCheck")]
+        [Route("EmailOTPCheck")]// Check Email with OTP
         public IActionResult OTPCheck(string email, string otp)
         {
             if(_emailService.VerifyOTP(new EmailVerifyDto { email = email, otp = otp }))
