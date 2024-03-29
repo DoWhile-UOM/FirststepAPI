@@ -34,7 +34,7 @@ namespace FirstStep.Data
 
         public DbSet<Revision> Revisions { get; set; } = null!;
 
-        public DbSet<OTPRequests> OTPRequests { get; set; } = null!;
+        public DbSet<OTPRequest> OTPRequests { get; set; } = null!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
