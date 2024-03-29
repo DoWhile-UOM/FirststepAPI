@@ -113,7 +113,7 @@ namespace FirstStep.Services
             builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
             otpBody.Body = builder.HtmlBody;
 
-            SendEmail(otpBody);
+            //SendEmail(otpBody);
         }
 
         private async Task CreateOTPRequestRecord(OTPRequests OTPrequest) //Create Email OTP Request Record
@@ -132,7 +132,12 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
 
             Console.WriteLine("OTP Request Record Created.....");
-            var deletionTimer = new Timer(DeleteOTPRequestRecord, dbOtpRequest, 15000, Timeout.Infinite); // 300000
+            Console.WriteLine(OTPrequest);
+
+            // delete automatically otp request after 5mins
+            Timer timer = new Timer(DeleteOTPRequestRecord, OTPrequest, 1500, Timeout.Infinite);
+            
+            Console.WriteLine("Timer Started.....");
         }
 
         public async Task<bool> VerifyOTP(OTPRequests request) //Check Email with OTP if available return true
@@ -147,6 +152,10 @@ namespace FirstStep.Services
             if (state is null)
             {
                 return;
+            }
+            else
+            {
+                Console.WriteLine("OTP is null");
             }
 
             OTPRequests entityToDelete = (OTPRequests)state;
