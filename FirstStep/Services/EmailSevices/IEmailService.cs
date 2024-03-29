@@ -1,6 +1,7 @@
-﻿using FirstStep.Models.DTOs;
+﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
-namespace FirstStep.Services.EmailSevices
+namespace FirstStep.Services
 {
     public interface IEmailService
     {
@@ -8,7 +9,7 @@ namespace FirstStep.Services.EmailSevices
         
         Task SendOTPEmail(string email, string recieverName);//for signup, company registraion and person verification to allow pasword changin in company portal
         
-        Task<bool> VerifyOTP(EmailVerifyDto request);// OTP verification
+        Task<bool> VerifyOTP(OTPRequests request);
         
         void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName,string jobAdvertisementTitle,string jobApplicationEvaluationStatusLink);//used in seeker portal
         

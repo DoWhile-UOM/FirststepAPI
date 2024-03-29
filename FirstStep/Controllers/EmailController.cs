@@ -1,7 +1,6 @@
-﻿using FirstStep.Models.DTOs;
-using Microsoft.AspNetCore.Mvc;
-using MimeKit;
-using FirstStep.Services.EmailSevices;
+﻿using Microsoft.AspNetCore.Mvc;
+using FirstStep.Services;
+using FirstStep.Models;
 
 /*Controller for Email Service*/
 
@@ -20,17 +19,17 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("RequestOTP/email={email}/fullname={fullName}")]
-        public IActionResult RequestOTP(string email, string fullName)
+        public async Task<IActionResult> RequestOTP(string email, string fullName)
         {
-            _emailService.SendOTPEmail(email, fullName);
+            await _emailService.SendOTPEmail(email, fullName);
             return Ok();
         }
 
         [HttpPost]
         [Route("VerifyEmail/email={email}/otp={otp}")]
-        public async Task<IActionResult> OTPCheck(string email, string otp)
+        public async Task<IActionResult> OTPCheck(string email, int otp)
         {
-            if(await _emailService.VerifyOTP(new EmailVerifyDto { email = email, otp = otp }))
+            if(await _emailService.VerifyOTP(new OTPRequests { email = email, otp = otp }))
             {
                 return Ok();
             }

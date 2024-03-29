@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240329131452_Isuranga_ChangePKofOTPRequest")]
+    partial class Isuranga_ChangePKofOTPRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -259,10 +262,10 @@ namespace FirstStep.Migrations
                     b.Property<string>("email")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("otp")
-                        .HasColumnType("int");
+                    b.Property<string>("otp")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("email");
+                    b.HasKey("email", "otp");
 
                     b.ToTable("OTPRequests");
                 });

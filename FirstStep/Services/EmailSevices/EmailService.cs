@@ -6,18 +6,14 @@ using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
 
-namespace FirstStep.Services.EmailSevices
+namespace FirstStep.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly IConfiguration _config;
-        private readonly ILogger<EmailService> _logger;
         private readonly DataContext _context;
 
-        public EmailService(IConfiguration config, ILogger<EmailService> logger, DataContext context)
+        public EmailService(DataContext context)
         {
-            _config = config;
-            _logger = logger;
             _context = context;
         }
 
@@ -27,7 +23,7 @@ namespace FirstStep.Services.EmailSevices
             var subject = request.Subject;
             var htmlContent = request.Body;
             var sender = "DoNotReply@6e8e40e7-e2d3-4f38-952f-d6dd1bbc9bca.azurecomm.net";
-            var recipient =request.To;
+            var recipient = request.To;
 
             try
             {
@@ -94,15 +90,16 @@ namespace FirstStep.Services.EmailSevices
 
         public async Task SendOTPEmail(string email, string recieverName) //Send OTP to the email
         {
-            EmailDto otpBody = new();
+            OTPRequests OTPrequest = new OTPRequests
+            {
+                email = email,
+                otp = GenerateOTP()
+            };
+
+            await CreateOTPRequestRecord(OTPrequest);
 
             var builder = new BodyBuilder();
-
-            string otp = GenerateOTP().ToString();
-
-            Console.WriteLine(otp);
-
-            await CreateOTPRequestRecord(email, otp);
+            EmailDto otpBody = new EmailDto();
 
             using (StreamReader SourceReader = File.OpenText("Template/CommonOTPEmailTemplate.html"))
             {
@@ -111,7 +108,7 @@ namespace FirstStep.Services.EmailSevices
 
             otpBody.To = email;
             otpBody.Subject = "FirstStep Verification OTP";
-            builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp);
+            builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", OTPrequest.otp.ToString());
             builder.HtmlBody = builder.HtmlBody.Replace("{name}", recieverName);//reciever= seeker's firstName / company name / Employee firstName
             builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
             otpBody.Body = builder.HtmlBody;
@@ -119,32 +116,28 @@ namespace FirstStep.Services.EmailSevices
             SendEmail(otpBody);
         }
 
-        private async Task CreateOTPRequestRecord(string email, string otp) //Create Email OTP Request Record
+        private async Task CreateOTPRequestRecord(OTPRequests OTPrequest) //Create Email OTP Request Record
         {
-            var dbOtpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == email);
+            var dbOtpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == OTPrequest.email);
 
             if (dbOtpRequest is not null)
             {
-                dbOtpRequest.otp = otp;
+                dbOtpRequest.otp = OTPrequest.otp;
             }
             else
-            {
-                dbOtpRequest = new OTPRequests
-                {
-                    email = email,
-                    otp = otp
-                };
-                
-                _context.OTPRequests.Add(dbOtpRequest);
+            {                
+                _context.OTPRequests.Add(OTPrequest);
             }
 
             await _context.SaveChangesAsync();
+
+            Console.WriteLine("OTP Request Record Created.....");
             var deletionTimer = new Timer(DeleteOTPRequestRecord, dbOtpRequest, 15000, Timeout.Infinite); // 300000
         }
 
-        public async Task<bool> VerifyOTP(EmailVerifyDto request) //Check Email with OTP if available return true
+        public async Task<bool> VerifyOTP(OTPRequests request) //Check Email with OTP if available return true
         {
-            var otpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == request.email && x.otp == request.otp);
+            var otpRequest = await _context.OTPRequests.FirstOrDefaultAsync(e => e.email == request.email && e.otp == request.otp);
 
             return (otpRequest == null) ? false : true;
         }
@@ -161,8 +154,16 @@ namespace FirstStep.Services.EmailSevices
 
             if (existingEntity is not null)
             {
+                Console.WriteLine("Deleting OTP Request Record.....");
+
                 _context.OTPRequests.Remove(existingEntity);
                 _context.SaveChanges();
+
+                Console.WriteLine("OTP Request Record Deleted.....");
+            }
+            else
+            {
+                Console.WriteLine("OTP Request Record Not Found.....");
             }
         }
 
