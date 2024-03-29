@@ -5,6 +5,7 @@ using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
+using System.Threading;
 
 namespace FirstStep.Services
 {
@@ -96,7 +97,10 @@ namespace FirstStep.Services
                 otp = GenerateOTP()
             };
 
-            await CreateOTPRequestRecord(OTPrequest);
+            await SaveOTP(OTPrequest);
+
+            Thread thread = new Thread(() => DeleteOTPRequest(OTPrequest));
+            thread.Start();
 
             var builder = new BodyBuilder();
             EmailDto otpBody = new EmailDto();
@@ -114,9 +118,14 @@ namespace FirstStep.Services
             otpBody.Body = builder.HtmlBody;
 
             //SendEmail(otpBody);
+
+            Console.WriteLine("Waiting for delete OTP Request Thread to finish.....");
+            thread.Join();
+
+            await _context.SaveChangesAsync();
         }
 
-        private async Task CreateOTPRequestRecord(OTPRequests OTPrequest) //Create Email OTP Request Record
+        private async Task SaveOTP(OTPRequests OTPrequest) // save the otp on the OTPRequest table
         {
             var dbOtpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == OTPrequest.email);
 
@@ -129,15 +138,7 @@ namespace FirstStep.Services
                 _context.OTPRequests.Add(OTPrequest);
             }
 
-            await _context.SaveChangesAsync();
-
-            Console.WriteLine("OTP Request Record Created.....");
-            Console.WriteLine(OTPrequest);
-
-            // delete automatically otp request after 5mins
-            Timer timer = new Timer(DeleteOTPRequestRecord, OTPrequest, 1500, Timeout.Infinite);
-            
-            Console.WriteLine("Timer Started.....");
+            //await _context.SaveChangesAsync();
         }
 
         public async Task<bool> VerifyOTP(OTPRequests request) //Check Email with OTP if available return true
@@ -147,26 +148,18 @@ namespace FirstStep.Services
             return (otpRequest == null) ? false : true;
         }
 
-        private void DeleteOTPRequestRecord(object? state) //Delete Email OTP Request Record
+        private void DeleteOTPRequest(OTPRequests request) //Delete Email OTP Request Record
         {
-            if (state is null)
-            {
-                return;
-            }
-            else
-            {
-                Console.WriteLine("OTP is null");
-            }
+            Thread.Sleep(10000);
 
-            OTPRequests entityToDelete = (OTPRequests)state;
-            OTPRequests existingEntity = _context.OTPRequests.FirstOrDefault(e => e.email == entityToDelete.email)!;
+            OTPRequests? existingEntity = _context.OTPRequests.FirstOrDefault(e => e.email == request.email)!;
 
             if (existingEntity is not null)
             {
                 Console.WriteLine("Deleting OTP Request Record.....");
 
                 _context.OTPRequests.Remove(existingEntity);
-                _context.SaveChanges();
+                //await _context.SaveChangesAsync();
 
                 Console.WriteLine("OTP Request Record Deleted.....");
             }
