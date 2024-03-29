@@ -23,7 +23,6 @@ namespace FirstStep.Services.EmailSevices
 
         public async void SendEmail(EmailDto request)
         {
-
             //Email details
             var subject = request.Subject;
             var htmlContent = request.Body;
@@ -92,107 +91,91 @@ namespace FirstStep.Services.EmailSevices
 
             
         }
-        public void OTP(string email, string recieverName, string message) //Send OTP to the email
+
+        public async Task SendOTPEmail(string email, string recieverName) //Send OTP to the email
         {
             EmailDto otpBody = new();
 
             var builder = new BodyBuilder();
 
-            int otp = GenerateOTP();
+            string otp = GenerateOTP().ToString();
 
-            string otpStr=otp.ToString();
+            Console.WriteLine(otp);
 
-            CreateOTPRequestRecord(email, otpStr);
+            await CreateOTPRequestRecord(email, otp);
 
-            using (StreamReader SourceReader = System.IO.File.OpenText("Template/CommonOTPEmailTemplate.html"))
+            using (StreamReader SourceReader = File.OpenText("Template/CommonOTPEmailTemplate.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
+
             otpBody.To = email;
             otpBody.Subject = "FirstStep Verification OTP";
-            builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp.ToString());
+            builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", otp);
             builder.HtmlBody = builder.HtmlBody.Replace("{name}", recieverName);//reciever= seeker's firstName / company name / Employee firstName
-            builder.HtmlBody = builder.HtmlBody.Replace("{message}", message);//message = "to proceed with the registration." / "to proceed with the changing password process"
+            builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
             otpBody.Body = builder.HtmlBody;
 
-            this.SendEmail(otpBody);
+            SendEmail(otpBody);
         }
 
-        public void CreateOTPRequestRecord(string emailIn,string otpIn) //Create Email OTP Request Record
+        private async Task CreateOTPRequestRecord(string email, string otp) //Create Email OTP Request Record
         {
-            var emailCheck = _context.OTPRequests.FirstOrDefault(x => x.email == emailIn);
+            var dbOtpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == email);
 
-            if (emailCheck is not null)
+            if (dbOtpRequest is not null)
             {
-                emailCheck.otp = otpIn;
-                emailCheck.otp_expiry_date = DateTime.Now.AddMinutes(5);
-                _context.SaveChanges();
+                dbOtpRequest.otp = otp;
             }
             else
             {
-                OTPRequests otpNewRequestObj = new OTPRequests
+                dbOtpRequest = new OTPRequests
                 {
-                    email = emailIn,
-                    otp = otpIn,
-                    status = false,
-                    otp_expiry_date = DateTime.Now.AddMinutes(5)
-
+                    email = email,
+                    otp = otp
                 };
-                _context.OTPRequests.Add(otpNewRequestObj);
-                _context.SaveChanges();
-
+                
+                _context.OTPRequests.Add(dbOtpRequest);
             }
 
-
+            await _context.SaveChangesAsync();
+            var deletionTimer = new Timer(DeleteOTPRequestRecord, dbOtpRequest, 15000, Timeout.Infinite); // 300000
         }
 
-
-
-        public int GenerateOTP()//Generate OTP code to store
+        public async Task<bool> VerifyOTP(EmailVerifyDto request) //Check Email with OTP if available return true
         {
-            Random random = new Random();
-            return random.Next(100000, 999999);
+            var otpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == request.email && x.otp == request.otp);
+
+            return (otpRequest == null) ? false : true;
         }
 
-
-
-        public bool VerifyOTP(EmailVerifyDto request) //Check Email with OTP if available return true
+        private void DeleteOTPRequestRecord(object? state) //Delete Email OTP Request Record
         {
-            var otpRequest = _context.OTPRequests.FirstOrDefault(x => x.email == request.email && x.otp == request.otp && x.status == false && x.otp_expiry_date > DateTime.Now);
-
-            if (otpRequest == null)
+            if (state is null)
             {
-                return false;
+                return;
             }
-            else
+
+            OTPRequests entityToDelete = (OTPRequests)state;
+            OTPRequests existingEntity = _context.OTPRequests.FirstOrDefault(e => e.email == entityToDelete.email)!;
+
+            if (existingEntity is not null)
             {
-                otpRequest.status = true;
+                _context.OTPRequests.Remove(existingEntity);
                 _context.SaveChanges();
-                return true;
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         public void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName, string jobAdvertisementTitle, string jobApplicationEvaluationStatusLink)
         {
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
-            using (StreamReader SourceReader = System.IO.File.OpenText("Template/JobApplicationSuccessfullySent.html"))
+           
+            using (StreamReader SourceReader = File.OpenText("Template/JobApplicationSuccessfullySent.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
+
             emailBody.To = email;
             emailBody.Subject = "Job Application was successfully sent";
             builder.HtmlBody = builder.HtmlBody.Replace("{jobseeker}", jobseekerFName);//jobseekerFName= job seeker's first name
@@ -201,9 +184,7 @@ namespace FirstStep.Services.EmailSevices
             builder.HtmlBody = builder.HtmlBody.Replace("{evaluation_link}", jobApplicationEvaluationStatusLink);//jobApplicationEvaluationStatusLink= the link that directs job seekers to the page where she can see the status of the application evaluation
             emailBody.Body = builder.HtmlBody;
 
-
-
-            this.SendEmail(emailBody);
+            SendEmail(emailBody);
         }
 
         public void EvaluatedCompanyRegistraionApplicationEmail(EmailDto request, string email, bool HasAccepted, string comment, string link, string company_name)
@@ -211,7 +192,7 @@ namespace FirstStep.Services.EmailSevices
       
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
-            using (StreamReader SourceReader = System.IO.File.OpenText("Template/EvaluatedCompanyRegistrationApplicationTemplate.html"))
+            using (StreamReader SourceReader = File.OpenText("Template/EvaluatedCompanyRegistrationApplicationTemplate.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
@@ -238,10 +219,13 @@ namespace FirstStep.Services.EmailSevices
             }
             emailBody.Body = builder.HtmlBody;
 
+            SendEmail(emailBody);
+        }
 
-
-            this.SendEmail(emailBody);
-
+        private int GenerateOTP()//Generate OTP code to store
+        {
+            Random random = new Random();
+            return random.Next(100000, 999999);
         }
     }
 }

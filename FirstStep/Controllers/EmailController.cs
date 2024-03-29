@@ -19,23 +19,23 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("OTPRequest")]// Request OTP
-        public IActionResult OTPSend(string email,string fname)
+        [Route("RequestOTP/email={email}/fullname={fullName}")]
+        public IActionResult RequestOTP(string email, string fullName)
         {
-            _emailService.OTP(email, fname, "This is the OTP to verfiy you Email");
-            return Ok(new { message = "OTP send succesfully"});
+            _emailService.SendOTPEmail(email, fullName);
+            return Ok();
         }
 
         [HttpPost]
-        [Route("EmailOTPCheck")]// Check Email with OTP
-        public IActionResult OTPCheck(string email, string otp)
+        [Route("VerifyEmail/email={email}/otp={otp}")]
+        public async Task<IActionResult> OTPCheck(string email, string otp)
         {
-            if(_emailService.VerifyOTP(new EmailVerifyDto { email = email, otp = otp }))
+            if(await _emailService.VerifyOTP(new EmailVerifyDto { email = email, otp = otp }))
             {
-                return Ok(new { message = "OTP is Valid" });
+                return Ok();
             }
 
-            return BadRequest(new { message = "Expired or Invalid OTP" });
+            return BadRequest();
         }
     }
 }
