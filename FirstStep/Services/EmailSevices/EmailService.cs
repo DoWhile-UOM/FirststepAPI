@@ -97,7 +97,20 @@ namespace FirstStep.Services
                 otp = GenerateOTP()
             };
 
-            await SaveOTP(OTPrequest);
+            // check whether the email is already request an OTP
+            var dbOtpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == OTPrequest.email);
+
+            if (dbOtpRequest is not null)
+            {
+                // update the OTP
+                dbOtpRequest.otp = OTPrequest.otp;
+            }
+            else
+            {
+                _context.OTPRequests.Add(OTPrequest);
+            }
+
+            //await _context.SaveChangesAsync();
 
             Thread thread = new Thread(() => DeleteOTPRequest(OTPrequest));
             thread.Start();
@@ -121,51 +134,33 @@ namespace FirstStep.Services
 
             Console.WriteLine("Waiting for delete OTP Request Thread to finish.....");
             thread.Join();
-
-            await _context.SaveChangesAsync();
         }
 
-        private async Task SaveOTP(OTPRequests OTPrequest) // save the otp on the OTPRequest table
-        {
-            var dbOtpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == OTPrequest.email);
-
-            if (dbOtpRequest is not null)
-            {
-                dbOtpRequest.otp = OTPrequest.otp;
-            }
-            else
-            {                
-                _context.OTPRequests.Add(OTPrequest);
-            }
-
-            //await _context.SaveChangesAsync();
-        }
-
-        public async Task<bool> VerifyOTP(OTPRequests request) //Check Email with OTP if available return true
+        public async Task<bool> VerifyOTP(OTPRequests request)
         {
             var otpRequest = await _context.OTPRequests.FirstOrDefaultAsync(e => e.email == request.email && e.otp == request.otp);
 
-            return (otpRequest == null) ? false : true;
+            if (otpRequest is not null)
+            {
+                _context.OTPRequests.Remove(otpRequest);
+                //await _context.SaveChangesAsync();
+
+                return true;
+            };
+
+            return false;
         }
 
-        private void DeleteOTPRequest(OTPRequests request) //Delete Email OTP Request Record
+        private async void DeleteOTPRequest(OTPRequests request)
         {
-            Thread.Sleep(10000);
+            Thread.Sleep(15000);
 
-            OTPRequests? existingEntity = _context.OTPRequests.FirstOrDefault(e => e.email == request.email)!;
+            OTPRequests? existingEntity = await _context.OTPRequests.FirstOrDefaultAsync(e => e.email == request.email)!;
 
             if (existingEntity is not null)
             {
-                Console.WriteLine("Deleting OTP Request Record.....");
-
                 _context.OTPRequests.Remove(existingEntity);
                 //await _context.SaveChangesAsync();
-
-                Console.WriteLine("OTP Request Record Deleted.....");
-            }
-            else
-            {
-                Console.WriteLine("OTP Request Record Not Found.....");
             }
         }
 

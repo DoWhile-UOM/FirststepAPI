@@ -27,14 +27,14 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("VerifyEmail/email={email}/otp={otp}")]
-        public async Task<IActionResult> OTPCheck(string email, int otp)
+        public async Task<ActionResult<bool>> OTPCheck(string email, int otp)
         {
             if(await _emailService.VerifyOTP(new OTPRequests { email = email, otp = otp }))
             {
-                return Ok();
+                return Ok(true);
             }
 
-            return BadRequest();
+            return Ok(false);
         }
     }
 }
