@@ -9,7 +9,7 @@ namespace FirstStep.Services
         
         Task SendOTPEmail(string email, string recieverName);//for signup, company registraion and person verification to allow pasword changin in company portal
         
-        Task<bool> VerifyOTP(OTPRequests request);
+        Task<bool> VerifyOTP(OTPRequest request);
         
         void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName,string jobAdvertisementTitle,string jobApplicationEvaluationStatusLink);//used in seeker portal
         

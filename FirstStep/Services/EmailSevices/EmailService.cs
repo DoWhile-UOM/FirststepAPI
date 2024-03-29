@@ -91,16 +91,27 @@ namespace FirstStep.Services
 
         public async Task SendOTPEmail(string email, string recieverName) //Send OTP to the email
         {
-            OTPRequests OTPrequest = new OTPRequests
+            OTPRequest OTPrequest = new OTPRequest
             {
                 email = email,
-                otp = GenerateOTP()
+                otp = GenerateOTP(),
+                expiry_date_time = DateTime.Now.AddMinutes(1)
             };
 
-            await SaveOTP(OTPrequest);
+            // check whether the email is already request an OTP
+            var dbOtpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == OTPrequest.email);
 
-            Thread thread = new Thread(() => DeleteOTPRequest(OTPrequest));
-            thread.Start();
+            if (dbOtpRequest is not null)
+            {
+                // update the OTP
+                dbOtpRequest.otp = OTPrequest.otp;
+            }
+            else
+            {
+                _context.OTPRequests.Add(OTPrequest);
+            }
+
+            await _context.SaveChangesAsync();
 
             var builder = new BodyBuilder();
             EmailDto otpBody = new EmailDto();
@@ -117,56 +128,27 @@ namespace FirstStep.Services
             builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
             otpBody.Body = builder.HtmlBody;
 
-            //SendEmail(otpBody);
-
-            Console.WriteLine("Waiting for delete OTP Request Thread to finish.....");
-            thread.Join();
-
-            await _context.SaveChangesAsync();
+            SendEmail(otpBody);
         }
 
-        private async Task SaveOTP(OTPRequests OTPrequest) // save the otp on the OTPRequest table
-        {
-            var dbOtpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == OTPrequest.email);
-
-            if (dbOtpRequest is not null)
-            {
-                dbOtpRequest.otp = OTPrequest.otp;
-            }
-            else
-            {                
-                _context.OTPRequests.Add(OTPrequest);
-            }
-
-            //await _context.SaveChangesAsync();
-        }
-
-        public async Task<bool> VerifyOTP(OTPRequests request) //Check Email with OTP if available return true
+        public async Task<bool> VerifyOTP(OTPRequest request)
         {
             var otpRequest = await _context.OTPRequests.FirstOrDefaultAsync(e => e.email == request.email && e.otp == request.otp);
 
-            return (otpRequest == null) ? false : true;
-        }
-
-        private void DeleteOTPRequest(OTPRequests request) //Delete Email OTP Request Record
-        {
-            Thread.Sleep(10000);
-
-            OTPRequests? existingEntity = _context.OTPRequests.FirstOrDefault(e => e.email == request.email)!;
-
-            if (existingEntity is not null)
+            if (otpRequest is not null)
             {
-                Console.WriteLine("Deleting OTP Request Record.....");
+                _context.OTPRequests.Remove(otpRequest);
+                await _context.SaveChangesAsync();
 
-                _context.OTPRequests.Remove(existingEntity);
-                //await _context.SaveChangesAsync();
+                if (otpRequest.expiry_date_time < DateTime.Now)
+                {
+                    return false;
+                }
 
-                Console.WriteLine("OTP Request Record Deleted.....");
-            }
-            else
-            {
-                Console.WriteLine("OTP Request Record Not Found.....");
-            }
+                return true;
+            };
+
+            return false;
         }
 
         public void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName, string jobAdvertisementTitle, string jobApplicationEvaluationStatusLink)
