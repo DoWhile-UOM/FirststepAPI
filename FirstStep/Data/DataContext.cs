@@ -35,7 +35,8 @@ namespace FirstStep.Data
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
         public DbSet<Revision> Revisions { get; set; } = null!;
-      
+        public DbSet<Document> Documents { get; set; } = null!;
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -120,6 +121,14 @@ namespace FirstStep.Data
                     .HasForeignKey(e => e.advertisement_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
+
+            modelBuilder.Entity<Document>(entity =>
+            {
+                entity.HasOne(e => e.seeker)
+                    .WithMany(e => e.documents)
+                    .HasForeignKey(e => e.user_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+            }); 
         }
     }
 }
