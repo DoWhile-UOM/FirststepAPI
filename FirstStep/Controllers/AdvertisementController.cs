@@ -32,7 +32,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementsById/seekerID={seekerID:int}/advertisements={jobIDs}")]
+        [Route("GetAllAdvertisements/seekerID={seekerID:int}/advertisements={jobIDs}")]
         public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisementsById(string jobIDs, int seekerID)
         {
             return Ok(await _service.GetById(jobIDs.Split(',').Select(int.Parse), seekerID));
