@@ -191,6 +191,9 @@ namespace FirstStep.Migrations
                     b.Property<string>("company_business_scale")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("company_city")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("company_description")
                         .HasColumnType("nvarchar(max)");
 
@@ -207,6 +210,9 @@ namespace FirstStep.Migrations
 
                     b.Property<int>("company_phone_number")
                         .HasColumnType("int");
+
+                    b.Property<string>("company_province")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("company_registered_date")
                         .HasColumnType("datetime2");

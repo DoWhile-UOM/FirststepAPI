@@ -2,7 +2,7 @@
 
 namespace FirstStep.Models.DTOs
 {
-    public struct UpdateCompanyDto
+    public class UpdateCompanyDto
     {
         public required int company_id { get; set; }
 
@@ -19,6 +19,10 @@ namespace FirstStep.Models.DTOs
         public string? company_logo { get; set; }
 
         public string? company_description { get; set; }
+
+        public string? company_city { get; set; }
+
+        public string? company_province { get; set; }
 
         public string? company_business_scale { get; set; }
     }
