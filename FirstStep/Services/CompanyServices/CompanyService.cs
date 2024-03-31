@@ -121,8 +121,6 @@ namespace FirstStep.Services
 
             unRegCompany.company_logo = company.company_logo;
             unRegCompany.company_description = company.company_description;
-            unRegCompany.company_city = company.company_city;
-            unRegCompany.company_province = company.company_province;
             unRegCompany.company_business_scale = company.company_business_scale;
 
             await _context.SaveChangesAsync();
@@ -165,8 +163,6 @@ namespace FirstStep.Services
             dbCompany.company_phone_number = company.company_phone_number;
             dbCompany.company_logo = company.company_logo;
             dbCompany.company_description = company.company_description;
-            dbCompany.company_city = company.company_city;
-            dbCompany.company_province = company.company_province;
             dbCompany.company_business_scale = company.company_business_scale;
 
             await _context.SaveChangesAsync();
