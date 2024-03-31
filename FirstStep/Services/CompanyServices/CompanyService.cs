@@ -52,7 +52,13 @@ namespace FirstStep.Services
             return await _context.Companies.Where(c => c.verification_status).ToListAsync();
         }
 
-        
+        //get company list for system admin
+        public async Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList()
+        {
+            IEnumerable<Company> companies = await GetAll();
+            IEnumerable<ViewCompanyListDto> companyDtos = _mapper.Map<IEnumerable<ViewCompanyListDto>>(companies);
+            return companyDtos;
+        }
         public async Task<CompanyProfileDto> GetCompanyProfile(int companyID)
         {
             // get all advertisements under the company
@@ -70,13 +76,7 @@ namespace FirstStep.Services
             return advertisementCompanyDto;
         }
         
-        //get company list for system admin
-        public async Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList()
-        {
-            IEnumerable<Company> companies = await GetAll();
-            IEnumerable<ViewCompanyListDto> companyDtos = _mapper.Map<IEnumerable<ViewCompanyListDto>>(companies);
-            return companyDtos;
-        }
+        
         //get company application by id
         public async Task<CompanyApplicationDto> GetCompanyApplicationById(int companyID)
         {
