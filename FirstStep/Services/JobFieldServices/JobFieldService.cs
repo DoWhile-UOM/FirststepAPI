@@ -19,7 +19,7 @@ namespace FirstStep.Services
             return await _context.JobFields.ToListAsync();
         }
 
-        public async Task<JobField> GetById(int id)
+        private async Task<JobField> GetById(int id)
         {
             JobField? jobField = await _context.JobFields.FindAsync(id);
             if (jobField is null)

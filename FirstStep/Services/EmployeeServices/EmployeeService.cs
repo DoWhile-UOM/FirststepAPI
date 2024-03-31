@@ -46,9 +46,15 @@ namespace FirstStep.Services
             return hrmanager;
         }
 
+        public async Task<int> FindCompany(int id)
+        {
+            var employee = await GetById(id);
+            return employee.company_id;
+        }
+
         public async Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id)
         {
-            ICollection<HRManager> hrManagers = await _context.HRManagers.Where(e => e.company_id == company_Id).ToListAsync();
+            ICollection<Employee> hrManagers = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type == "HRM").ToListAsync();
             if (hrManagers is null)
             {
                 throw new Exception("There are no HR Managers under the company");
@@ -70,7 +76,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllEmployees(int company_Id)
         {
-            ICollection<Employee> employees = await _context.Employees.Where(e => e.company_id == company_Id).ToListAsync();
+            ICollection<Employee> employees = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type != "CA").ToListAsync();
             if (employees is null)
             {
                 throw new Exception("There are no employees under the company");
@@ -110,7 +116,7 @@ namespace FirstStep.Services
             await ValidateCompany(newCompanyAdmin.company_id);
 
             // validate there is no any other company admin in within the company
-            var company = await _companyService.GetById(newCompanyAdmin.company_id);
+            var company = await _companyService.FindByID(newCompanyAdmin.company_id);
             
             if (company.company_admin_id != null)
             {

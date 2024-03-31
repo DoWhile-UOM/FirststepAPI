@@ -18,19 +18,11 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllProfessionKeywords")]
+        [Route("GetAllProfessionKeywords/{fieldID:int}")]
 
-        public async Task<ActionResult<IEnumerable<ProfessionKeyword>>> GetProfessionKeywords()
+        public async Task<ActionResult<IEnumerable<string>>> GetProfessionKeywords(int fieldID)
         {
-            return Ok(await _service.GetAll());
-        }
-
-        [HttpGet]
-        [Route("GetProfessionKeywordById/{id}")]
-
-        public async Task<ActionResult<IEnumerable<ProfessionKeyword>>> GetProfessionKeywordById(int id)
-        {
-            return Ok(await _service.GetById(id));
+            return Ok(await _service.GetAll(fieldID));
         }
 
         [HttpPost]
