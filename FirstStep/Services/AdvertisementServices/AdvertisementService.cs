@@ -113,7 +113,7 @@ namespace FirstStep.Services
             return currentAdData;
         }
 
-        public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status, string title)
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status, string title)
         {
             ValidateStatus(status);
 
@@ -146,7 +146,7 @@ namespace FirstStep.Services
             }
         }
 
-        public async Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status)
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status)
         {
             ValidateStatus(status);
 
@@ -355,6 +355,38 @@ namespace FirstStep.Services
             return null;
         }
 
+        public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfresultsPerPage)
+        {
+            var dbAds = await FindAll();
+
+            return await CreateFirstPageResults(dbAds, seekerID, noOfresultsPerPage);
+        }
+
+        private async Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage)
+        {
+            AdvertisementFirstPageDto firstPageResults = new AdvertisementFirstPageDto();
+
+            // select only number of advertisements per page
+            firstPageResults.FirstPageAdvertisements = await CreateAdvertisementList(dbAds.Take(noOfresultsPerPage), seekerID);
+
+            // add all advertisement ids into a list
+            firstPageResults.allAdvertisementIds = dbAds.Select(e => e.advertisement_id).ToList();
+
+            return firstPageResults;
+        }
+
+        public async Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID)
+        {
+            var advertisements = new List<Advertisement>();
+
+            foreach (var adId in adList)
+            {
+                advertisements.Add(await FindById(adId));
+            }
+
+            return await CreateAdvertisementList(advertisements, seekerID);
+        }
+
         // map the advertisements to a list of AdvertisementCardDtos and create advertisement list for the seeker
         public async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID)
         {
@@ -384,14 +416,14 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of JobOfferDtos and create advertisement list for the company
-        public async Task<IEnumerable<JobOfferDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        public async Task<IEnumerable<AdvertisementTableRowDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
         {
             // map to jobofferDtos
-            var jobOfferDtos = new List<JobOfferDto>();
+            var jobOfferDtos = new List<AdvertisementTableRowDto>();
 
             foreach (var ad in dbAds)
             {
-                var jobOfferDto = _mapper.Map<JobOfferDto>(ad);
+                var jobOfferDto = _mapper.Map<AdvertisementTableRowDto>(ad);
 
                 if (status != "all" && ad.current_status != status)
                 {
@@ -480,7 +512,7 @@ namespace FirstStep.Services
             }
         }
 
-        public async Task<IEnumerable<AdvertisementShortDto>> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID)
+        public async Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID, int pageLength)
         {
             var advertisements = await _context.Advertisements
                 .Include("professionKeywords")
@@ -500,7 +532,7 @@ namespace FirstStep.Services
             {
                 Console.Out.WriteLine($"Filtered advertisements: {advertisements.Count}");
 
-                return await CreateAdvertisementList(advertisements, seekerID);
+                return await CreateFirstPageResults(advertisements, seekerID, pageLength);
             }
 
             var filteredAdvertisements = new List<Advertisement> { };
@@ -531,9 +563,9 @@ namespace FirstStep.Services
                 }
             }
 
-            Console.Out.WriteLine($"Filtered advertisements: {filteredAdvertisements.Count}");  
+            Console.Out.WriteLine($"Filtered advertisements: {filteredAdvertisements.Count}");
 
-            return await CreateAdvertisementList(filteredAdvertisements, seekerID);
+            return await CreateFirstPageResults(advertisements, seekerID, pageLength);
         }
 
         public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)

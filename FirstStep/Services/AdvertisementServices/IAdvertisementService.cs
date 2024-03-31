@@ -9,13 +9,17 @@ namespace FirstStep.Services
 
         Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID);
 
+        Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int pageLength);
+
+        Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID);
+
         Task<AdvertisementDto> GetById(int id);
 
         Task<UpdateAdvertisementDto> GetByIdWithKeywords(int id);
 
-        Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status);
+        Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status);
 
-        Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompany(int companyID, string status, string title);
+        Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status, string title);
 
         Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID);
 
@@ -31,7 +35,7 @@ namespace FirstStep.Services
 
         Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> advertisements, int seekerID);
 
-        Task<IEnumerable<AdvertisementShortDto>> BasicSearch(SearchJobRequestDto searchRequest, int seekerID);
+        Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto searchRequest, int seekerID, int pageLength);
 
         Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID);
 
