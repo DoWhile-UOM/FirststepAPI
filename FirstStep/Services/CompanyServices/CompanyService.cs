@@ -92,11 +92,15 @@ namespace FirstStep.Services
             }
 
             company.verification_status = false;
+            company.registration_url= GenerateUniqueStringId(company.business_reg_no);
 
             //Call Company Registration Email Verfication service
 
+
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
+
+            //return(company.registration_url); //Return Company Registration URL (Unique ID 
         }
 
         //Company Resgistration State Check ID Generation Starts here
@@ -127,10 +131,6 @@ namespace FirstStep.Services
         //Company Resgistration State Check ID Generation Ends here
 
 
-
-
-
-
         public class EmailAlreadyExistsException : Exception
         {
             public EmailAlreadyExistsException(string message) : base(message) { }
@@ -142,6 +142,7 @@ namespace FirstStep.Services
         }
 
 
+
         private async Task<bool> CheckCompnayEmailExist(string Email) //Function to check company email exist
         {
             return await _context.Companies.AnyAsync(x => x.company_email == Email);
@@ -151,7 +152,19 @@ namespace FirstStep.Services
         {
             return await _context.Companies.AnyAsync(x => x.business_reg_no == int.Parse(RegNo));
         }
-        //Company Registration Ends here
+
+        public async Task<Company> FindByRegCheckID(string id) //Function to check company registration status
+        {
+            Company? company = await _context.Companies.Where(c => c.registration_url == id).FirstOrDefaultAsync();
+            if (company is null)
+            {
+                throw new Exception("Company not found.");
+            }
+
+            return company;
+        }
+
+        //-----------------Company Registration Ends here---------------------------------------------------------
 
 
         public async Task Delete(int id)

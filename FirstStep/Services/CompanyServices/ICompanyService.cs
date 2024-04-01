@@ -27,6 +27,8 @@ namespace FirstStep.Services
 
         public Task UpdateRegisteredCompany(int companyID, UpdateCompanyDto company);
 
+        public Task<Company> FindByRegCheckID(string id);
+
         public Task Delete(int id);
 
         public Task<bool> IsRegistered(int companyID);
