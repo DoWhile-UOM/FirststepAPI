@@ -30,7 +30,7 @@ namespace FirstStep.Models
 
         public required string current_status { get; set; }
 
-        [MaxLength(2500)]
+        [MaxLength(4000)]
         public string? job_description { get; set; }
 
 

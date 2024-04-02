@@ -52,8 +52,6 @@ builder.Services.AddSwaggerGen(opt =>
     });
 });
 
-
-
 builder.Services.AddAutoMapper(typeof(Program));
 
 // DataContext Configuration

@@ -466,52 +466,6 @@ namespace FirstStep.Services
             }
         }
 
-        // temp function
-        // random function to add 10 advertisements to the database
-        private async Task AddRandomAdvertisements(int limit)
-        {
-            var keywordArray = new List<string>() { "C#", "python", "ASP.NET", "MVC", "SQL", "Azure", "Entity Framework", "LINQ", "Web API", "RESTful", "SOAP", "WCF", "WPF", "Xamarin", "Blazor", "Razor", "SignalR", "Angular", "React", "Vue", "Bootstrap", "jQuery", "HTML", "CSS", "JavaScript", "TypeScript", ".NET Core", ".NET Framework", ".NET Standard", "Visual Studio", "Git", "GitHub", "DevOps", "Agile", "Scrum", "TDD", "BDD", "SOLID", "Design Patterns", "OOP", "Microservices", "Docker", "Kubernetes", "AWS", "Machine Learning", "AI", "Data Science", "Python", "R", "TensorFlow" };
-            
-            var titleArray = new List<string>() { "Web Developer", "Software Engineer", "Data Analyst", "Network Administrator", "Database Administrator", "Cybersecurity Analyst", "Cloud Engineer", "Machine Learning Engineer", "Artificial Intelligence Engineer", "Software Tester", "Technical Support Specialist", "IT Project Manager", "Business Analyst", "UX Designer", "UI Developer", "Game Developer", "Blockchain Developer", "DevOps Engineer", "IT Consultant", "Webmaster" };
-
-            var random = new Random();
-
-            for (int i = 0; i < limit; i++)
-            {
-                var addAdvertisementDto = new AddAdvertisementDto
-                {
-                    job_number = random.Next(100, 999),
-                    title = titleArray[random.Next(0, titleArray.Count - 1)],
-                    country = "Sri Lanka",
-                    city = "Colombo",
-                    employeement_type = random.Next(0, 1) == 0 ? "Full-time" : "Part-time",
-                    arrangement = random.Next(0, 1) == 0 ? "Remote" : "On-site",
-                    is_experience_required = random.Next(0, 1) == 1 ? true: false,
-                    salary = random.Next(300000, 600000),
-                    submission_deadline = DateTime.Now.AddDays(random.Next(25, 45)),
-                    job_description = "We are looking for a software developer to join our team. We are a company that values its employees.",
-                    hrManager_id = 10, // under bistec
-                    field_id = 1, // it and cs
-                    keywords = new List<string>(),
-                    reqSkills = new List<string>()
-                };
-
-                for (int j = 0; j < random.Next(4, 11); j++)
-                {
-                    addAdvertisementDto.keywords.Add(keywordArray[random.Next(0, keywordArray.Count - 1)].ToLower());
-                }
-
-                for (int j = 0; j < random.Next(4, 11); j++)
-                {
-                    addAdvertisementDto.reqSkills.Add(keywordArray[random.Next(0, keywordArray.Count - 1)].ToLower());
-                }
-
-                await Create(addAdvertisementDto);
-
-                Console.Out.WriteLine($"Advertisement added. { i + 1 }");
-            }
-        }
-
         public async Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID, int pageLength)
         {
             var advertisements = await _context.Advertisements
@@ -530,21 +484,33 @@ namespace FirstStep.Services
 
             if (requestAdsDto.title == null)
             {
-                Console.Out.WriteLine($"Filtered advertisements: {advertisements.Count}");
-
                 return await CreateFirstPageResults(advertisements, seekerID, pageLength);
             }
 
             var filteredAdvertisements = new List<Advertisement> { };
 
+            filteredAdvertisements
+                .AddRange(advertisements
+                    .Where(ad => ad.title.ToLower().Contains(requestAdsDto.title.ToLower()))
+                    .ToList());
+
             var titles = requestAdsDto.title.Split(' ');
 
             foreach (var title in titles)
             {
-                filteredAdvertisements
-                    .AddRange(advertisements
-                        .Where(ad => ad.title.ToLower().Contains(title.ToLower()))
-                        .ToList());
+                var ads = new List<Advertisement> { };
+
+                ads.AddRange(advertisements
+                    .Where(ad => ad.title.ToLower().Contains(title.ToLower()))
+                    .ToList());
+
+                for (int i = 0; i < ads.Count; i++)
+                {
+                    if (!filteredAdvertisements.Contains(ads[i]))
+                    {
+                        filteredAdvertisements.Add(ads[i]);
+                    }
+                }
             }
 
             foreach (var title in titles)
@@ -563,9 +529,7 @@ namespace FirstStep.Services
                 }
             }
 
-            Console.Out.WriteLine($"Filtered advertisements: {filteredAdvertisements.Count}");
-
-            return await CreateFirstPageResults(advertisements, seekerID, pageLength);
+            return await CreateFirstPageResults(filteredAdvertisements, seekerID, pageLength);
         }
 
         public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)

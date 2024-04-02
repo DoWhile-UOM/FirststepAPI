@@ -75,7 +75,7 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisementsBasic(int seekerID, int pageLength, SearchJobRequestDto requestDto)
+        public async Task<ActionResult<AdvertisementFirstPageDto>> SearchAdvertisementsBasic(int seekerID, int pageLength, SearchJobRequestDto requestDto)
         {
             return Ok(await _service.BasicSearch(requestDto, seekerID, pageLength));
         }
