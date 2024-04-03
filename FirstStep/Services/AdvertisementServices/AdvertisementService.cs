@@ -119,7 +119,6 @@ namespace FirstStep.Services
 
             if (title != null)
             {
-
                 var dbAdvertisements = await FindByCompanyID(companyID);
                 
                 // filter advertisements by title
@@ -195,7 +194,7 @@ namespace FirstStep.Services
         public async Task Update(int jobID, UpdateAdvertisementDto reqAdvertisement)
         {
             Advertisement dbAdvertisement = await FindById(jobID);
-
+            
             dbAdvertisement.job_number = reqAdvertisement.job_number;
             dbAdvertisement.title = reqAdvertisement.title;
             dbAdvertisement.country = reqAdvertisement.country;

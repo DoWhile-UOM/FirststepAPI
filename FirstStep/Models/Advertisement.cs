@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace FirstStep.Models
 {
     public class Advertisement
-    {
+    {   
         [Key]
         public required int advertisement_id { get; set; }
 
