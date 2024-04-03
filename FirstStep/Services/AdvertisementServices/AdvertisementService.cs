@@ -106,7 +106,7 @@ namespace FirstStep.Services
         {
             var dbAdvertismeent = await FindById(id);
             var currentAdData = _mapper.Map<UpdateAdvertisementDto>(dbAdvertismeent);
-
+               
             currentAdData.reqSkills = dbAdvertismeent.skills!.Select(e => e.skill_name).ToList();
             currentAdData.reqKeywords = dbAdvertismeent.professionKeywords!.Select(e => e.profession_name).ToList();
 
