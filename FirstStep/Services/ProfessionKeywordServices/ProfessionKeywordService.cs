@@ -17,9 +17,10 @@ namespace FirstStep.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ProfessionKeyword>> GetAll()
+        public async Task<IEnumerable<string>> GetAll(int fieldID)
         {
-            return await _context.ProfessionKeywords.Include(e => e.job_Field).ToListAsync();
+            IEnumerable<string> keywords = await _context.ProfessionKeywords.Where(e => e.field_id == fieldID).Select(e => e.profession_name).ToListAsync();
+            return keywords;
         }
 
         public async Task<ProfessionKeyword> GetById(int id)
@@ -37,17 +38,12 @@ namespace FirstStep.Services
             return professionKeyword;
         }
 
-        public async Task<ProfessionKeyword> GetByName(string name, int fieldID)
+        public async Task<ProfessionKeyword?> GetByName(string name, int fieldID)
         {
             var professionKeyword = await _context.ProfessionKeywords
                 .Where(e => e.profession_name == name && e.field_id == fieldID)
                 .Include(e => e.job_Field)
                 .FirstOrDefaultAsync();
-
-            if (professionKeyword is null)
-            {
-                throw new Exception("ProfessionKeyword not found.");
-            }
 
             return professionKeyword;
         }

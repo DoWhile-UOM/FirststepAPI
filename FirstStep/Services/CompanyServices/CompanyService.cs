@@ -10,11 +10,13 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly IAdvertisementService _advertisementService;
 
-        public CompanyService(DataContext context, IMapper mapper)
+        public CompanyService(DataContext context, IMapper mapper, IAdvertisementService advertisementService)
         {
             _context = context;
             _mapper = mapper;
+            _advertisementService = advertisementService;
         }
 
         public async Task<IEnumerable<Company>> GetAll()
@@ -22,7 +24,7 @@ namespace FirstStep.Services
             return await _context.Companies.ToListAsync();
         }
 
-        public async Task<Company> GetById(int id)
+        public async Task<Company> FindByID(int id)
         {
             Company? company = await _context.Companies.FindAsync(id);
             if (company is null)
@@ -31,6 +33,13 @@ namespace FirstStep.Services
             }
 
             return company;
+        }
+
+        public async Task<CompanyProfileDetailsDto> GetById(int id)
+        {
+            Company company = await FindByID(id);
+            CompanyProfileDetailsDto companydto = _mapper.Map<CompanyProfileDetailsDto>(company);
+            return companydto;
         }
 
         public async Task<IEnumerable<Company>> GetAllUnregisteredCompanies()
@@ -43,19 +52,74 @@ namespace FirstStep.Services
             return await _context.Companies.Where(c => c.verification_status).ToListAsync();
         }
 
+        
+        public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID)
+        {
+            // get all advertisements under the company
+            IEnumerable<Advertisement> dbAdvertisements = await _advertisementService.FindByCompanyID(companyID);
+
+            // get company details
+            var dbCompany = await FindByID(companyID);
+
+            // map to DTO
+            var advertisementCompanyDto = _mapper.Map<CompanyProfileDto>(dbCompany);
+
+            // feed all advertisments under the company to DTO as an array of advertisementCardDtos
+            advertisementCompanyDto.advertisementUnderCompany = await _advertisementService.CreateAdvertisementList(dbAdvertisements, seekerID);
+            
+            return advertisementCompanyDto;
+        }
+
+
+        //Company Registration Starts here
         public async Task Create(AddCompanyDto newCompanyDto)
         {
             var company = _mapper.Map<Company>(newCompanyDto);
 
+            if (await CheckCompnayEmailExist(company.company_email))
+            {
+                throw new EmailAlreadyExistsException("Company email already exists");
+            }
+
+            if (await CheckCompnayRegNo(company.business_reg_no.ToString()))
+            {
+                throw new RegistrationNumberAlreadyExistsException("Company registration number already exists");
+            }
+
             company.verification_status = false;
+
+            //Call Company Registration Email Verfication service
 
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
         }
 
+        public class EmailAlreadyExistsException : Exception
+        {
+            public EmailAlreadyExistsException(string message) : base(message) { }
+        }
+
+        public class RegistrationNumberAlreadyExistsException : Exception
+        {
+            public RegistrationNumberAlreadyExistsException(string message) : base(message) { }
+        }
+
+
+        private async Task<bool> CheckCompnayEmailExist(string Email) //Function to check company email exist
+        {
+            return await _context.Companies.AnyAsync(x => x.company_email == Email);
+        }
+
+        private async Task<bool> CheckCompnayRegNo(string RegNo) //Function to check company regNo exist
+        {
+            return await _context.Companies.AnyAsync(x => x.business_reg_no == int.Parse(RegNo));
+        }
+        //Company Registration Ends here
+
+
         public async Task Delete(int id)
         {
-            Company company = await GetById(id);
+            Company company = await FindByID(id);
 
             _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
@@ -63,7 +127,7 @@ namespace FirstStep.Services
 
         public async Task UpdateCompanyVerification(int companyID, CompanyRegInfoDto companyRegInfo)
         {
-            var unRegCompany = await GetById(companyID);
+            var unRegCompany = await FindByID(companyID);
 
             unRegCompany.verification_status = companyRegInfo.verification_status;
             unRegCompany.company_registered_date = companyRegInfo.company_registered_date;
@@ -75,7 +139,7 @@ namespace FirstStep.Services
 
         public async Task RegisterCompany(int companyID, AddDetailsCompanyDto company)
         {
-            var unRegCompany = await GetById(companyID);
+            var unRegCompany = await FindByID(companyID);
 
             unRegCompany.company_logo = company.company_logo;
             unRegCompany.company_description = company.company_description;
@@ -88,7 +152,7 @@ namespace FirstStep.Services
 
         public async Task UpdateUnregisteredCompany(int companyID, UpdateUnRegCompanyDto company)
         {
-            Company dbCompany = await GetById(companyID);
+            Company dbCompany = await FindByID(companyID);
 
             if (dbCompany.verification_status)
             {
@@ -110,7 +174,7 @@ namespace FirstStep.Services
 
         public async Task UpdateRegisteredCompany(int companyID, UpdateCompanyDto company)
         {
-            Company dbCompany = await GetById(companyID);
+            Company dbCompany = await FindByID(companyID);
 
             if (!dbCompany.verification_status)
             {
@@ -119,7 +183,6 @@ namespace FirstStep.Services
 
             dbCompany.company_name = company.company_name;
             dbCompany.company_email = company.company_email;
-            dbCompany.business_reg_no = company.business_reg_no;
             dbCompany.company_website = company.company_website;
             dbCompany.company_phone_number = company.company_phone_number;
             dbCompany.company_logo = company.company_logo;
@@ -133,7 +196,7 @@ namespace FirstStep.Services
 
         public async Task<bool> IsRegistered(int companyID)
         {
-            Company company = await GetById(companyID);
+            Company company = await FindByID(companyID);
 
             return company.verification_status;
         }

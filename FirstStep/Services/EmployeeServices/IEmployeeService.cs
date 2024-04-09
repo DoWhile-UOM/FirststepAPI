@@ -11,6 +11,8 @@ namespace FirstStep.Services
 
         public Task<HRManager> FindHRM(int id);
 
+        public Task<int> FindCompany(int id);
+
         public Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id);
 
         public Task<IEnumerable<Employee>> GetAllHRAssistants(int company_Id);
@@ -23,7 +25,7 @@ namespace FirstStep.Services
 
         public Task CreateCompanyAdmin(AddEmployeeDto newCompanyAdmin);
 
-        public Task Update(Employee employee);
+        public Task Update(int id, UpdateEmployeeDto employee);
 
         public Task Delete(int id);
     }

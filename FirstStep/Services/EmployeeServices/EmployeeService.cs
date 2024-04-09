@@ -46,9 +46,15 @@ namespace FirstStep.Services
             return hrmanager;
         }
 
+        public async Task<int> FindCompany(int id)
+        {
+            var employee = await GetById(id);
+            return employee.company_id;
+        }
+
         public async Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id)
         {
-            ICollection<HRManager> hrManagers = await _context.HRManagers.Where(e => e.company_id == company_Id).ToListAsync();
+            ICollection<Employee> hrManagers = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type == "HRM").ToListAsync();
             if (hrManagers is null)
             {
                 throw new Exception("There are no HR Managers under the company");
@@ -59,7 +65,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllHRAssistants(int company_Id)
         {
-            ICollection<HRAssistant> hrAssistants = await _context.HRAssistants.Where(e => e.company_id == company_Id).ToListAsync();
+            ICollection<HRAssistant> hrAssistants = await _context.HRAssistants.Where(e => e.company_id == company_Id && e.user_type == "HRA").ToListAsync();
             if (hrAssistants is null)
             {
                 throw new Exception("There are no HR Assistants under the company");
@@ -70,7 +76,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllEmployees(int company_Id)
         {
-            ICollection<Employee> employees = await _context.Employees.Where(e => e.company_id == company_Id).ToListAsync();
+            ICollection<Employee> employees = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type != "CA").ToListAsync();
             if (employees is null)
             {
                 throw new Exception("There are no employees under the company");
@@ -110,7 +116,7 @@ namespace FirstStep.Services
             await ValidateCompany(newCompanyAdmin.company_id);
 
             // validate there is no any other company admin in within the company
-            var company = await _companyService.GetById(newCompanyAdmin.company_id);
+            var company = await _companyService.FindByID(newCompanyAdmin.company_id);
             
             if (company.company_admin_id != null)
             {
@@ -127,15 +133,15 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(Employee employee)
+        public async Task Update(int userId, UpdateEmployeeDto employee)
         {
-            Employee dbEmployee = await GetById(employee.user_id);
+            var dbEmployee = await GetById(userId);
 
             // need to use seperate dto (without password hash, be password) as UpdateEmployeeDto
             dbEmployee.first_name = employee.first_name;
             dbEmployee.last_name = employee.last_name;
             dbEmployee.email = employee.email;
-            dbEmployee.password_hash = employee.password_hash;
+            //dbEmployee.password_hash = employee.password_hash;
             dbEmployee.user_type = employee.user_type;
 
             await _context.SaveChangesAsync();

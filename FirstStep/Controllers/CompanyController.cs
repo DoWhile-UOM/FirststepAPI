@@ -3,6 +3,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static FirstStep.Services.CompanyService;
 
 namespace FirstStep.Controllers
 {
@@ -26,7 +27,7 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetCompanyById/{companyId:int}")]
-        public async Task<ActionResult<Company>> GetCompanyById(int companyId)
+        public async Task<ActionResult<CompanyProfileDetailsDto>> GetCompanyById(int companyId)
         {
             return Ok(await _service.GetById(companyId));
         }
@@ -45,12 +46,37 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetAllRegisteredCompanies());
         }
 
+        [HttpGet]
+        [Route("GetCompanyProfile/{companyID:int}/seekerID={seekerID:int}")]
+        public async Task<ActionResult<CompanyProfileDto>> GetCompanyProfile(int companyID, int seekerID)
+        {
+            return Ok(await _service.GetCompanyProfile(companyID, seekerID));
+        }
+
         [HttpPost]
         [Route("AddCompany")] // Company Admin
         public async Task<IActionResult> AddCompany(AddCompanyDto newCompany)
         {
-            await _service.Create(newCompany);
-            return Ok($"Successfully added new unregistered company: {newCompany.company_name}.");
+            try
+            {
+                await _service.Create(newCompany);
+                return Ok("Company Application successfully filled!");
+            }
+            catch (EmailAlreadyExistsException ex)//Handle Email Already Exists Exception
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (RegistrationNumberAlreadyExistsException ex)// Handle Registration Number Already Exists Exception
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)//Handle other errors
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, "Internal Server Error");
+            }
+
         }
 
         [HttpPut]
