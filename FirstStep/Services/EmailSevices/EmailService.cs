@@ -89,11 +89,11 @@ namespace FirstStep.Services
             
         }
 
-        public async Task SendOTPEmail(string email, string recieverName) //Send OTP to the email
+        public async Task SendOTPEmail(VerifyEmailDto request) //Send OTP to the email
         {
             OTPRequest OTPrequest = new OTPRequest
             {
-                email = email,
+                email = request.email,
                 otp = GenerateOTP(),
                 expiry_date_time = DateTime.Now.AddMinutes(1)
             };
@@ -121,17 +121,17 @@ namespace FirstStep.Services
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
 
-            otpBody.To = email;
+            otpBody.To = request.email;
             otpBody.Subject = "FirstStep Verification OTP";
             builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", OTPrequest.otp.ToString());
-            builder.HtmlBody = builder.HtmlBody.Replace("{name}", recieverName);//reciever= seeker's firstName / company name / Employee firstName
+            builder.HtmlBody = builder.HtmlBody.Replace("{name}", "Test");//reciever= seeker's firstName / company name / Employee firstName
             builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
             otpBody.Body = builder.HtmlBody;
 
             SendEmail(otpBody);
         }
 
-        public async Task<bool> VerifyOTP(OTPRequest request)
+        public async Task<string> VerifyOTP(OTPRequest request)
         {
             var otpRequest = await _context.OTPRequests.FirstOrDefaultAsync(e => e.email == request.email && e.otp == request.otp);
 
@@ -142,13 +142,13 @@ namespace FirstStep.Services
 
                 if (otpRequest.expiry_date_time < DateTime.Now)
                 {
-                    return false;
+                    return "OTP Expired";
                 }
 
-                return true;
+                return "Verification Successful";
             };
 
-            return false;
+            return "Invalid Request";
         }
 
         public void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName, string jobAdvertisementTitle, string jobApplicationEvaluationStatusLink)
