@@ -22,8 +22,12 @@ namespace FirstStep.Controllers
         [Route("RequestOTP")]
         public async Task<IActionResult> RequestOTP(VerifyEmailDto request)
         {
-            await _emailService.SendOTPEmail(request);
-            return Ok();
+            var response = await _emailService.SendOTPEmail(request);
+            return response switch
+            {
+                "Email Sent" => Ok(response),
+                _ => BadRequest(response),
+            };
         }
 
         [HttpPost]

@@ -5,9 +5,9 @@ namespace FirstStep.Services
 {
     public interface IEmailService
     {
-        void SendEmail(EmailDto request);
+        Task<string> SendEmail(EmailDto request);
         
-        Task SendOTPEmail(VerifyEmailDto request);//for signup, company registraion and person verification to allow pasword changin in company portal
+        Task<string> SendOTPEmail(VerifyEmailDto request);//for signup, company registraion and person verification to allow pasword changin in company portal
 
         Task<string> VerifyOTP(OTPRequest request);
 

@@ -18,7 +18,7 @@ namespace FirstStep.Services
             _context = context;
         }
 
-        public async void SendEmail(EmailDto request)
+        public async Task<string> SendEmail(EmailDto request)
         {
             //Email details
             var subject = request.Subject;
@@ -28,16 +28,6 @@ namespace FirstStep.Services
 
             try
             {
-                /*
-                string connectionString = Environment.GetEnvironmentVariable("COMMUNICATION_SERVICES_CONNECTION_STRING");
-
-                if (connectionString == null)
-                {
-                    // Handle the case where the environment variable is not set
-                    Console.WriteLine("Error: COMMUNICATION_SERVICES_CONNECTION_STRING environment variable is not set.");
-                    return; // or throw an exception
-                }
-                */
                 EmailClient emailClient = new EmailClient("endpoint=https://firsstepcom.unitedstates.communication.azure.com/;accesskey=BBgT2UTVnfRfWet5z9if14CDBjoKJdjA1VWjvRWi4jbAC6y46gZaBA0mZHbtrRDAodhVPXjWZ+yd2G119BuQzA==");
 
 
@@ -55,11 +45,15 @@ namespace FirstStep.Services
                 /// Get the OperationId so that it can be used for tracking the message for troubleshooting
                 string operationId = emailSendOperation.Id;
                 Console.WriteLine($"Email operation id = {operationId}");
+
+                return "Email Sent";
             }
             catch (RequestFailedException ex)
             {
                 /// OperationID is contained in the exception message and can be used for troubleshooting purposes
                 Console.WriteLine($"Email send operation failed with error code: {ex.ErrorCode}, message: {ex.Message}");
+                
+                return ($"Email send operation failed with error code: {ex.ErrorCode}, message: {ex.Message}");//Return if error occurs
             }
         }
 
@@ -80,22 +74,17 @@ namespace FirstStep.Services
                 builder.HtmlBody = builder.HtmlBody.Replace("{Company Name}", company_name);
                 builder.HtmlBody = builder.HtmlBody.Replace("{evaluation_link}", applicationEvaluationStatusLink); // here this applicationEvaluationStautsLink will direct company to a page where the company can see its regirataion application evaluation status.
                 request.Body = builder.HtmlBody;
-
-
-
-                this.SendEmail(request);
-            
-
-            
+            _ = this.SendEmail(request);
+           
         }
 
-        public async Task SendOTPEmail(VerifyEmailDto request) //Send OTP to the email
+        public async Task<string> SendOTPEmail(VerifyEmailDto request) //Send OTP to the email
         {
             OTPRequest OTPrequest = new OTPRequest
             {
                 email = request.email,
                 otp = GenerateOTP(),
-                expiry_date_time = DateTime.Now.AddMinutes(1)
+                expiry_date_time = DateTime.Now.AddMinutes(5)
             };
 
             // check whether the email is already request an OTP
@@ -128,8 +117,11 @@ namespace FirstStep.Services
             builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
             otpBody.Body = builder.HtmlBody;
 
-            SendEmail(otpBody);
+            return await SendEmail(otpBody);
+
+
         }
+
 
         public async Task<string> VerifyOTP(OTPRequest request)
         {
@@ -169,7 +161,7 @@ namespace FirstStep.Services
             builder.HtmlBody = builder.HtmlBody.Replace("{evaluation_link}", jobApplicationEvaluationStatusLink);//jobApplicationEvaluationStatusLink= the link that directs job seekers to the page where she can see the status of the application evaluation
             emailBody.Body = builder.HtmlBody;
 
-            SendEmail(emailBody);
+            _ = SendEmail(emailBody);
         }
 
         public void EvaluatedCompanyRegistraionApplicationEmail(EmailDto request, string email, bool HasAccepted, string comment, string link, string company_name)
@@ -204,7 +196,7 @@ namespace FirstStep.Services
             }
             emailBody.Body = builder.HtmlBody;
 
-            SendEmail(emailBody);
+            _ = SendEmail(emailBody);
         }
 
         private int GenerateOTP()//Generate OTP code to store
