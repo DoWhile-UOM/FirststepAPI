@@ -40,7 +40,7 @@ namespace FirstStep.Controllers
                     case "OTP Expired":
                         return BadRequest(response);
                     default:
-                        return BadRequest("Invalid Request");
+                        return BadRequest(response);
                 }
 
             }
