@@ -203,6 +203,7 @@ namespace FirstStep.Services
             dbAdvertisement.arrangement = reqAdvertisement.arrangement;
             dbAdvertisement.is_experience_required = reqAdvertisement.is_experience_required;
             dbAdvertisement.salary = reqAdvertisement.salary;
+            dbAdvertisement.currency_unit = reqAdvertisement.currency_unit;
             dbAdvertisement.submission_deadline = reqAdvertisement.submission_deadline;
             dbAdvertisement.job_description = reqAdvertisement.job_description;
             dbAdvertisement.field_id = reqAdvertisement.field_id;

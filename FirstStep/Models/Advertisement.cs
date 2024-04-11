@@ -24,6 +24,8 @@ namespace FirstStep.Models
 
         public float salary { get; set; }
 
+        public string? currency_unit { get; set; }
+
         public required DateTime posted_date { get; set; } = DateTime.Now;
 
         public DateTime submission_deadline { get; set; }
