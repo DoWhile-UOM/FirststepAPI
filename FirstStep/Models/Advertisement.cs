@@ -10,26 +10,33 @@ namespace FirstStep.Models
 
         public int? job_number { get; set; }
 
+        [MaxLength(100)]
         public required string title { get; set; }
 
+        [MaxLength(40)]
         public required string country { get; set; }
 
+        [MaxLength(40)]
         public required string city { get; set; }
 
+        [MaxLength(15)]
         public required string employeement_type { get; set; }
 
+        [MaxLength(15)]
         public required string arrangement { get; set; }
 
         public required bool is_experience_required { get; set; }
 
-        public float salary { get; set; }
+        public float? salary { get; set; }
 
+        [MaxLength(5)]
         public string? currency_unit { get; set; }
 
         public required DateTime posted_date { get; set; } = DateTime.Now;
 
         public DateTime submission_deadline { get; set; }
 
+        [MaxLength(7)]
         public required string current_status { get; set; }
 
         [MaxLength(4000)]
