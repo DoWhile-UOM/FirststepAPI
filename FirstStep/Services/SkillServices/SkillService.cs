@@ -13,9 +13,10 @@ namespace FirstStep.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Skill>> GetAll()
+        public async Task<IEnumerable<string>> GetAll()
         {
-            return await _context.Skills.ToListAsync();
+            IEnumerable<string> skills = await _context.Skills.Select(e => e.skill_name).ToListAsync();
+            return skills;
         }
 
         public async Task<Skill> GetById(int id)
