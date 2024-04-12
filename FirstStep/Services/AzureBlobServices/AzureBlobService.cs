@@ -1,6 +1,7 @@
 ﻿
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using System.Threading.Tasks;
 
 namespace FirstStep.Services
 
@@ -48,24 +49,14 @@ namespace FirstStep.Services
             return items;
         }
 
-       public async Task<BlobDownloadInfo> DownloadBlob(string eTag)
-        {  
-            
-            if (eTag == null)
-            {
-                throw new Exception("Document is not found");
-            }
-
-          var blobClient = _blobcontainerClient.GetBlobClient(eTag);
-            var download = await blobClient.DownloadAsync();
-            return download.Value;     
+        public async Task<Stream> DownloadBlob(string eTag)
+        {
+            var blobClient = _blobcontainerClient.GetBlobClient(eTag);
+            var downloadContent = await blobClient.DownloadAsync();
+            return downloadContent.Value.Content;
         }
 
-      /*  public  Task DeleteBlob(string blobName)
-        {
-            var blobClient = _blobcontainerClient.GetBlobClient(blobName);
-            var delete =  blobClient.DeleteIfExists();
-            return Task.CompletedTask;
-        }*/
+
+
     }
 }
