@@ -22,8 +22,6 @@ namespace FirstStep.Data
 
         public DbSet<Employee> Employees { get; set; } = null!;
 
-    
-
         public DbSet<Seeker> Seekers { get; set; } = null!;
 
         public DbSet<HRManager> HRManagers { get; set; } = null!;
@@ -36,7 +34,6 @@ namespace FirstStep.Data
 
         public DbSet<Revision> Revisions { get; set; } = null!;
       
-
         public DbSet<OTPRequest> OTPRequests { get; set; } = null!;
 
 
