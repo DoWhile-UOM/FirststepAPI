@@ -121,6 +121,11 @@ namespace FirstStep.Data
                     .WithMany(e => e.applications)
                     .HasForeignKey(e => e.advertisement_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.seeker)
+                    .WithMany(e => e.applications)
+                    .HasForeignKey(e => e.user_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
             });
         }
     }
