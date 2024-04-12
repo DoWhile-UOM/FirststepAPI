@@ -32,7 +32,7 @@ namespace FirstStep.Services
         public Task UpdateUnregisteredCompany(int companyID, UpdateUnRegCompanyDto company);
 
         public Task UpdateRegisteredCompany(int companyID, UpdateCompanyDto company);
-        public Task UpdateCompanyApplication(int companyID, UpdateRegistrationStatusDto company);
+        public Task UpdateCompanyApplication(int companyID, UpdateRegistrationStatusDto companyRegistrationInfo);
         public Task Delete(int id);
 
         public Task<bool> IsRegistered(int companyID);
