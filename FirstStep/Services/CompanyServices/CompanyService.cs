@@ -59,7 +59,7 @@ namespace FirstStep.Services
             IEnumerable<Advertisement> dbAdvertisements = await _advertisementService.FindByCompanyID(companyID);
 
             // get company details
-            var dbCompany = await GetById(companyID);
+            var dbCompany = await FindByID(companyID);
 
             // map to DTO
             var advertisementCompanyDto = _mapper.Map<CompanyProfileDto>(dbCompany);

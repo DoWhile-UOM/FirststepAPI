@@ -84,10 +84,29 @@ namespace FirstStep.Services
 
         public async Task Update(int seekerId, Seeker seeker)
         {
-            // create UpdateSeekerDto and recheck this endpoint using relationships
+            // For ruwandie, please follow these steps to update the Seeker object with relationships:
 
+            // first create a DTO called UpdateSeekerDto
+            // add all the properties that you want to update in the Seeker object
+            // in the Seeker object, add a property called seekerSkills of type List<string>
+            // in this function, need to map the Seeker object to the UpdateSeekerDto object
+            // then update the Seeker object with the new values wihout skills
+
+            // for to update skills, need to consider about relationship between Seeker and Skill (m to m)
+
+            // for update the seeker's skills
+            // first, find the already exists skill in the database
+            // if the skill exists, add it to the seeker's list of skills
+            // if the skill doesn't exist, create it and add it to the seeker's list of skills
+
+
+
+            // this is the update function without updating the skills
+
+            // for get the seeker object from the database
             Seeker dbSeeker = await GetById(seekerId);
 
+            // update the Seeker object with the new values
             dbSeeker.first_name = seeker.first_name;
             dbSeeker.last_name = seeker.last_name;
             dbSeeker.email = seeker.email;
@@ -99,7 +118,22 @@ namespace FirstStep.Services
             dbSeeker.profile_picture = seeker.profile_picture;
             dbSeeker.linkedin = seeker.linkedin;
 
+            // update the Seeker's skills
+            // Ruwanide you need to implement this part
+
+            // save the changes
             await _context.SaveChangesAsync();
+
+
+            // after implementing the above steps,
+            // you should be change the function parameter type to UpdateSeekerDto
+            // as well as the function return type to Task<UpdateSeekerDto>
+            // also need to update the controller and the interface
+
+
+            // you can refer the code segment in advertisement service for updating the relationships
+            // line 180 to 212 - function name: IncludeProfessionKeywordsToAdvertisement()
+            // advertisement and the keyword relationship is similar to the seeker and the skill relationship
         }
 
         public async Task Delete(int id)

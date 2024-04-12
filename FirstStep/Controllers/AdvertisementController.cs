@@ -25,6 +25,20 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
+        [Route("GetAllAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAdvertisements(int seekerID, int pageLength)
+        {
+            return Ok(await _service.GetFirstPage(seekerID, pageLength));
+        }
+
+        [HttpGet]
+        [Route("GetAllAdvertisements/seekerID={seekerID:int}/advertisements={jobIDs}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisementsById(string jobIDs, int seekerID)
+        {
+            return Ok(await _service.GetById(jobIDs.Split(',').Select(int.Parse), seekerID));
+        }
+
+        [HttpGet]
         [Route("GetAdvertisementById/{jobID:int}")]
         public async Task<ActionResult<AdvertisementDto>> GetAdvertisementById(int jobID)
         {            
@@ -40,14 +54,14 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}")]
-        public async Task<ActionResult<IEnumerable<JobOfferDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
+        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
         {
             return Ok(await _service.GetAdvertisementsByCompany(companyID, status));
         }
 
         [HttpGet]
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}/title={title}")]
-        public async Task<ActionResult<IEnumerable<JobOfferDto>>> GetAdvertisementsByCompanyID(int companyID, string status, string title)
+        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status, string title)
         {
             return Ok(await _service.GetAdvertisementsByCompany(companyID, status, title));
         }
@@ -60,10 +74,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisementsBasic(int seekerID, SearchJobRequestDto requestDto)
+        [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisementsBasic(int seekerID, int pageLength, SearchJobRequestDto requestDto)
         {
-            return Ok(await _service.BasicSearch(requestDto, seekerID));
+            return Ok(await _service.BasicSearch(requestDto, seekerID, pageLength));
         }
 
         [HttpPost]
