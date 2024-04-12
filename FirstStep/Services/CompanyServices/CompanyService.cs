@@ -114,6 +114,15 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateCompanyApplication(int companyID, UpdateRegistrationStatusDto companyRegistrationInfo)
+        {
+            var company = await FindByID(companyID);
+            
+            company.verification_status = companyRegistrationInfo.verification_status;
+            company.comment = companyRegistrationInfo.comment;
+
+            await _context.SaveChangesAsync();
+        }
 
         public async Task RegisterCompany(int companyID, AddDetailsCompanyDto company)
         {
