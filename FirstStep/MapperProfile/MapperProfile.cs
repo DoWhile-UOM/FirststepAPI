@@ -25,7 +25,8 @@ namespace FirstStep.MapperProfile
             CreateMap<Company, CompanyProfileDetailsDto>();
             CreateMap<Company, ViewCompanyListDto>();
             CreateMap<Company, CompanyApplicationDto>();
-
+            CreateMap<Company, CompanyApplicationDto>();
+            CreateMap<UpdateRegistrationStatusDto, Company>();
         }
     }
 }
