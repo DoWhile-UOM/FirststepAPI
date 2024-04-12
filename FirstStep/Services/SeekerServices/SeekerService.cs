@@ -132,8 +132,12 @@ namespace FirstStep.Services
 
 
             // you can refer the code segment in advertisement service for updating the relationships
-            // line 180 to 212 - function name: IncludeProfessionKeywordsToAdvertisement()
+            // line 290 to 322 - function name: IncludeProfessionKeywordsToAdvertisement()
             // advertisement and the keyword relationship is similar to the seeker and the skill relationship
+
+            // also have a relationship betweene advertisement and the skills
+            // you can refer the code segment in advertisement service for updating the relationships
+            // line 324 to 356 - function name: IncludeSkillsToAdvertisement()
         }
 
         public async Task Delete(int id)
