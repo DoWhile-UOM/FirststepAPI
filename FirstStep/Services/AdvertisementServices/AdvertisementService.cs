@@ -483,30 +483,33 @@ namespace FirstStep.Services
                     )
                 .ToListAsync();
 
-            /*
-            if (requestAdsDto.city != null && requestAdsDto.distance > 0)
-            {
-                foreach (Advertisement advertisement in advertisements)
-                {
-                    if (await MapAPI.GetDistance(advertisement.city, requestAdsDto.city) > requestAdsDto.distance + 1)
-                    {
-                        advertisements.Remove(advertisement);
-                    }
-                }
-            }
-            */
+            var filteredAdvertisements = new List<Advertisement> { };
 
             if (requestAdsDto.title == null)
             {
-                return await CreateFirstPageResults(advertisements, seekerID, pageLength);
+                return await CreateFirstPageResults(filteredAdvertisements, seekerID, pageLength);
             }
-
-            var filteredAdvertisements = new List<Advertisement> { };
 
             filteredAdvertisements
                 .AddRange(advertisements
                     .Where(ad => ad.title.ToLower().Contains(requestAdsDto.title.ToLower()))
                     .ToList());
+
+            if (requestAdsDto.city != null && requestAdsDto.distance > 0)
+            {
+                foreach (Advertisement advertisement in advertisements)
+                {
+                    if (filteredAdvertisements.Contains(advertisement))
+                    {
+                        continue;
+                    }
+
+                    if (await MapAPI.GetDistance(advertisement.city, requestAdsDto.city) <= requestAdsDto.distance + 1)
+                    {
+                        filteredAdvertisements.Add(advertisement);
+                    }
+                }
+            }
 
             var titles = requestAdsDto.title.Split(' ');
 
