@@ -62,6 +62,7 @@ namespace FirstStep.Services
         {
             
                 // Registration Email
+                applicationEvaluationStatusLink= "http://localhost:4200/RegCheck?id="+applicationEvaluationStatusLink;// this link will direct company to a page where the company can see its regirataion application evaluation status.
                 
                 EmailDto request = new();
                 var builder = new BodyBuilder();

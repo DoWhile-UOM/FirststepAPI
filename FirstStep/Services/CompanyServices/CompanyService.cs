@@ -12,16 +12,18 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IAdvertisementService _advertisementService;
+        private readonly IEmailService _emailService;//Email Service dependency injection
 
         // Random ID generation
         private static readonly Random random = new Random();
         private static readonly HashSet<string> seenIds = new HashSet<string>();
 
-        public CompanyService(DataContext context, IMapper mapper, IAdvertisementService advertisementService)
+        public CompanyService(IEmailService emailService,DataContext context, IMapper mapper, IAdvertisementService advertisementService)
         {
             _context = context;
             _mapper = mapper;
             _advertisementService = advertisementService;
+            _emailService=emailService;
         }
 
         public async Task<IEnumerable<Company>> GetAll()
@@ -100,6 +102,7 @@ namespace FirstStep.Services
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
 
+            _emailService.SendEmailCompanyRegistration(company.company_email, company.company_name,company.registration_url); //Send Company Registration Email
             //return(company.registration_url); //Return Company Registration URL (Unique ID 
         }
 
