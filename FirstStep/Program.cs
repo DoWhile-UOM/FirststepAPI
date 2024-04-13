@@ -1,6 +1,7 @@
 using FirstStep.Data;
 using FirstStep.Services;
 using FirstStep.Services.BackgroundServices;
+using FirstStep.Services.UserServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -74,6 +75,7 @@ builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IRevisionService, RevisionService>();
 builder.Services.AddScoped<IEmailService, EmailService>();;
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
+builder.Services.AddScoped<IUserService, UserService>();//Register User Service-Ashan
 
 //JWT Authentication
 builder.Services.AddAuthentication(x =>

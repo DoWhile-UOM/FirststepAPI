@@ -11,6 +11,7 @@ using FirstStep.Helper;
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Services.UserServices;
 
 namespace FirstStep.Controllers
 {
@@ -19,9 +20,11 @@ namespace FirstStep.Controllers
     public class UserController : ControllerBase
     {
         private readonly DataContext _context;
-        public UserController(DataContext authContext)
+        private readonly IUserService _userService;
+        public UserController(DataContext authContext,IUserService userservice)
         {
             _context = authContext;
+            _userService = userservice;
         }
 
         [HttpPost("authenticate")]
@@ -53,45 +56,23 @@ namespace FirstStep.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegRequestDto userObj)
         {
-            if (userObj == null)
-                return BadRequest();
-
-            //check if email already exists
-            if (await CheckEmailExist(userObj.email))
-                return BadRequest(new { message = "Email already exists" });
-
-
-            //password strength check
-            var passCheck = PasswordStrengthCheck(userObj.password_hash);
-
-            if (!string.IsNullOrEmpty(passCheck))
-                return BadRequest(new { Message = passCheck.ToString() });
-
-            userObj.password_hash = PasswordHasher.Hasher(userObj.password_hash);//Hash password before saving to database
-            //userObj.Role = "User";
-            //userObj.token = CreateVerifyToken();
-
-            User userNewObj = new User
+            try
             {
-                email = userObj.email,
-                password_hash = userObj.password_hash,
-                first_name = userObj.first_name,
-                last_name = userObj.last_name,
-                user_type = "User",
-                token =null,
-                refresh_token = null
-            };  
+                var response = await _userService.RegisterUser(userObj);
 
-            _context.Users.Add(userNewObj);
-            _context.SaveChanges();
-            //Send email verification link
-            //SendEmail(userObj.email, userObj.token);
-
-            return Ok(
-                new
+                return response switch
                 {
-                    message = "Registration Succesfull!"
-                });
+                    "User Registered Successfully" => Ok(response),
+                    "Null User" => BadRequest(response),
+                    "Email Already exist" => BadRequest(response),
+                    _ => BadRequest(response),
+                };
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
         }
 
         //Test comments
@@ -278,5 +259,6 @@ namespace FirstStep.Controllers
                 RefreshToken = newRefreshToken,
             });
         }
+
     }
 }
