@@ -7,7 +7,7 @@ namespace FirstStep.Helper
     {
         private static HttpClient? client = null;
 
-        public static async Task GetDistance(string city1, string city2)
+        public static async Task<float> GetDistance(string city1, string city2)
         {
             // Get the coordinates of the two cities
             var city1Coordinates = await GetCoordinates(city1.ToLower());
@@ -16,8 +16,7 @@ namespace FirstStep.Helper
             // Calculate the distance between the two cities using the Haversine formula
             double distance = CalculateDistance(city1Coordinates, city2Coordinates);
 
-            // Print the distance
-            Console.WriteLine($"The distance between {city1} and {city2} is {distance} km.");
+            return (float)distance;
         }
 
         private static async Task<(double Latitude, double Longitude)> GetCoordinates(string cityName)
@@ -90,6 +89,9 @@ namespace FirstStep.Helper
                 Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
             double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
             double distance = R * c;
+
+            // convert distance to nearest 2nd decimal place
+            distance = Math.Round(distance, 2);
 
             return distance;
         }

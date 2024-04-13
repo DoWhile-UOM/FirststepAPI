@@ -2,6 +2,7 @@
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Helper;
 using Microsoft.EntityFrameworkCore;
 using KdTree;
 using KdTree.Math;
@@ -468,19 +469,32 @@ namespace FirstStep.Services
 
         public async Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID, int pageLength)
         {
-            var advertisements = await _context.Advertisements
+            List<Advertisement> advertisements = await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
                 .Include("skills")
                 .Include("hrManager")
                 .Include("savedSeekers")
                 .Where(ad =>
-                    ad.country == requestAdsDto.country &&
-                    ad.city == requestAdsDto.city &&
+                    ad.current_status == AdvertisementStatus.active.ToString() &&
                         (ad.arrangement == requestAdsDto.arrangement ||
                         ad.employeement_type == requestAdsDto.employeement_type) &&
-                    ad.current_status == AdvertisementStatus.active.ToString())
+                    ad.country == requestAdsDto.country
+                    )
                 .ToListAsync();
+
+            /*
+            if (requestAdsDto.city != null && requestAdsDto.distance > 0)
+            {
+                foreach (Advertisement advertisement in advertisements)
+                {
+                    if (await MapAPI.GetDistance(advertisement.city, requestAdsDto.city) > requestAdsDto.distance + 1)
+                    {
+                        advertisements.Remove(advertisement);
+                    }
+                }
+            }
+            */
 
             if (requestAdsDto.title == null)
             {
