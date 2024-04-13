@@ -30,27 +30,22 @@ namespace FirstStep.Controllers
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] LoginRequestDto userObj)
         {
+            try
+            {
+                var response = await _userService.Authenticate(userObj);
 
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.email == userObj.email);
-            if (user == null)
-                return NotFound(new { message = "Username Not Found" });
-
-            if (!PasswordHasher.VerifyPassword(userObj.password, user.password_hash))
-                return BadRequest(new { message = "Invalid Password" });
-
-
-            user.token = await CreateJwt(user); //create access token for session
-            var newAccessToken = user.token; 
-            var newRefreshToken = CreateRefreshToken(); //create refresh token
-            user.refresh_token= newRefreshToken;
-            await _context.SaveChangesAsync();// save changes to database
-
-            return Ok(
-                new TokenApiDto()
+                return response switch
                 {
-                    AccessToken = newAccessToken,
-                    RefreshToken = newRefreshToken
-                });
+                    { IsSuccessful: true } => Ok(response.Token),
+                    { IsSuccessful: false } => BadRequest(response.ErrorMessage),
+                    _ => BadRequest(response.ErrorMessage),
+                };
+
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpPost("register")]

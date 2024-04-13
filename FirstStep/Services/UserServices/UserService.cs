@@ -5,6 +5,10 @@ using FirstStep.Models.DTOs;
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
 using FirstStep.Helper;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace FirstStep.Services.UserServices
 {
@@ -15,6 +19,39 @@ namespace FirstStep.Services.UserServices
         {
             _context = context;
         }
+
+        //Authentication Result return types
+        public class AuthenticationResult
+        {
+            public bool IsSuccessful { get; set; }
+            public TokenApiDto? Token { get; set; }
+            public string? ErrorMessage { get; set; }
+        }
+
+
+
+        //User Authentication
+        public async Task<AuthenticationResult> Authenticate(LoginRequestDto userObj)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.email == userObj.email);
+            if (user == null)
+                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "Username Not Found" };
+
+            if (!PasswordHasher.VerifyPassword(userObj.password, user.password_hash))
+
+                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "Invalid Password" };
+
+
+            user.token = await CreateJwt(user); //create access token for session
+            var newAccessToken = user.token;
+            var newRefreshToken = CreateRefreshToken(); //create refresh token
+            user.refresh_token = newRefreshToken;
+            await _context.SaveChangesAsync();// save changes to database
+
+            return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken } };
+        }
+
+
 
 
         //Register User
@@ -74,6 +111,79 @@ namespace FirstStep.Services.UserServices
         private async Task<bool> CheckEmailExist(string Email)
         {
             return await _context.Users.AnyAsync(x => x.email == Email);
+        }
+
+        //Create JWT Token
+        private async Task<string> CreateJwt(User user)
+        {
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes("AshanMatheeshaSecretKeythisisSecret");
+
+            User? dbUser = await _context.Users.FirstOrDefaultAsync(u => u.user_id == user.user_id);
+
+            if (dbUser == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            var identity = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
+                new Claim(ClaimTypes.Role, dbUser.user_type),//Store role in JWT Token (seeker ,sa ,HRM ,HRA, ca)
+                new Claim(ClaimTypes.GivenName, user.first_name),
+                new Claim(ClaimTypes.Surname,user.last_name),
+                new Claim(ClaimTypes.Webpage, user.first_name)
+            });
+
+            identity.AddClaim(new Claim(ClaimTypes.Webpage, dbUser.user_type));
+
+            var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = identity,
+                Expires = DateTime.Now.AddSeconds(10),
+                SigningCredentials = credentials
+            };
+            var token = jwtTokenHandler.CreateToken(tokenDescriptor);
+            return jwtTokenHandler.WriteToken(token);
+        }
+
+        //Refresh token generator
+        private string CreateRefreshToken()
+        {
+            var tokenBytes = RandomNumberGenerator.GetBytes(64);
+            var refreshToken = Convert.ToBase64String(tokenBytes);
+
+            var tokenInUser = _context.Users
+                .Any(a => a.refresh_token == refreshToken);
+            if (tokenInUser)//If refresh token exist generate new one otherwise return
+            {
+                return CreateRefreshToken();
+            }
+            return refreshToken;
+        }
+
+        //Fetch user prinicipals from the expired access token
+        private ClaimsPrincipal GetPrincipleFromExpiredToken(string token)
+        {
+            var key = Encoding.ASCII.GetBytes("AshanMatheeshaSecretKeythisisSecret");
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateLifetime = false
+            };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            SecurityToken securityToken;
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                throw new SecurityTokenException("This is Invalid Token");
+            return principal;
+
         }
 
 
