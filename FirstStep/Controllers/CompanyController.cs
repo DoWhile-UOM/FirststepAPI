@@ -60,7 +60,7 @@ namespace FirstStep.Controllers
             try
             {
                 await _service.Create(newCompany);
-                return Ok("Company Application successfully filled!");
+                return Ok("Company Application successfully submitted!");
             }
             catch (EmailAlreadyExistsException ex)//Handle Email Already Exists Exception
             {
@@ -78,6 +78,14 @@ namespace FirstStep.Controllers
             }
 
         }
+
+        [HttpGet]
+        [Route("GetRegCheckByID/{companyId}")]
+        public async Task<ActionResult<CompanyProfileDetailsDto>> GetRegCheckByID(string companyId)
+        {
+            return Ok(await _service.FindByRegCheckID(companyId));
+        }
+
 
         [HttpPut]
         [Route("UpdateCompanyVerification/{companyId:int}")] // System Admin
