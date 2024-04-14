@@ -483,35 +483,30 @@ namespace FirstStep.Services
                     )
                 .ToListAsync();
 
-            var filteredAdvertisements = new List<Advertisement> { };
+            // filter advertisements by title
+            var filteredAdvertisements = FilterByTitle(advertisements, requestAdsDto.title);
 
-            if (requestAdsDto.title == null)
+            // filter advertisements by city
+            filteredAdvertisements = await FilterByCity(filteredAdvertisements, requestAdsDto.city, requestAdsDto.distance);
+
+            return await CreateFirstPageResults(filteredAdvertisements, seekerID, pageLength);
+        }
+
+        private List<Advertisement> FilterByTitle(List<Advertisement> advertisements, string? reqTitle)
+        {
+            if (reqTitle == null)
             {
-                return await CreateFirstPageResults(filteredAdvertisements, seekerID, pageLength);
+                return advertisements;
             }
+
+            var filteredAdvertisements = new List<Advertisement> { };
 
             filteredAdvertisements
                 .AddRange(advertisements
-                    .Where(ad => ad.title.ToLower().Contains(requestAdsDto.title.ToLower()))
+                    .Where(ad => ad.title.ToLower().Contains(reqTitle.ToLower()))
                     .ToList());
 
-            if (requestAdsDto.city != null && requestAdsDto.distance > 0)
-            {
-                foreach (Advertisement advertisement in advertisements)
-                {
-                    if (filteredAdvertisements.Contains(advertisement))
-                    {
-                        continue;
-                    }
-
-                    if (await MapAPI.GetDistance(advertisement.city, requestAdsDto.city) <= requestAdsDto.distance + 1)
-                    {
-                        filteredAdvertisements.Add(advertisement);
-                    }
-                }
-            }
-
-            var titles = requestAdsDto.title.Split(' ');
+            var titles = reqTitle.Split(' ');
 
             foreach (var title in titles)
             {
@@ -546,7 +541,38 @@ namespace FirstStep.Services
                 }
             }
 
-            return await CreateFirstPageResults(filteredAdvertisements, seekerID, pageLength);
+            return filteredAdvertisements;
+        }
+
+        private async Task<List<Advertisement>> FilterByCity(List<Advertisement> advertisements, string? reqCity, float? reqDistance)
+        {
+            if (reqCity == null || reqDistance < 0)
+            {
+                return advertisements;
+            }
+
+            // reqDistance is 0, means that the seeker wants to search only in the requested city
+            if (reqDistance == 0)
+            {
+                return advertisements
+                    .Where(ad => ad.city.ToLower() == reqCity.ToLower())
+                    .ToList();
+            }
+
+            var filteredAdvertisements = new List<Advertisement> { };
+
+            // get coordinates of the requested city
+            var reqCityCoordinate = await MapAPI.GetCoordinates(reqCity.ToLower());
+
+            foreach (Advertisement advertisement in advertisements)
+            {
+                if (await MapAPI.GetDistance(advertisement.city, reqCityCoordinate) <= reqDistance)
+                {
+                    filteredAdvertisements.Add(advertisement);
+                }
+            }
+
+            return filteredAdvertisements;
         }
 
         public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)

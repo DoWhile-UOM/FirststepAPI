@@ -3,6 +3,12 @@ using System.Net;
 
 namespace FirstStep.Helper
 {
+    public struct Coordinate
+    {
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+    }
+
     public static class MapAPI
     {
         private static HttpClient? client = null;
@@ -19,7 +25,16 @@ namespace FirstStep.Helper
             return (float)distance;
         }
 
-        private static async Task<(double Latitude, double Longitude)> GetCoordinates(string cityName)
+        public static async Task<float> GetDistance(string city, Coordinate reqCityCoordinate)
+        {
+            var cityCoordinates = await GetCoordinates(city.ToLower());
+
+            double distance = CalculateDistance(cityCoordinates, reqCityCoordinate);
+
+            return (float)distance;
+        }
+
+        public static async Task<Coordinate> GetCoordinates(string cityName)
         {
             // URL for the Nominatim API
             string url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(cityName)}&format=json&limit=1";
@@ -53,8 +68,6 @@ namespace FirstStep.Helper
                 throw new Exception($"API request failed with status code {response.StatusCode}");
             }
 
-            Console.WriteLine(response);
-
             // Parse the response
             string jsonResponse = await response.Content.ReadAsStringAsync();
             dynamic? data = JsonConvert.DeserializeObject(jsonResponse);
@@ -70,15 +83,15 @@ namespace FirstStep.Helper
                 throw new Exception("City not found or invalid response from API.");
             }
 
-            // Get latitude and longitude
-            double latitude = data[0].lat;
-            double longitude = data[0].lon;
-
-            return (latitude, longitude);
+            return new Coordinate
+            { 
+                Latitude = data[0].lat, 
+                Longitude = data[0].lon 
+            };
         }
 
         // Method to calculate distance between two coordinates using the Haversine formula
-        private static double CalculateDistance((double Latitude, double Longitude) coord1, (double Latitude, double Longitude) coord2)
+        private static double CalculateDistance(Coordinate coord1, Coordinate coord2)
         {
             double R = 6378.137; // Radius of the Earth in km
             double dLat = ToRadians(coord2.Latitude - coord1.Latitude);
