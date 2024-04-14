@@ -12,5 +12,6 @@
         public string? business_reg_certificate { get; set; }
         public string? certificate_of_incorporation { get; set; }
         public string? comment { get; set; }
+        public required int verified_system_admin_id { get; set; }
     }
 }
