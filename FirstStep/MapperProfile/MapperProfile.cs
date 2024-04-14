@@ -13,7 +13,7 @@ namespace FirstStep.MapperProfile
             CreateMap<AddAdvertisementDto, Advertisement>();
 
             CreateMap<Advertisement, UpdateAdvertisementDto>();
-            CreateMap<UpdateAdvertisementDto, Advertisement>();
+            CreateMap<UpdateAdvertisementDto, Advertisement>().ForMember(ad => ad.advertisement_id, act => act.Ignore());
 
             CreateMap<Advertisement, AdvertisementDto>()
                 .ForMember(
