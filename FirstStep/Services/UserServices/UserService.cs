@@ -52,6 +52,30 @@ namespace FirstStep.Services.UserServices
         }
 
 
+        //Refresh Token
+        public async Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto)
+        {
+            if (tokenApiDto is null)
+                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "Input is Null" };
+            string accessToken = tokenApiDto.AccessToken;
+            string refreshToken = tokenApiDto.RefreshToken;
+            var principal = GetPrincipleFromExpiredToken(accessToken);
+            var username = principal.Identity?.Name;
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.email == username);
+            if (user is null || user.refresh_token != refreshToken || user.refresh_token_expiry <= DateTime.Now)
+                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "Invalid Request" };
+
+            var newAccessToken = CreateJwt(user);
+            var newRefreshToken = CreateRefreshToken();
+            user.refresh_token = newRefreshToken;
+            await _context.SaveChangesAsync();
+
+            return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = await newAccessToken, RefreshToken = newRefreshToken } };
+
+        }
+
+
 
 
         //Register User
@@ -142,7 +166,7 @@ namespace FirstStep.Services.UserServices
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = identity,
-                Expires = DateTime.Now.AddSeconds(10),
+                Expires = DateTime.Now.AddMinutes(2),
                 SigningCredentials = credentials
             };
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
