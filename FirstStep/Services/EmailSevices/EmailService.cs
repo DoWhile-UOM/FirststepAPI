@@ -172,7 +172,7 @@ namespace FirstStep.Services
             SendEmail(emailBody);
         }
 
-        public void EvaluatedCompanyRegistraionApplicationEmail(EmailDto request, string email, bool HasAccepted, string comment, string link, string company_name)
+        public void EvaluatedCompanyRegistraionApplicationEmail( string email, bool HasAccepted, string comment, string link, string company_name)
         {
       
             EmailDto emailBody = new();
