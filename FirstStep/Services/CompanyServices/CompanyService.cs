@@ -11,12 +11,14 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IAdvertisementService _advertisementService;
+        private readonly IEmailService _emailService;
 
-        public CompanyService(DataContext context, IMapper mapper, IAdvertisementService advertisementService)
+        public CompanyService(DataContext context, IMapper mapper, IAdvertisementService advertisementService, IEmailService emailService)
         {
             _context = context;
             _mapper = mapper;
             _advertisementService = advertisementService;
+            _emailService = emailService;
         }
 
         public async Task<IEnumerable<Company>> GetAll()
@@ -127,14 +129,28 @@ namespace FirstStep.Services
 
         public async Task UpdateCompanyVerification(int companyID, CompanyRegInfoDto companyRegInfo)
         {
-            var unRegCompany = await FindByID(companyID);
+            string link= null; // common varible for both types of links that appears in company email
+            try
+            {
+                var unRegCompany = await FindByID(companyID);
 
-            unRegCompany.verification_status = companyRegInfo.verification_status;
-            unRegCompany.company_registered_date = companyRegInfo.company_registered_date;
-            unRegCompany.verified_system_admin_id = companyRegInfo.verified_system_admin_id;
-            unRegCompany.comment = companyRegInfo.comment;
+                unRegCompany.verification_status = companyRegInfo.verification_status;
+                unRegCompany.company_registered_date = companyRegInfo.company_registered_date;
+                unRegCompany.verified_system_admin_id = companyRegInfo.verified_system_admin_id;
+                unRegCompany.comment = companyRegInfo.comment;
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
+
+                //sending email to registered company
+                if (unRegCompany.verification_status == true)
+                {
+                    await _emailService.EvaluatedCompanyRegistraionApplicationEmail(unRegCompany.company_email, unRegCompany.verification_status,unRegCompany.comment,link,unRegCompany.company_name)
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error occurred while updating company verification.");
+            }
         }
 
         public async Task RegisterCompany(int companyID, AddDetailsCompanyDto company)
