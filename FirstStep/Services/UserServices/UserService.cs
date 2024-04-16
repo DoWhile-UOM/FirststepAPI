@@ -79,7 +79,7 @@ namespace FirstStep.Services.UserServices
 
 
         //Register User
-        public async Task<string> RegisterUser(UserRegRequestDto userObj)
+        public async Task<string> RegisterUser(UserRegRequestDto userObj,string? type,string? company_id) // UserRegRequestDto must modify
         {
             if (userObj == null)
                 return "Null User";
@@ -99,13 +99,41 @@ namespace FirstStep.Services.UserServices
             //userObj.Role = "User";
             //userObj.token = CreateVerifyToken();
 
+            string user_type;
+
+            switch (type)
+            {
+                case "CA":
+                    user_type = "CA";
+                    //Call Company service to find input id is valid by FindByRegCheckID(string id)
+                    //if input id valid then call Company service to add company admin
+                    //Call Email service to send success email
+                    break;
+                case "HRM":
+                    user_type = "HRM";
+                    //Check auth bearer token if bearer have access to add manager(company admin)
+                    //Call Company service to add company manager 
+                    //call emailservice to send email to manager email
+                    break;
+                case "HRA":
+                    user_type = "HRA";
+                    //Check auth bearer token if bearer have access to add manager(company admin)
+                    //Call Company service to add company manager 
+                    //call emailservice to send email to manager email
+                    break;
+                default:
+                    user_type = "SEEKER";
+                    //Call Email service to send email to user email
+                    break;
+            }
+
             User userNewObj = new User
             {
                 email = userObj.email,
                 password_hash = userObj.password_hash,
                 first_name = userObj.first_name,
                 last_name = userObj.last_name,
-                user_type = "User",
+                user_type = user_type,
                 token = null,
                 refresh_token = null
             };

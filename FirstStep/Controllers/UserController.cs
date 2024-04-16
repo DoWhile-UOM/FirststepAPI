@@ -15,6 +15,25 @@ using FirstStep.Services.UserServices;
 
 namespace FirstStep.Controllers
 {
+
+    //Authentication Result return types
+    public class UserRegRequest
+    {
+        public required string email { get; set; }
+
+        public required string password_hash { get; set; }
+
+        public required string first_name { get; set; }
+
+        public required string last_name { get; set; }
+
+        public string? type { get; set; }
+        public string? company_id { get; set; }
+
+
+
+    }
+
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -49,11 +68,20 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegRequestDto userObj)
+        public async Task<IActionResult> Register([FromBody] UserRegRequest userObjfull)
         {
+
+            UserRegRequestDto userObj = new()
+            {
+                email = userObjfull.email,
+                password_hash = userObjfull.password_hash,
+                first_name = userObjfull.first_name,
+                last_name = userObjfull.last_name
+            };
+
             try
             {
-                var response = await _userService.RegisterUser(userObj);
+                var response = await _userService.RegisterUser(userObj, userObjfull.type, userObjfull.company_id);// UserRegRequestDto must modify 
 
                 return response switch
                 {
