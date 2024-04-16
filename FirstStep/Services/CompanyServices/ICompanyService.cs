@@ -18,8 +18,8 @@ namespace FirstStep.Services
         
         //get comapny list for system Admin
         public Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList();
-        
-        public Task<CompanyProfileDto> GetCompanyProfile(int companyID);
+
+        public Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID);
 
         public Task Create(AddCompanyDto company);
 
@@ -30,6 +30,8 @@ namespace FirstStep.Services
         public Task UpdateUnregisteredCompany(int companyID, UpdateUnRegCompanyDto company);
 
         public Task UpdateRegisteredCompany(int companyID, UpdateCompanyDto company);
+
+        public Task<Company> FindByRegCheckID(string id);
 
         public Task Delete(int id);
 

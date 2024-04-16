@@ -32,6 +32,53 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetById(id));
         }
 
+
+        [HttpGet]
+        [Route("GetApplicationsByAdvertisementId/{id}")]
+        public async Task<ActionResult<IEnumerable<Application>>> GetApplicationsByAdvertisementId(int id)
+        {
+            return Ok(await _service.GetByAdvertisementId(id));
+        }
+
+        [HttpGet]
+        [Route("GetApplicationsBySeekerId/{id}")]
+        public async Task<ActionResult<IEnumerable<Application>>> GetApplicationsBySeekerId(int id)
+        {
+            return Ok(await _service.GetBySeekerId(id));
+        }
+
+
+
+        [HttpGet]
+        [Route("TotalEvaluatedApplications/{advertisment_id}")]
+
+        public async Task<ActionResult<int>> TotalEvaluatedApplications(int advertisment_id)
+        {
+            return Ok(await _service.TotalEvaluatedApplications(advertisment_id));
+        }
+
+        [HttpGet]
+        [Route("TotalNotEvaluatedApplications/{advertisment_id}")]
+        public async Task<ActionResult<int>> TotalNotEvaluatedApplications(int advertisment_id)
+        {
+            return Ok(await _service.TotalNotEvaluatedApplications(advertisment_id));
+        }
+
+        [HttpGet]
+        [Route("AcceptedApplications/{advertisment_id}")]
+        public async Task<ActionResult<int>> AcceptedApplications(int advertisment_id)
+        {
+            return Ok(await _service.AcceptedApplications(advertisment_id));
+        }
+
+        [HttpGet]
+        [Route("RejectedApplications/{advertisment_id}")]
+        public async Task<ActionResult<int>> RejectedApplications(int advertisment_id)
+        {
+            return Ok(await _service.RejectedApplications(advertisment_id));
+        }
+
+
         [HttpPost]
         [Route("AddApplication")]
 

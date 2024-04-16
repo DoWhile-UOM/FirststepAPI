@@ -87,14 +87,9 @@ namespace FirstStep.Controllers
         [HttpPut]
         [Route("UpdateEmployee/{id:int}")]
 
-        public async Task<IActionResult> UpdateEmployee(Employee reqEmployee, int id)
+        public async Task<IActionResult> UpdateEmployee(UpdateEmployeeDto reqEmployee, int id)
         {
-            if (id != reqEmployee.user_id)
-            {
-                return BadRequest("Context is not matching");
-            }
-
-            await _service.Update(reqEmployee);
+            await _service.Update(id, reqEmployee);
             return Ok();
         }
 
