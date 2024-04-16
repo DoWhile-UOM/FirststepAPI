@@ -18,7 +18,7 @@ namespace FirstStep.Services
         private static readonly Random random = new Random();
         private static readonly HashSet<string> seenIds = new HashSet<string>();
 
-        public CompanyService(IEmailService emailService,DataContext context, IMapper mapper, IAdvertisementService advertisementService)
+        public CompanyService(IEmailService emailService, DataContext context, IMapper mapper, IAdvertisementService advertisementService)
         {
             _context = context;
             _mapper = mapper;
