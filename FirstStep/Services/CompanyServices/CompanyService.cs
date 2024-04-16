@@ -129,7 +129,8 @@ namespace FirstStep.Services
 
         public async Task UpdateCompanyVerification(int companyID, CompanyRegInfoDto companyRegInfo)
         {
-            string link= null; // common varible for both types of links that appears in company email
+            string linkForUnregistered= null; // common varible for both types of links that appears in company email
+            string linkForRegistered = null;
             try
             {
                 var unRegCompany = await FindByID(companyID);
@@ -144,12 +145,16 @@ namespace FirstStep.Services
                 //sending email to registered company
                 if (unRegCompany.verification_status == true)
                 {
-                    await _emailService.EvaluatedCompanyRegistraionApplicationEmail(unRegCompany.company_email, unRegCompany.verification_status,unRegCompany.comment,link,unRegCompany.company_name)
+                     _emailService.EvaluatedCompanyRegistraionApplicationEmail(unRegCompany.company_email, unRegCompany.verification_status, unRegCompany.comment, linkForRegistered, unRegCompany.company_name);
+                }
+                else
+                {
+                    _emailService.EvaluatedCompanyRegistraionApplicationEmail(unRegCompany.company_email, unRegCompany.verification_status, unRegCompany.comment, linkForUnregistered, unRegCompany.company_name);
                 }
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error occurred while updating company verification.");
+                
             }
         }
 
