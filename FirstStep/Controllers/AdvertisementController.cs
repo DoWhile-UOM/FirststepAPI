@@ -48,14 +48,14 @@ namespace FirstStep.Controllers
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}")]
         public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
         {
-            return Ok(await _service.GetAdvertisementsByCompany(companyID, status));
+            return Ok(await _service.GetByCompanyID(companyID, status));
         }
 
         [HttpGet]
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}/title={title}")]
         public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status, string title)
         {
-            return Ok(await _service.GetAdvertisementsByCompany(companyID, status, title));
+            return Ok(await _service.GetByCompanyID(companyID, status, title));
         }
 
         [HttpGet]

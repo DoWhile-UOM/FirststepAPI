@@ -5,8 +5,6 @@ namespace FirstStep.Services
 {
     public interface IAdvertisementService
     {
-        Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID);
-
         Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int pageLength);
 
         Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID);
@@ -15,9 +13,11 @@ namespace FirstStep.Services
 
         Task<UpdateAdvertisementDto> GetByIdWithKeywords(int id);
 
-        Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status);
+        Task<IEnumerable<Advertisement>> GetByCompanyID(int companyID);
 
-        Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status, string title);
+        Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status);
+
+        Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title);
 
         Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID);
 

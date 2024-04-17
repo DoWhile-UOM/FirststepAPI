@@ -68,7 +68,7 @@ namespace FirstStep.Services
             return advertisement;
         }
         
-        public async Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID)
+        private async Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID)
         {
             var advertisementList = await _context.Advertisements
                 .Include("professionKeywords")
@@ -133,17 +133,33 @@ namespace FirstStep.Services
             return currentAdData;
         }
 
-        public async Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status, string title)
+        public async Task<IEnumerable<Advertisement>> GetByCompanyID(int companyID)
+        {
+            var advertisements = await FindByCompanyID(companyID);
+
+            return advertisements.Where(e => e.current_status == AdvertisementStatus.active.ToString()).ToList();
+        }
+
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status)
+        {
+            ValidateStatus(status);
+
+            var dbAdvertisements = await FindByCompanyID(companyID);
+
+            return await CreateAdvertisementList(dbAdvertisements, status);
+        }
+
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title)
         {
             ValidateStatus(status);
 
             if (title != null)
             {
                 var dbAdvertisements = await FindByCompanyID(companyID);
-                
+
                 // filter advertisements by title
                 var filteredAdvertisements = dbAdvertisements.Where(x => x.title.ToLower().Contains(title.ToLower())).ToList();
-                
+
                 // split title into sub parts and filter advertisements by each sub part
                 List<string> titleSubParts = title.Split(' ').ToList();
                 foreach (string subPart in titleSubParts)
@@ -161,17 +177,8 @@ namespace FirstStep.Services
             }
             else
             {
-                return await GetAdvertisementsByCompany(companyID, status);
+                return await GetByCompanyID(companyID, status);
             }
-        }
-
-        public async Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status)
-        {
-            ValidateStatus(status);
-
-            var dbAdvertisements = await FindByCompanyID(companyID);
-
-            return await CreateAdvertisementList(dbAdvertisements, status);
         }
 
         public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfresultsPerPage)

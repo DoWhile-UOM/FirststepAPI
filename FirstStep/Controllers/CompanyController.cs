@@ -62,14 +62,6 @@ namespace FirstStep.Controllers
                 await _service.Create(newCompany);
                 return Ok("Company Application successfully filled!");
             }
-            catch (EmailAlreadyExistsException ex)//Handle Email Already Exists Exception
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (RegistrationNumberAlreadyExistsException ex)// Handle Registration Number Already Exists Exception
-            {
-                return BadRequest(ex.Message);
-            }
             catch (Exception ex)//Handle other errors
             {
                 Console.WriteLine(ex.Message);
