@@ -57,8 +57,10 @@ namespace FirstStep.Services
                 {
                     return blob;
                 }
+               
             }
-            return null; 
+            return null;
+
         }
 
         public Task<byte[]> DownloadBlobByETag(string eTag)
