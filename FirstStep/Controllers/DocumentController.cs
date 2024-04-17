@@ -31,12 +31,18 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("DownloadBlob/{eTag}")]
+        [Route("DownloadBlob/{eTag}")]    
         public async Task<IActionResult> DownloadBlob(string eTag)
         {
-            var fileStream = await _azureBlobService.DownloadBlob(eTag);
-            return File(fileStream, "application/octet-stream", $"blobfile");
+            return Ok(await _azureBlobService.DownloadBlob(eTag));
         }
 
+/*
+        [HttpDelete]
+        public async Task<IActionResult> DeleteBlob(string blobName)
+        {
+            await _azureBlobService.DeleteBlob(blobName);
+            return Ok();
+        }*/
     }
 }
