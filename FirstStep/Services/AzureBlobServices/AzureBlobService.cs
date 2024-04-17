@@ -60,5 +60,18 @@ namespace FirstStep.Services
             }
             return null; 
         }
+
+        public Task<byte[]> DownloadBlobByETag(string eTag)
+        {
+           
+            var blobItem = GetBlobByETag(eTag).Result;
+            if (blobItem != null)
+            {
+                var blobClient = _blobcontainerClient.GetBlobClient(blobItem.Name);
+                var download = blobClient.DownloadContent();
+                return Task.FromResult(download.Value.Content.ToArray());
+            }
+            return null;
+        }
     }
 }

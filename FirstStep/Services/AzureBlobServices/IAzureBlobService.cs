@@ -9,5 +9,7 @@ namespace FirstStep.Services
         public Task<List<BlobItem>> GetUploadedBlobs();
 
         Task<BlobItem> GetBlobByETag(string eTag);
+
+        Task<byte[]> DownloadBlobByETag(string eTag);
     }
 }

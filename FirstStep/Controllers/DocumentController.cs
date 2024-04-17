@@ -40,5 +40,17 @@ namespace FirstStep.Controllers
             }
             return Ok(blob);
         }
+
+        [HttpGet("download/{eTag}")]
+        public async Task<IActionResult> DownloadBlobByETag(string eTag)
+        {
+            var blob = await _azureBlobService.GetBlobByETag(eTag);
+            if (blob == null)
+            {
+                return NotFound();
+            }
+            var file = await _azureBlobService.DownloadBlobByETag(eTag);
+            return File(file, "application/octet-stream", blob.Name);
+        }   
     }
 }
