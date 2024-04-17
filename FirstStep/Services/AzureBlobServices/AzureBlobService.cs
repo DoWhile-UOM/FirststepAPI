@@ -47,30 +47,5 @@ namespace FirstStep.Services
 
             return items;
         }
-
-
-        public async Task<BlobClient> GetBlobByETag(string eTag)
-        {
-            // Get all blobs in the container
-            var blobs = _blobcontainerClient.GetBlobsAsync();
-
-            // Loop through each blob
-            await foreach (BlobItem blobItem in blobs)
-            {
-                // Get the blob client for the current item
-                var blobClient =  _blobcontainerClient.GetBlobClient(blobItem.Name);
-
-                // Check if the ETag of the current blob matches the provided ETag
-                if (blobClient.GetPropertiesAsync.ETag == eTag)
-                {
-                    // Return the blob client if ETags match
-                    return blobClient;
-                }
-            }
-
-            // Return null if no blob with the matching ETag is found
-            return null;
-        }
-
     }
 }
