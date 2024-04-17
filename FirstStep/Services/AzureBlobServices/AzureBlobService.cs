@@ -9,12 +9,12 @@ namespace FirstStep.Services
     {
         BlobServiceClient _blobServiceClient;
         BlobContainerClient _blobcontainerClient;
-        string azureconnectionstring = "DefaultEndpointsProtocol=https;AccountName=firststepstore;AccountKey=1eWRQrfo08HFx8T+eqk4Ja4M4kjZ2zRdfPPrbINpF4XbFbBG5pOCg4qI5aI5sPq0qI/13CCNJbY4+ASthzeFbw==;EndpointSuffix=core.windows.net";
-        
+        string azureconnectionstring = "DefaultEndpointsProtocol=https;AccountName=firststep;AccountKey=uufTzzJ+uB7BRnKG9cN2RUi0mw92n5lTl2EMvnOTw6xv7sfPQSWBqJxHll+Zn2FNc06cGf8Qgrkb+ASteH1KEQ==;EndpointSuffix=core.windows.net";
+
         public AzureBlobService()
         {
             _blobServiceClient = new BlobServiceClient(azureconnectionstring);
-            _blobcontainerClient = _blobServiceClient.GetBlobContainerClient("apiimages");
+            _blobcontainerClient = _blobServiceClient.GetBlobContainerClient("firststep");
         }
         
         public async Task<List<Azure.Response<BlobContentInfo>>> UploadFiles(List<IFormFile> files)
@@ -46,6 +46,19 @@ namespace FirstStep.Services
             }
 
             return items;
+        }
+
+        public async Task<BlobItem> GetBlobByETag(string eTag)
+        {
+            await foreach (BlobItem blob in _blobcontainerClient.GetBlobsAsync())
+            {
+                var properties = await _blobcontainerClient.GetBlobClient(blob.Name).GetPropertiesAsync();
+                if (properties.Value.ETag.ToString() == eTag)
+                {
+                    return blob;
+                }
+            }
+            return null; 
         }
     }
 }

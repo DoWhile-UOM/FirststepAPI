@@ -29,5 +29,16 @@ namespace FirstStep.Controllers
             var response = await _azureBlobService.GetUploadedBlobs();
             return Ok(response);
         }
+
+        [HttpGet("{eTag}")]
+        public async Task<IActionResult> GetBlobByETag(string eTag)
+        {
+            var blob = await _azureBlobService.GetBlobByETag(eTag);
+            if (blob == null)
+            {
+                return NotFound();
+            }
+            return Ok(blob);
+        }
     }
 }
