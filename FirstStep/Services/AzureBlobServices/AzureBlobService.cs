@@ -48,6 +48,7 @@ namespace FirstStep.Services
 
             return items;
         }
+<<<<<<< HEAD
 
         public async Task<Stream> DownloadBlob(string eTag)
         {
@@ -58,5 +59,7 @@ namespace FirstStep.Services
 
 
 
+=======
+>>>>>>> parent of 4f4ab32 (failed)
     }
 }

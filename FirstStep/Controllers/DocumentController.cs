@@ -29,6 +29,7 @@ namespace FirstStep.Controllers
             var response = await _azureBlobService.GetUploadedBlobs();
             return Ok(response);
         }
+<<<<<<< HEAD
 
         [HttpGet]
         [Route("DownloadBlob/{eTag}")]
@@ -38,5 +39,7 @@ namespace FirstStep.Controllers
             return File(fileStream, "application/octet-stream", $"blobfile");
         }
 
+=======
+>>>>>>> parent of 4f4ab32 (failed)
     }
 }
