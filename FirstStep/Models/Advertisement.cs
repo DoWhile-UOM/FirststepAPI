@@ -25,7 +25,8 @@ namespace FirstStep.Models
         [MaxLength(15)]
         public required string arrangement { get; set; }
 
-        public required bool is_experience_required { get; set; }
+        [MaxLength(15)]
+        public required string experience { get; set; }
 
         public float? salary { get; set; }
 

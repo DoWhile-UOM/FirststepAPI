@@ -235,7 +235,7 @@ namespace FirstStep.Services
             dbAdvertisement.city = reqAdvertisement.city;
             dbAdvertisement.employeement_type = reqAdvertisement.employeement_type;
             dbAdvertisement.arrangement = reqAdvertisement.arrangement;
-            dbAdvertisement.is_experience_required = reqAdvertisement.is_experience_required;
+            dbAdvertisement.experience = reqAdvertisement.experience;
             dbAdvertisement.salary = reqAdvertisement.salary;
             dbAdvertisement.currency_unit = reqAdvertisement.currency_unit;
             dbAdvertisement.submission_deadline = reqAdvertisement.submission_deadline;
