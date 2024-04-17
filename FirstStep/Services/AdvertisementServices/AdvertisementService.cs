@@ -382,7 +382,7 @@ namespace FirstStep.Services
             return null;
         }
 
-        private async Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage)
+        public async Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage)
         {
             AdvertisementFirstPageDto firstPageResults = new AdvertisementFirstPageDto();
 
@@ -396,7 +396,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of AdvertisementCardDtos and create advertisement list for the seeker
-        public async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID)
+        private async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
 
@@ -424,7 +424,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of JobOfferDtos and create advertisement list for the company
-        public async Task<IEnumerable<AdvertisementTableRowDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        private async Task<IEnumerable<AdvertisementTableRowDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
         {
             // map to jobofferDtos
             var jobOfferDtos = new List<AdvertisementTableRowDto>();

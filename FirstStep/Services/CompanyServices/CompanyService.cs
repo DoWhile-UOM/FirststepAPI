@@ -53,7 +53,7 @@ namespace FirstStep.Services
         }
 
         
-        public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID)
+        public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID, int pageLength)
         {
             // get all advertisements under the company
             IEnumerable<Advertisement> dbAdvertisements = await _advertisementService.FindByCompanyID(companyID);
@@ -65,7 +65,7 @@ namespace FirstStep.Services
             var advertisementCompanyDto = _mapper.Map<CompanyProfileDto>(dbCompany);
 
             // feed all advertisments under the company to DTO as an array of advertisementCardDtos
-            advertisementCompanyDto.advertisementUnderCompany = await _advertisementService.CreateAdvertisementList(dbAdvertisements, seekerID);
+            advertisementCompanyDto.companyAdvertisements = await _advertisementService.CreateFirstPageResults(dbAdvertisements, seekerID, pageLength);
             
             return advertisementCompanyDto;
         }
