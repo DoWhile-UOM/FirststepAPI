@@ -7,8 +7,6 @@ namespace FirstStep.Services
     {
         Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID);
 
-        Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID);
-
         Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int pageLength);
 
         Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID);

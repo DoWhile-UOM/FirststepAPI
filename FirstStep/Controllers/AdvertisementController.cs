@@ -1,5 +1,4 @@
-﻿using FirstStep.Models;
-using FirstStep.Models.DTOs;
+﻿using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +14,6 @@ namespace FirstStep.Controllers
         public AdvertisementController(IAdvertisementService service)
         {
             _service = service;
-        }
-
-        [HttpGet]
-        [Route("GetAllAdvertisements/seekerID={seekerID:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisements(int seekerID)
-        {
-            return Ok(await _service.GetAll(seekerID));
         }
 
         [HttpGet]
