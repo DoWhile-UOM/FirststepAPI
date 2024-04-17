@@ -14,6 +14,6 @@
 
         public string company_website { get; set; }
 
-        public IEnumerable<AdvertisementShortDto> advertisementUnderCompany { get; set; }
+        public AdvertisementFirstPageDto companyAdvertisements { get; set; }
     }
 }
