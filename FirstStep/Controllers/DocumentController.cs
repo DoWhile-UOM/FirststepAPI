@@ -29,5 +29,36 @@ namespace FirstStep.Controllers
             var response = await _azureBlobService.GetUploadedBlobs();
             return Ok(response);
         }
+
+        [HttpGet]
+        [Route("{eTag}")]
+        public async Task<IActionResult> GetDocumentByETag(string eTag)
+        {
+            if (string.IsNullOrEmpty(eTag))
+            {
+                return BadRequest("Please provide a valid ETag");
+            }
+
+            var blobClient = await _azureBlobService.(eTag);
+            if (blobClient == null)
+            {
+                return NotFound("No document found with the provided ETag");
+            }
+
+            // Download the file content (optional)
+            var downloadContent = await blobClient.DownloadStreamingAsync();
+
+            // Prepare the file for download based on content type (optional)
+            if (downloadContent.ContentType != null)
+            {
+                return File(downloadContent, downloadContent.ContentType, blobClient.Name);
+            }
+            else
+            {
+                // Handle scenario where content type is unknown (optional)
+                return Content("Document found, but content type unavailable.", "text/plain");
+            }
+        }
+
     }
 }
