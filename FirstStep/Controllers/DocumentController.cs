@@ -1,7 +1,6 @@
 ﻿using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Azure.Storage.Blobs;
 
 namespace FirstStep.Controllers
 {
@@ -9,9 +8,9 @@ namespace FirstStep.Controllers
     [ApiController]
     public class DocumentController : ControllerBase
     {
-        public IAzureBlobService _azureBlobService;
+        public IFileService _azureBlobService;
 
-        public DocumentController(IAzureBlobService service)
+        public DocumentController(IFileService service)
         {
             _azureBlobService = service;
         }

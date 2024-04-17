@@ -1,17 +1,15 @@
-﻿
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 
 namespace FirstStep.Services
-
 {
-    public class AzureBlobService : IAzureBlobService
+    public class FileService : IFileService
     {
         BlobServiceClient _blobServiceClient;
         BlobContainerClient _blobcontainerClient;
         string azureconnectionstring = "DefaultEndpointsProtocol=https;AccountName=firststep;AccountKey=uufTzzJ+uB7BRnKG9cN2RUi0mw92n5lTl2EMvnOTw6xv7sfPQSWBqJxHll+Zn2FNc06cGf8Qgrkb+ASteH1KEQ==;EndpointSuffix=core.windows.net";
 
-        public AzureBlobService()
+        public FileService()
         {
             _blobServiceClient = new BlobServiceClient(azureconnectionstring);
             _blobcontainerClient = _blobServiceClient.GetBlobContainerClient("firststep");
@@ -48,7 +46,7 @@ namespace FirstStep.Services
             return items;
         }
 
-        public async Task<BlobItem> GetBlobByETag(string eTag)
+        public async Task<BlobItem?> GetBlobByETag(string eTag)
         {
             await foreach (BlobItem blob in _blobcontainerClient.GetBlobsAsync())
             {
@@ -63,7 +61,7 @@ namespace FirstStep.Services
 
         }
 
-        public Task<byte[]> DownloadBlobByETag(string eTag)
+        public Task<byte[]>? DownloadBlobByETag(string eTag)
         {
            
             var blobItem = GetBlobByETag(eTag).Result;
