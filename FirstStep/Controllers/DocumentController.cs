@@ -29,20 +29,5 @@ namespace FirstStep.Controllers
             var response = await _azureBlobService.GetUploadedBlobs();
             return Ok(response);
         }
-
-        [HttpGet]
-        [Route("DownloadBlob/{eTag}")]    
-        public async Task<IActionResult> DownloadBlob(string eTag)
-        {
-            return Ok(await _azureBlobService.DownloadBlob(eTag));
-        }
-
-/*
-        [HttpDelete]
-        public async Task<IActionResult> DeleteBlob(string blobName)
-        {
-            await _azureBlobService.DeleteBlob(blobName);
-            return Ok();
-        }*/
     }
 }

@@ -47,25 +47,5 @@ namespace FirstStep.Services
 
             return items;
         }
-
-       public async Task<BlobDownloadInfo> DownloadBlob(string eTag)
-        {  
-            
-            if (eTag == null)
-            {
-                throw new Exception("Document is not found");
-            }
-
-          var blobClient = _blobcontainerClient.GetBlobClient(eTag);
-            var download = await blobClient.DownloadAsync();
-            return download.Value;     
-        }
-
-      /*  public  Task DeleteBlob(string blobName)
-        {
-            var blobClient = _blobcontainerClient.GetBlobClient(blobName);
-            var delete =  blobClient.DeleteIfExists();
-            return Task.CompletedTask;
-        }*/
     }
 }
