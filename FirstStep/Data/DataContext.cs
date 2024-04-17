@@ -37,6 +37,8 @@ namespace FirstStep.Data
         public DbSet<Revision> Revisions { get; set; } = null!;
       
 
+        public DbSet<OTPRequest> OTPRequests { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -118,6 +120,11 @@ namespace FirstStep.Data
                 entity.HasOne(e => e.advertisement)
                     .WithMany(e => e.applications)
                     .HasForeignKey(e => e.advertisement_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.seeker)
+                    .WithMany(e => e.applications)
+                    .HasForeignKey(e => e.user_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
         }

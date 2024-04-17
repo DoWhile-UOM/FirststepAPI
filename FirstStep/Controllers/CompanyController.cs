@@ -3,6 +3,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static FirstStep.Services.CompanyService;
 
 namespace FirstStep.Controllers
 {
@@ -46,18 +47,28 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetCompanyProfile/{companyID:int}/seekerID={seekerID:int}")]
-        public async Task<ActionResult<CompanyProfileDto>> GetCompanyProfile(int companyID, int seekerID)
+        [Route("GetCompanyProfile/{companyID:int}/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<CompanyProfileDto>> GetCompanyProfile(int companyID, int seekerID, int pageLength)
         {
-            return Ok(await _service.GetCompanyProfile(companyID, seekerID));
+            return Ok(await _service.GetCompanyProfile(companyID, seekerID, pageLength));
         }
 
         [HttpPost]
         [Route("AddCompany")] // Company Admin
         public async Task<IActionResult> AddCompany(AddCompanyDto newCompany)
         {
-            await _service.Create(newCompany);
-            return Ok($"Successfully added new unregistered company: {newCompany.company_name}.");
+            try
+            {
+                await _service.Create(newCompany);
+                return Ok("Company Application successfully filled!");
+            }
+            catch (Exception ex)//Handle other errors
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, "Internal Server Error");
+            }
+
         }
 
         [HttpPut]

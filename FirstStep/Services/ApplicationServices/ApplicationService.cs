@@ -69,7 +69,6 @@ namespace FirstStep.Services
             return applications;
         }
 
-
         public async Task Update(Application application)
         {
             Application dbApplication = await GetById(application.application_Id);
@@ -80,54 +79,34 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();           
         }
 
+        public async Task<int> NumberOfApplicationsByAdvertisementId(int id)
+        {
+            int NumberOfApplications = await _context.Applications.Where(a => a.advertisement_id == id).CountAsync();
+            return NumberOfApplications;
+        }
+
         public async Task<int> TotalEvaluatedApplications(int id)
         {
-            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.Evaluated.ToString()).CountAsync();
+            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == AdvertisementStatus.Evaluated.ToString()).CountAsync();
             return TolaEvaluatedApplications;
-
         }
 
         public async Task<int> TotalNotEvaluatedApplications(int id)
         {
-            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.NotEvaluated.ToString()).CountAsync();
+            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == AdvertisementStatus.NotEvaluated.ToString()).CountAsync();
             return TolaEvaluatedApplications;
-
         }
 
         public async Task<int> AcceptedApplications(int id)
         {
-
-            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
-            int AcceptedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.Accepted.ToString()).CountAsync();
+            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == AdvertisementStatus.Accepted.ToString()).CountAsync();
             return AcceptedApplications;
         }
 
         public async Task<int> RejectedApplications(int id)
         {
-            IEnumerable<Application> allapplications = await GetByAdvertisementId(id);
-            int AcceptedApplications = await _context.Applications.Where(a => a.status == AdvertisementStatus.Rejected.ToString()).CountAsync();
+            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == AdvertisementStatus.Rejected.ToString()).CountAsync();
             return AcceptedApplications;
         }
-
-
-
-        // Nethma do these tasks
-
-        // create a method to get all applications by advertisement id
-
-        // create a methos to get all applications by seeker id
-
-        // create a method to calculate all evaluated applications by advertisement id
-
-        // create a method to calculate all un-evaluated applications by advertisement id
-
-        // create a method to calculate all accepted applications by advertisement id
-
-        // create a method to calculate all rejected applications by advertisement id
-
-        // make a seeker Dto in including appliacation details
-
     }
 }

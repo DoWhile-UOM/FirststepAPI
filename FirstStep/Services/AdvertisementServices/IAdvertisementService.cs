@@ -5,13 +5,19 @@ namespace FirstStep.Services
 {
     public interface IAdvertisementService
     {
-        Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID);
+        Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int pageLength);
 
-        Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID);
+        Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID);
 
         Task<AdvertisementDto> GetById(int id);
 
-        Task<IEnumerable<JobOfferDto>> GetAdvertisementsByCompanyID(int companyID, string status);
+        Task<UpdateAdvertisementDto> GetByIdWithKeywords(int id);
+
+        Task<IEnumerable<Advertisement>> GetByCompanyID(int companyID);
+
+        Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status);
+
+        Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title);
 
         Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID);
 
@@ -21,18 +27,14 @@ namespace FirstStep.Services
 
         Task Update(int jobID, UpdateAdvertisementDto advertisement);
 
-        Task SaveAdvertisement(int advertisementId, int seekerId);
-
-        Task UnsaveAdvertisement(int advertisementId, int seekerId);
+        Task SaveAdvertisement(int advertisementId, int seekerId, bool isSave);
 
         Task Delete(int id);
 
-        Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> advertisements, int seekerID);
+        Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage);
 
-        Task<IEnumerable<AdvertisementShortDto>> BasicSearch(SearchJobRequestDto searchRequest, int seekerID);
+        Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto searchRequest, int seekerID, int pageLength);
 
         Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID);
-
-        // IEnumerable<Advertisement> GetAdvertisementsByHRManagerId(int id);
     }
 }

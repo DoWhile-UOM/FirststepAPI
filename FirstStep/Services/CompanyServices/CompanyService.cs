@@ -53,32 +53,58 @@ namespace FirstStep.Services
         }
 
         
-        public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID)
+        public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID, int pageLength)
         {
-            // get all advertisements under the company
-            IEnumerable<Advertisement> dbAdvertisements = await _advertisementService.FindByCompanyID(companyID);
+            // get all active advertisements under the company
+            IEnumerable<Advertisement> dbAdvertisements = await _advertisementService.GetByCompanyID(companyID);
 
             // get company details
-            var dbCompany = await GetById(companyID);
+            var dbCompany = await FindByID(companyID);
 
             // map to DTO
             var advertisementCompanyDto = _mapper.Map<CompanyProfileDto>(dbCompany);
 
             // feed all advertisments under the company to DTO as an array of advertisementCardDtos
-            advertisementCompanyDto.advertisementUnderCompany = await _advertisementService.CreateAdvertisementList(dbAdvertisements, seekerID);
+            advertisementCompanyDto.companyAdvertisements = await _advertisementService.CreateFirstPageResults(dbAdvertisements, seekerID, pageLength);
             
             return advertisementCompanyDto;
         }
 
+
+        //Company Registration Starts here
         public async Task Create(AddCompanyDto newCompanyDto)
         {
             var company = _mapper.Map<Company>(newCompanyDto);
 
+            if (await CheckCompnayEmailExist(company.company_email))
+            {
+                throw new Exception("Company email already exists");
+            }
+
+            if (await CheckCompnayRegNo(company.business_reg_no.ToString()))
+            {
+                throw new Exception("Company registration number already exists");
+            }
+
             company.verification_status = false;
+
+            //Call Company Registration Email Verfication service
 
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
         }
+
+        private async Task<bool> CheckCompnayEmailExist(string Email) //Function to check company email exist
+        {
+            return await _context.Companies.AnyAsync(x => x.company_email == Email);
+        }
+
+        private async Task<bool> CheckCompnayRegNo(string RegNo) //Function to check company regNo exist
+        {
+            return await _context.Companies.AnyAsync(x => x.business_reg_no == int.Parse(RegNo));
+        }
+        //Company Registration Ends here
+
 
         public async Task Delete(int id)
         {
