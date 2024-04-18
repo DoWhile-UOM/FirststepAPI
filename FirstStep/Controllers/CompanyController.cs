@@ -38,6 +38,14 @@ namespace FirstStep.Controllers
         {
             return Ok(await _service.GetAllCompanyList());
         }
+        
+        //company application by id in system admin portal
+        [HttpGet]
+        [Route("GetCompanyApplicationById/{companyId:int}")]
+        public async Task<ActionResult<CompanyApplicationDto>> GetCompanyApplicationById(int companyID)
+        {
+            return Ok(await _service.GetCompanyApplicationById(companyID));
+        }
 
         [HttpGet]
         [Route("GetAllUnregisteredCompanies")]
@@ -105,6 +113,18 @@ namespace FirstStep.Controllers
 
             await _service.UpdateCompanyVerification(companyId, reqCompany);
             return Ok($"Successfully updated verification details of unregistered company on ID: {reqCompany.company_id}.");
+        }
+        //put updated company details in the comapny envaluated process 
+        [HttpPut]
+        [Route("UpdateComapanyApplicationById/{companyId:int}")]
+        public async Task<IActionResult> UpdateCompanyApplication(UpdateRegistrationStatusDto reqCompany, int companyId)
+        {
+            if (companyId != reqCompany.company_id)
+            {
+                return BadRequest("Context is not matching");
+            }
+            await _service.UpdateCompanyApplication(companyId, reqCompany);
+            return Ok($"Successfully updated company registration status of the company on ID: {reqCompany.company_id}.");
         }
 
         [HttpPut]

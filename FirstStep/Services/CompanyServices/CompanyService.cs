@@ -59,6 +59,13 @@ namespace FirstStep.Services
             return await _context.Companies.Where(c => c.verification_status).ToListAsync();
         }
 
+        //get company list for system admin
+        public async Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList()
+        {
+            IEnumerable<Company> companies = await GetAll();
+            IEnumerable<ViewCompanyListDto> companyDtos = _mapper.Map<IEnumerable<ViewCompanyListDto>>(companies);
+            return companyDtos;
+        }
         
         public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID)
         {
@@ -76,16 +83,15 @@ namespace FirstStep.Services
             
             return advertisementCompanyDto;
         }
-        
-        //get company list for system admin
-        public async Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList()
+
+        //get company application by id
+        public async Task<CompanyApplicationDto> GetCompanyApplicationById(int companyID)
         {
-            IEnumerable<Company> companies = await GetAll();
-            IEnumerable<ViewCompanyListDto> companyDtos = _mapper.Map<IEnumerable<ViewCompanyListDto>>(companies);
-            return companyDtos;
+            Company company = await FindByID(companyID);
+            CompanyApplicationDto companydto = _mapper.Map<CompanyApplicationDto>(company);
+            return companydto;
         }
-
-
+        
         //Company Registration Starts here
         public async Task Create(AddCompanyDto newCompanyDto)
         {
@@ -194,6 +200,15 @@ namespace FirstStep.Services
             unRegCompany.company_registered_date = companyRegInfo.company_registered_date;
             unRegCompany.verified_system_admin_id = companyRegInfo.verified_system_admin_id;
             unRegCompany.comment = companyRegInfo.comment;
+
+            await _context.SaveChangesAsync();
+        }
+        public async Task UpdateCompanyApplication(int companyID, UpdateRegistrationStatusDto companyRegistrationInfo)
+        {
+            var company = await FindByID(companyID);
+            
+            company.verification_status = companyRegistrationInfo.verification_status;
+            company.comment = companyRegistrationInfo.comment;
 
             await _context.SaveChangesAsync();
         }
