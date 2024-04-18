@@ -25,7 +25,7 @@ namespace FirstStep.Services
 
         public Task CreateCompanyAdmin(AddEmployeeDto newCompanyAdmin);
 
-        public Task Update(Employee employee);
+        public Task Update(int id, UpdateEmployeeDto employee);
 
         public Task Delete(int id);
     }

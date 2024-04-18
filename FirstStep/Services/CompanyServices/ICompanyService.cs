@@ -7,7 +7,6 @@ namespace FirstStep.Services
     {
         public Task<IEnumerable<Company>> GetAll();
 
-
         public Task<IEnumerable<Company>> GetAllUnregisteredCompanies();
 
         public Task<IEnumerable<Company>> GetAllRegisteredCompanies();
@@ -16,12 +15,11 @@ namespace FirstStep.Services
 
         public Task<CompanyProfileDetailsDto> GetById(int id);
         
-        
-        public Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList();
-      
         public Task<CompanyApplicationDto> GetCompanyApplicationById(int companyID);
-        
-        public Task<CompanyProfileDto> GetCompanyProfile(int companyID);
+  
+        public Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList();
+
+        public Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID);
 
         public Task Create(AddCompanyDto company);
 
@@ -32,7 +30,11 @@ namespace FirstStep.Services
         public Task UpdateUnregisteredCompany(int companyID, UpdateUnRegCompanyDto company);
 
         public Task UpdateRegisteredCompany(int companyID, UpdateCompanyDto company);
+      
         public Task UpdateCompanyApplication(int companyID, UpdateRegistrationStatusDto companyRegistrationInfo);
+
+        public Task<Company> FindByRegCheckID(string id);
+
         public Task Delete(int id);
 
         public Task<bool> IsRegistered(int companyID);

@@ -10,14 +10,12 @@
         public required string employeement_type { get; set; }
         public required string arrangement { get; set; }
         public required bool is_experience_required { get; set; }
-        public float salary { get; set; }
+        public float? salary { get; set; }
+        public string? currency_unit { get; set; }
         public DateTime submission_deadline { get; set; }
-        public string? job_overview { get; set; }
-        public string? job_responsibilities { get; set; }
-        public string? job_qualifications { get; set; }
-        public string? job_benefits { get; set; }
-        public string? job_other_details { get; set; }
+        public string? job_description { get; set; }
         public int field_id { get; set; }
-        public ICollection<string>? keywords { get; set; }
+        public ICollection<string>? reqKeywords { get; set; }
+        public ICollection<string>? reqSkills { get; set; }
     }
 }

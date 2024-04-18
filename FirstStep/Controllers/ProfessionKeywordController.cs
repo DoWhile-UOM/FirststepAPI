@@ -25,14 +25,6 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetAll(fieldID));
         }
 
-        [HttpGet]
-        [Route("GetProfessionKeywordById/{id}")]
-
-        public async Task<ActionResult<IEnumerable<ProfessionKeyword>>> GetProfessionKeywordById(int id)
-        {
-            return Ok(await _service.GetById(id));
-        }
-
         [HttpPost]
         [Route("AddProfessionKeyword")]
 
