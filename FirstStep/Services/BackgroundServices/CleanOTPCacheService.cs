@@ -12,7 +12,7 @@ namespace FirstStep.Services.BackgroundServices
             _context = context;
         }
 
-        public async Task ICleanOTPCache()
+        public async Task CleanOTPCache()
         {
             var otpRequests = await _context.OTPRequests.ToListAsync();
 

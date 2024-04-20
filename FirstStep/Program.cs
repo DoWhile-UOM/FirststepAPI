@@ -61,8 +61,11 @@ builder.Services.AddScoped<ISystemAdminService, SystemAdminService>();
 builder.Services.AddScoped<ISeekerService, SeekerService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IRevisionService, RevisionService>();
-builder.Services.AddScoped<IEmailService, EmailService>();;
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IFileService, FileService>();
+
+// Background Services Configuration
+builder.Services.AddHostedService<TimedHostedService>();
 
 //JWT Authentication
 builder.Services.AddAuthentication(x =>
@@ -108,4 +111,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-

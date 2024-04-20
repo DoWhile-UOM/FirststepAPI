@@ -6,22 +6,38 @@
         private readonly ILogger<TimedHostedService> _logger;
         private Timer? _timer;
 
-        public TimedHostedService(ILogger<TimedHostedService> logger)
+        private readonly IServiceScopeFactory _scopeFactory;
+
+        public TimedHostedService(
+            ILogger<TimedHostedService> logger, IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
+            _scopeFactory = scopeFactory;
         }
 
         public Task StartAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Timed Hosted Service running.");
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromDays(1));
             return Task.CompletedTask;
         }
 
-        private void DoWork(object? state)
+        private async void DoWork(object? state)
         {
-            var count = Interlocked.Increment(ref executionCount);
-            _logger.LogInformation("Timed Hosted Service is working. Count: {Count}", count);
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var advertisementService = scope.ServiceProvider.GetRequiredService<IAdvertisementService>();
+                // var OTPService = scope.ServiceProvider.GetRequiredService<CleanOTPCacheService>();
+
+                // Clean OTP cache
+                // await OTPService.CleanOTPCache();
+
+                // Close expired advertisements
+                await advertisementService.CloseExpiredAdvertisements();
+
+                var count = Interlocked.Increment(ref executionCount);
+                _logger.LogInformation("Timed Hosted Service is working. Count: {Count}", count);
+            }
         }
 
         public Task StopAsync(CancellationToken stoppingToken)

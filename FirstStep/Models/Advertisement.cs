@@ -35,7 +35,7 @@ namespace FirstStep.Models
 
         public required DateTime posted_date { get; set; } = DateTime.Now;
 
-        public DateTime submission_deadline { get; set; }
+        public DateTime? submission_deadline { get; set; }
 
         [MaxLength(7)]
         public required string current_status { get; set; }

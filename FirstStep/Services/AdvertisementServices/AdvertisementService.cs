@@ -649,11 +649,15 @@ namespace FirstStep.Services
 
             foreach (var ad in advertisements)
             {
+                if (ad.submission_deadline == null) continue;
+
                 if (DateTime.Now > ad.submission_deadline)
                 {
                     ad.current_status = AdvertisementStatus.closed.ToString();
                 }
             }
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)

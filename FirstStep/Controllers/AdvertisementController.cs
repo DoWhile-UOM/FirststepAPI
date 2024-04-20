@@ -73,13 +73,6 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("SearchAdvertisementsAdvance/seekerID={seekerID:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisementsAdvanced(int seekerID, SearchJobRequestDto requestDto)
-        {
-            return Ok(await _service.AdvanceSearch(requestDto, seekerID));
-        }
-
-        [HttpPost]
         [Route("AddAdvertisement")]
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
