@@ -10,6 +10,8 @@ namespace FirstStep.Services
 
         Task<BlobItem?> GetBlobByETag(string eTag);
 
+     
+
         Task<byte[]>? DownloadBlobByETag(string eTag);
     }
 }
