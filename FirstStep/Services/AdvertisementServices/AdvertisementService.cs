@@ -36,17 +36,29 @@ namespace FirstStep.Services
 
         enum AdvertisementStatus { active, closed }
 
-        private async Task<IEnumerable<Advertisement>> FindAll()
+        private async Task<IEnumerable<Advertisement>> FindAll(bool isActivatedOnly)
         {
-            // get all active advertisements
-            return await _context.Advertisements
-                .Include("professionKeywords")
-                .Include("job_Field")
-                .Include("hrManager")
-                .Include("skills")
-                .Include("savedSeekers")
-                .Where(x => x.current_status == AdvertisementStatus.active.ToString())
-                .ToListAsync();
+            if (isActivatedOnly)
+            {
+                return await _context.Advertisements
+                    .Include("professionKeywords")
+                    .Include("job_Field")
+                    .Include("hrManager")
+                    .Include("skills")
+                    .Include("savedSeekers")
+                    .Where(x => x.current_status == AdvertisementStatus.active.ToString())
+                    .ToListAsync();
+            }
+            else
+            {
+                return await _context.Advertisements
+                    .Include("professionKeywords")
+                    .Include("job_Field")
+                    .Include("hrManager")
+                    .Include("skills")
+                    .Include("savedSeekers")
+                    .ToListAsync();
+            }
         }
 
         private async Task<Advertisement> FindById(int id)
@@ -90,7 +102,7 @@ namespace FirstStep.Services
         private async Task<IEnumerable<Advertisement>> FindBySeekerID(int seekerID)
         {
             // get all active advertisements
-            var advertisements = await FindAll();
+            var advertisements = await FindAll(true);
 
             // find the seeker's field
             int seekerFieldId = await findSeekerField(seekerID);
@@ -281,7 +293,8 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID)
         {
-            var advertisements = await FindAll();
+            // get all advertisements (with closed advrtisements)
+            var advertisements = await FindAll(false);
 
             var savedAds = new List<Advertisement>();
 
@@ -629,9 +642,23 @@ namespace FirstStep.Services
             return seeker.field_id;
         }
 
+        public async Task CloseExpiredAdvertisements()
+        {
+            // get all active advertisements
+            var advertisements = await FindAll(true);
+
+            foreach (var ad in advertisements)
+            {
+                if (DateTime.Now > ad.submission_deadline)
+                {
+                    ad.current_status = AdvertisementStatus.closed.ToString();
+                }
+            }
+        }
+
         public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)
         {
-            var advertisements = await FindAll();
+            var advertisements = await FindAll(true);
 
             // convert advertisements into kdtree
             var tree = new KdTree<float, Advertisement>(5, new FloatMath());
