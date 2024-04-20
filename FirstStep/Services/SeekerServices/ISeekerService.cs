@@ -11,8 +11,10 @@ namespace FirstStep.Services
 
         public Task Create(AddSeekerDto newSeeker);
 
-        public Task Update(int seekerID, Seeker seeker);
+        // public Task Update(int seekerID, Seeker seeker);
+        public Task Update(int seekerId, UpdateSeekerDto updateDto);
 
         public Task Delete(int id);
+
     }
 }

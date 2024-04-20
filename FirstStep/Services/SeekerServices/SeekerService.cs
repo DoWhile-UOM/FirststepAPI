@@ -69,10 +69,10 @@ namespace FirstStep.Services
                     else
                     {
                         // if it doesn't exist, create it and add it to the seeker's list of skills
-                        seeker.skills.Add(new Skill 
-                        { 
-                            skill_id = 0, 
-                            skill_name = skill 
+                        seeker.skills.Add(new Skill
+                        {
+                            skill_id = 0,
+                            skill_name = skill
                         });
                     }
                 }
@@ -82,62 +82,61 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(int seekerId, Seeker seeker)
+        public async Task Update(int seekerId, UpdateSeekerDto updateDto)
         {
-            // For ruwandie, please follow these steps to update the Seeker object with relationships:
-
-            // first create a DTO called UpdateSeekerDto
-            // add all the properties that you want to update in the Seeker object
-            // in the Seeker object, add a property called seekerSkills of type List<string>
-            // in this function, need to map the Seeker object to the UpdateSeekerDto object
-            // then update the Seeker object with the new values wihout skills
-
-            // for to update skills, need to consider about relationship between Seeker and Skill (m to m)
-
-            // for update the seeker's skills
-            // first, find the already exists skill in the database
-            // if the skill exists, add it to the seeker's list of skills
-            // if the skill doesn't exist, create it and add it to the seeker's list of skills
-
-
-
-            // this is the update function without updating the skills
-
+            
             // for get the seeker object from the database
             Seeker dbSeeker = await GetById(seekerId);
 
             // update the Seeker object with the new values
-            dbSeeker.first_name = seeker.first_name;
-            dbSeeker.last_name = seeker.last_name;
-            dbSeeker.email = seeker.email;
-            dbSeeker.phone_number = seeker.phone_number;
-            dbSeeker.bio = seeker.bio;
-            dbSeeker.description = seeker.description; 
-            dbSeeker.university = seeker.university;
-            dbSeeker.CVurl = seeker.CVurl;
-            dbSeeker.profile_picture = seeker.profile_picture;
-            dbSeeker.linkedin = seeker.linkedin;
+            dbSeeker.first_name = updateDto.first_name;
+            dbSeeker.last_name = updateDto.last_name;
+            dbSeeker.email = updateDto.email;
+            dbSeeker.phone_number = updateDto.phone_number;
+            dbSeeker.bio = updateDto.bio;
+            dbSeeker.description = updateDto.description;
+            dbSeeker.university = updateDto.university;
+            dbSeeker.CVurl = updateDto.CVurl;
+            dbSeeker.profile_picture = updateDto.profile_picture;
+            dbSeeker.linkedin = updateDto.linkedin;
 
             // update the Seeker's skills
-            // Ruwanide you need to implement this part
+            dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
+
 
             // save the changes
             await _context.SaveChangesAsync();
+        }
 
+        private async Task<ICollection<Skill>?> IncludeSkillsToSeeker(ICollection<string>? newSkills)
+        {
+            var skills = new List<Skill>();
 
-            // after implementing the above steps,
-            // you should be change the function parameter type to UpdateSeekerDto
-            // as well as the function return type to Task<UpdateSeekerDto>
-            // also need to update the controller and the interface
+            if (newSkills != null)
+            {
+                foreach (var skillName in newSkills)
+                {
+                    var dbSkill = await _seekerSkillService.GetByName(skillName.ToLower());
 
-
-            // you can refer the code segment in advertisement service for updating the relationships
-            // line 290 to 322 - function name: IncludeProfessionKeywordsToAdvertisement()
-            // advertisement and the keyword relationship is similar to the seeker and the skill relationship
-
-            // also have a relationship betweene advertisement and the skills
-            // you can refer the code segment in advertisement service for updating the relationships
-            // line 324 to 356 - function name: IncludeSkillsToAdvertisement()
+                    if (dbSkill != null)
+                    {
+                        // if it exists, add it to the seeker's list of skills
+                        skills.Add(dbSkill);
+                    }
+                    else
+                    {
+                        // if it doesn't exist, create a new skill and add it to the seeker's list of skills
+                        var newSkill = new Skill
+                        {
+                            skill_id = 0,
+                            skill_name = skillName.ToLower()  // Assuming the Skill class has a SkillName property
+                        };
+                   
+                    }
+                }
+                return skills;
+            }
+            return null;
         }
 
         public async Task Delete(int id)
