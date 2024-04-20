@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public class SearchJobRequestDto
+    public struct SearchJobRequestDto
     {
         public string? title { get; set; }
         public string? country { get; set; }
