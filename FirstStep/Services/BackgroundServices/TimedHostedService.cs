@@ -2,7 +2,6 @@
 {
     public class TimedHostedService : IHostedService, IDisposable
     {
-        private int executionCount = 0;
         private readonly ILogger<TimedHostedService> _logger;
         private Timer? _timer;
 
@@ -34,9 +33,6 @@
 
                 // Close expired advertisements
                 await advertisementService.CloseExpiredAdvertisements();
-
-                var count = Interlocked.Increment(ref executionCount);
-                _logger.LogInformation("Timed Hosted Service is working. Count: {Count}", count);
             }
         }
 

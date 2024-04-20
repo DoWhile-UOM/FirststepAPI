@@ -36,5 +36,7 @@ namespace FirstStep.Services
         Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto searchRequest, int seekerID, int pageLength);
 
         Task CloseExpiredAdvertisements();
+
+        Task<bool> IsExpired(int jobID);
     }
 }

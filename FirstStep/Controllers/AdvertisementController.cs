@@ -110,6 +110,11 @@ namespace FirstStep.Controllers
         [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
         public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {
+            if (await _service.IsExpired(jobID))
+            {
+                return BadRequest("Advertisement is expired.");
+            }
+
             await _service.SaveAdvertisement(jobID, seekerId, isSave);
             return Ok();
         }
