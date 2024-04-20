@@ -117,6 +117,7 @@ namespace FirstStep.Services
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
             advertisementDto.company_name = _context.Companies.Find(dbAdvertismeent.hrManager!.company_id)!.company_name;
+            advertisementDto.is_expired = IsExpired(dbAdvertismeent);
 
             return advertisementDto;
         }
