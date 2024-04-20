@@ -9,7 +9,7 @@
         public required string city { get; set; }
         public required string employeement_type { get; set; }
         public required string arrangement { get; set; }
-        public required bool is_experience_required { get; set; }
+        public required string experience { get; set; }
         public float? salary { get; set; }
         public string? currency_unit { get; set; }
         public DateTime submission_deadline { get; set; }

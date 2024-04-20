@@ -1,7 +1,6 @@
 ﻿using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Azure.Storage.Blobs;
 
 namespace FirstStep.Controllers
 {
@@ -9,9 +8,9 @@ namespace FirstStep.Controllers
     [ApiController]
     public class DocumentController : ControllerBase
     {
-        public IAzureBlobService _azureBlobService;
+        public IFileService _azureBlobService;
 
-        public DocumentController(IAzureBlobService service)
+        public DocumentController(IFileService service)
         {
             _azureBlobService = service;
         }
@@ -29,5 +28,28 @@ namespace FirstStep.Controllers
             var response = await _azureBlobService.GetUploadedBlobs();
             return Ok(response);
         }
+
+        [HttpGet("{eTag}")]
+        public async Task<IActionResult> GetBlobByETag(string eTag)
+        {
+            var blob = await _azureBlobService.GetBlobByETag(eTag);
+            if (blob == null)
+            {
+                return NotFound();
+            }
+            return Ok(blob);
+        }
+
+        [HttpGet("download/{eTag}")]
+        public async Task<IActionResult> DownloadBlobByETag(string eTag)
+        {
+            var blob = await _azureBlobService.GetBlobByETag(eTag);
+            if (blob == null)
+            {
+                return NotFound();
+            }
+            var file = await _azureBlobService.DownloadBlobByETag(eTag);
+            return File(file, "application/octet-stream", blob.Name);
+        }   
     }
 }
