@@ -234,6 +234,12 @@ namespace FirstStep.Services
             ValidateStatus(newStatus);
             var advertisement = await FindById(id);
 
+            if (newStatus == AdvertisementStatus.active.ToString() && IsExpired(advertisement))
+            {
+                // can't activate an expired advertisement, therefore first need to update the submission deadline
+                throw new InvalidDataException("Cannot activate an expired advertisement.");
+            }
+
             advertisement.current_status = newStatus;
             await _context.SaveChangesAsync();
         }

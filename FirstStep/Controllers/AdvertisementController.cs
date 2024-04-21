@@ -102,8 +102,15 @@ namespace FirstStep.Controllers
         [Route("ChangeStatus/{jobID:int}/status={newStatus}")]
         public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
         {
-            await _service.ChangeStatus(jobID, newStatus);
-            return Ok();
+            try
+            {
+                await _service.ChangeStatus(jobID, newStatus);
+                return Ok();
+            }
+            catch (InvalidDataException e)
+            {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, e.Message);
+            }
         }
 
         [HttpPut]

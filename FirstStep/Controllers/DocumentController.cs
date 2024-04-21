@@ -48,7 +48,7 @@ namespace FirstStep.Controllers
             {
                 return NotFound();
             }
-            var file = await _azureBlobService.DownloadBlobByETag(eTag);
+            var file = await _azureBlobService.DownloadBlobByETag(eTag)!;
             return File(file, "application/octet-stream", blob.Name);
         }   
     }
