@@ -14,6 +14,8 @@
 
         public string company_website { get; set; }
 
+        public string company_logo { get; set; }
+
         public AdvertisementFirstPageDto companyAdvertisements { get; set; }
     }
 }

@@ -51,7 +51,6 @@ namespace FirstStep.Services
         {
             return await _context.Companies.Where(c => c.verification_status).ToListAsync();
         }
-
         
         public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID, int pageLength)
         {
@@ -69,7 +68,6 @@ namespace FirstStep.Services
             
             return advertisementCompanyDto;
         }
-
 
         //Company Registration Starts here
         public async Task Create(AddCompanyDto newCompanyDto)
