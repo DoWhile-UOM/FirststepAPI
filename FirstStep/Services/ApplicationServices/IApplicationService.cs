@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -11,6 +12,8 @@ namespace FirstStep.Services
         public Task<IEnumerable<Application>> GetByAdvertisementId(int id);
 
         public Task<IEnumerable<Application>> GetBySeekerId(int id);
+
+        public Task<SeekerApplicationDto> GetSeekr(int seekerID, int pageLength);
 
         public Task Create(Application application);
 
