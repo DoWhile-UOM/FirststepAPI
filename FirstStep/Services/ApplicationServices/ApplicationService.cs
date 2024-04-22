@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.Design;
 using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -107,6 +108,11 @@ namespace FirstStep.Services
         {
             int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == AdvertisementStatus.Rejected.ToString()).CountAsync();
             return AcceptedApplications;
+        }
+
+        public Task<SeekerApplicationDto> GetSeekerDetails(int seekerID)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -43,6 +43,8 @@ namespace FirstStep.Services
             return seeker;
         }
 
+      
+
         public async Task Create(AddSeekerDto newSeeker)
         {
             // map the AddSeekerDto to a Seeker object
@@ -143,5 +145,19 @@ namespace FirstStep.Services
             _context.Seekers.Remove(seeker);
             await _context.SaveChangesAsync();
         }
+
+
+ 
+      
+        public async Task<SeekerApplicationDto> GetSeekerDetails(int seekerId)
+        {
+            Seeker seeker = await GetById(seekerId);
+
+            SeekerApplicationDto seekerApplicationDto = _mapper.Map<SeekerApplicationDto>(seeker);
+
+            return seekerApplicationDto;
+        }
+
+   
     }
 }

@@ -9,6 +9,8 @@ namespace FirstStep.Services
 
         public Task<Seeker> GetById(int id);
 
+        public Task<SeekerApplicationDto> GetSeekerDetails(int seekerID);
+
         public Task Create(AddSeekerDto newSeeker);
 
         public Task Update(int seekerID, Seeker seeker);
