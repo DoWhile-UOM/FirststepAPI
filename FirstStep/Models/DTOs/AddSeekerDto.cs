@@ -18,5 +18,8 @@
 
         public  string description { get; set; }
 
+        public virtual List<string>? seekerSkills { get; set; }
+
+
     }
 }
