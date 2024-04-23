@@ -63,7 +63,6 @@ namespace FirstStep.Services
 
         public Task<byte[]>? DownloadBlobByETag(string eTag)
         {
-           
             var blobItem = GetBlobByETag(eTag).Result;
             if (blobItem != null)
             {

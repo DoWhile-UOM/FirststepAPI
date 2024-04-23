@@ -73,13 +73,6 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("SearchAdvertisementsAdvance/seekerID={seekerID:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisementsAdvanced(int seekerID, SearchJobRequestDto requestDto)
-        {
-            return Ok(await _service.AdvanceSearch(requestDto, seekerID));
-        }
-
-        [HttpPost]
         [Route("AddAdvertisement")]
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
@@ -109,14 +102,26 @@ namespace FirstStep.Controllers
         [Route("ChangeStatus/{jobID:int}/status={newStatus}")]
         public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
         {
-            await _service.ChangeStatus(jobID, newStatus);
-            return Ok();
+            try
+            {
+                await _service.ChangeStatus(jobID, newStatus);
+                return Ok();
+            }
+            catch (InvalidDataException e)
+            {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, e.Message);
+            }
         }
 
         [HttpPut]
         [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
         public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {
+            if (await _service.IsExpired(jobID))
+            {
+                return BadRequest("Advertisement is expired.");
+            }
+
             await _service.SaveAdvertisement(jobID, seekerId, isSave);
             return Ok();
         }

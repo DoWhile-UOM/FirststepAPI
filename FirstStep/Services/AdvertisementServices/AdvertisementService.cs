@@ -36,17 +36,29 @@ namespace FirstStep.Services
 
         enum AdvertisementStatus { active, closed }
 
-        private async Task<IEnumerable<Advertisement>> FindAll()
+        private async Task<IEnumerable<Advertisement>> FindAll(bool isActivatedOnly)
         {
-            // get all active advertisements
-            return await _context.Advertisements
-                .Include("professionKeywords")
-                .Include("job_Field")
-                .Include("hrManager")
-                .Include("skills")
-                .Include("savedSeekers")
-                .Where(x => x.current_status == AdvertisementStatus.active.ToString())
-                .ToListAsync();
+            if (isActivatedOnly)
+            {
+                return await _context.Advertisements
+                    .Include("professionKeywords")
+                    .Include("job_Field")
+                    .Include("hrManager")
+                    .Include("skills")
+                    .Include("savedSeekers")
+                    .Where(x => x.current_status == AdvertisementStatus.active.ToString())
+                    .ToListAsync();
+            }
+            else
+            {
+                return await _context.Advertisements
+                    .Include("professionKeywords")
+                    .Include("job_Field")
+                    .Include("hrManager")
+                    .Include("skills")
+                    .Include("savedSeekers")
+                    .ToListAsync();
+            }
         }
 
         private async Task<Advertisement> FindById(int id)
@@ -90,7 +102,7 @@ namespace FirstStep.Services
         private async Task<IEnumerable<Advertisement>> FindBySeekerID(int seekerID)
         {
             // get all active advertisements
-            var advertisements = await FindAll();
+            var advertisements = await FindAll(true);
 
             // find the seeker's field
             int seekerFieldId = await findSeekerField(seekerID);
@@ -105,6 +117,7 @@ namespace FirstStep.Services
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
             advertisementDto.company_name = _context.Companies.Find(dbAdvertismeent.hrManager!.company_id)!.company_name;
+            advertisementDto.is_expired = IsExpired(dbAdvertismeent);
 
             return advertisementDto;
         }
@@ -118,7 +131,7 @@ namespace FirstStep.Services
                 advertisements.Add(await FindById(adId));
             }
 
-            return await CreateAdvertisementList(advertisements, seekerID);
+            return await CreateAdvertisementList(advertisements, seekerID, false);
         }
 
         // fill the advertisement form when updating an advertisement
@@ -221,6 +234,12 @@ namespace FirstStep.Services
             ValidateStatus(newStatus);
             var advertisement = await FindById(id);
 
+            if (newStatus == AdvertisementStatus.active.ToString() && IsExpired(advertisement))
+            {
+                // can't activate an expired advertisement, therefore first need to update the submission deadline
+                throw new InvalidDataException("Cannot activate an expired advertisement.");
+            }
+
             advertisement.current_status = newStatus;
             await _context.SaveChangesAsync();
         }
@@ -281,35 +300,10 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID)
         {
-            var advertisements = await FindAll();
+            // get all advertisements (with closed advrtisements)
+            var advertisements = await FindAll(false);
 
-            var savedAds = new List<Advertisement>();
-
-            foreach (var ad in advertisements)
-            {
-                if (ad.savedSeekers != null && ad.savedSeekers.Any(e => e.user_id == seekerID))
-                {
-                    savedAds.Add(ad);
-                }
-            }
-
-            return await CreateAdvertisementList(savedAds, 0);
-        }
-
-        private async Task<bool> IsAdvertisementSaved(int advertisementId, int seekerId)
-        {
-            // find the seeker
-            var seeker = await _seekerService.GetById(seekerId);
-
-            // find the advertisement
-            var advertisement = await FindById(advertisementId);
-
-            if (advertisement.savedSeekers is null || !advertisement.savedSeekers.Contains(seeker))
-            {
-                return false;
-            }
-
-            return true;
+            return await CreateAdvertisementList(advertisements, seekerID, true);
         }
 
         public async Task Delete(int id)
@@ -394,7 +388,7 @@ namespace FirstStep.Services
             AdvertisementFirstPageDto firstPageResults = new AdvertisementFirstPageDto();
 
             // select only number of advertisements per page
-            firstPageResults.FirstPageAdvertisements = await CreateAdvertisementList(dbAds.Take(noOfresultsPerPage), seekerID);
+            firstPageResults.FirstPageAdvertisements = await CreateAdvertisementList(dbAds.Take(noOfresultsPerPage), seekerID, false);
 
             // add all advertisement ids into a list
             firstPageResults.allAdvertisementIds = dbAds.Select(e => e.advertisement_id).ToList();
@@ -403,26 +397,24 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of AdvertisementCardDtos and create advertisement list for the seeker
-        private async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID)
+        private async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID, bool isSaveOnly)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
+
+            Seeker seeker = await _seekerService.GetById(seekerID);
 
             foreach (var ad in dbAds)
             {
                 var adDto = _mapper.Map<AdvertisementShortDto>(ad);
 
+                // check whether the advertisement is saved by the seeker
+                adDto.is_saved = IsSaved(ad, seeker);
+                if (isSaveOnly && !adDto.is_saved) continue;
+
+                // check whether the advertisement is expired or not
+                adDto.is_expired = IsExpired(ad);
+
                 adDto.company_name = _context.Companies.Find(ad.hrManager!.company_id)!.company_name;
-                // when seekerID is 0, it means that the all advertisements are saved by the seeker
-                // from GetSavedAdvertisements method passed seekerID as 0
-                if (seekerID != 0)
-                {
-                    // check whether the advertisement is saved by the seeker
-                    adDto.is_saved = await IsAdvertisementSaved(ad.advertisement_id, seekerID);
-                }
-                else
-                {
-                    adDto.is_saved = true;
-                }
 
                 adCardDtos.Add(adDto);
             }
@@ -447,16 +439,9 @@ namespace FirstStep.Services
 
                 jobOfferDto.field_name = ad.job_Field!.field_name;
 
-                // search number of applications
                 jobOfferDto.no_of_applications = await _applicationService.NumberOfApplicationsByAdvertisementId(ad.advertisement_id);
-
-                // search number of evaluated applications
                 jobOfferDto.no_of_evaluated_applications = await _applicationService.TotalNotEvaluatedApplications(ad.advertisement_id);
-
-                // search number if accepted applications
                 jobOfferDto.no_of_accepted_applications = await _applicationService.AcceptedApplications(ad.advertisement_id);
-
-                // search number of rejected applications
                 jobOfferDto.no_of_rejected_applications = await _applicationService.RejectedApplications(ad.advertisement_id);
 
                 jobOfferDtos.Add(jobOfferDto);
@@ -629,9 +614,54 @@ namespace FirstStep.Services
             return seeker.field_id;
         }
 
+        public async Task CloseExpiredAdvertisements()
+        {
+            // get all active advertisements
+            var advertisements = await FindAll(true);
+
+            foreach (var ad in advertisements)
+            {
+                if (ad.submission_deadline == null) continue;
+
+                if (DateTime.Now > ad.submission_deadline)
+                {
+                    ad.current_status = AdvertisementStatus.closed.ToString();
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsExpired(int advertisementId)
+        {
+            var advertisement = await FindById(advertisementId);
+
+            return IsExpired(advertisement);
+        }
+
+        private bool IsExpired(Advertisement advertisement)
+        {
+            if (advertisement.submission_deadline == null)
+            {
+                return false;
+            }
+
+            return DateTime.Now > advertisement.submission_deadline;
+        }
+
+        private bool IsSaved(Advertisement advertisement, Seeker seeker)
+        {
+            if (advertisement.savedSeekers is null || !advertisement.savedSeekers.Contains(seeker))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)
         {
-            var advertisements = await FindAll();
+            var advertisements = await FindAll(true);
 
             // convert advertisements into kdtree
             var tree = new KdTree<float, Advertisement>(5, new FloatMath());
@@ -666,7 +696,7 @@ namespace FirstStep.Services
 
             var filteredAdvertisements = nearestAds.Select(e => e.Value).ToList();
 
-            return await CreateAdvertisementList(filteredAdvertisements, seekerID);
+            return await CreateAdvertisementList(filteredAdvertisements, seekerID, false);
         }
     }
 }
