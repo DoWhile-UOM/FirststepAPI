@@ -16,9 +16,18 @@
 
         public string bio { get; set; }
 
-        public  string description { get; set; }
+        public int field_id { get; set; }
+
+        public string cVurl { get; set; }
+
+        public string? profile_picture { get; set; }
+
+        public string description { get; set; }
 
         public virtual List<string>? seekerSkills { get; set; }
+
+        public string password_hash { get; set; }
+
 
 
     }
