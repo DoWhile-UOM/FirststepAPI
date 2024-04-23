@@ -10,17 +10,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-//CORS
-/*
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("MyPolicy", builder => builder.WithOrigins("http://localhost:4200", "https://localhost:4200")
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials());
-});*/
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -73,9 +62,13 @@ builder.Services.AddScoped<ISystemAdminService, SystemAdminService>();
 builder.Services.AddScoped<ISeekerService, SeekerService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IRevisionService, RevisionService>();
-builder.Services.AddScoped<IEmailService, EmailService>();;
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
-builder.Services.AddScoped<IUserService, UserService>();//Register User Service-Ashan
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IFileService, FileService>();
+
+// Background Services Configuration
+builder.Services.AddHostedService<TimedHostedService>();
 
 //JWT Authentication
 builder.Services.AddAuthentication(x =>
@@ -112,10 +105,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
 app.UseHttpsRedirection();
-
-app.UseCors("MyPolicy");
 
 app.UseAuthentication();
 
@@ -124,4 +114,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-

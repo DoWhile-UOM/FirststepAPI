@@ -1,5 +1,4 @@
-﻿using FirstStep.Models;
-using FirstStep.Models.DTOs;
+﻿using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +14,6 @@ namespace FirstStep.Controllers
         public AdvertisementController(IAdvertisementService service)
         {
             _service = service;
-        }
-
-        [HttpGet]
-        [Route("GetAllAdvertisements/seekerID={seekerID:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisements(int seekerID)
-        {
-            return Ok(await _service.GetAll(seekerID));
         }
 
         [HttpGet]
@@ -56,14 +48,14 @@ namespace FirstStep.Controllers
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}")]
         public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
         {
-            return Ok(await _service.GetAdvertisementsByCompany(companyID, status));
+            return Ok(await _service.GetByCompanyID(companyID, status));
         }
 
         [HttpGet]
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}/title={title}")]
         public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status, string title)
         {
-            return Ok(await _service.GetAdvertisementsByCompany(companyID, status, title));
+            return Ok(await _service.GetByCompanyID(companyID, status, title));
         }
 
         [HttpGet]
@@ -75,16 +67,9 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisementsBasic(int seekerID, int pageLength, SearchJobRequestDto requestDto)
+        public async Task<ActionResult<AdvertisementFirstPageDto>> SearchAdvertisementsBasic(int seekerID, int pageLength, SearchJobRequestDto requestDto)
         {
             return Ok(await _service.BasicSearch(requestDto, seekerID, pageLength));
-        }
-
-        [HttpPost]
-        [Route("SearchAdvertisementsAdvance/seekerID={seekerID:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> SearchAdvertisementsAdvanced(int seekerID, SearchJobRequestDto requestDto)
-        {
-            return Ok(await _service.AdvanceSearch(requestDto, seekerID));
         }
 
         [HttpPost]
@@ -117,14 +102,26 @@ namespace FirstStep.Controllers
         [Route("ChangeStatus/{jobID:int}/status={newStatus}")]
         public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
         {
-            await _service.ChangeStatus(jobID, newStatus);
-            return Ok();
+            try
+            {
+                await _service.ChangeStatus(jobID, newStatus);
+                return Ok();
+            }
+            catch (InvalidDataException e)
+            {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, e.Message);
+            }
         }
 
         [HttpPut]
         [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
         public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {
+            if (await _service.IsExpired(jobID))
+            {
+                return BadRequest("Advertisement is expired.");
+            }
+
             await _service.SaveAdvertisement(jobID, seekerId, isSave);
             return Ok();
         }
