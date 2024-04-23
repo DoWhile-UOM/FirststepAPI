@@ -43,7 +43,25 @@ namespace FirstStep.Services
             return seeker;
         }
 
-      
+
+        public async Task<Seeker> FindByID(int id)
+        {
+            Seeker? seeker = await _context.Seekers.FindAsync(id);
+            if (seeker is null)
+            {
+                throw new Exception("Seeker not found.");
+            }
+
+            return seeker;
+        }
+
+        public async Task<SeekerApplicationDto> GetSeekerDetails(int id)
+        {
+            Seeker seeker = await FindByID(id);
+            SeekerApplicationDto seekerdto = _mapper.Map<SeekerApplicationDto>(seeker);
+            return seekerdto;
+        }
+
 
         public async Task Create(AddSeekerDto newSeeker)
         {
@@ -71,10 +89,10 @@ namespace FirstStep.Services
                     else
                     {
                         // if it doesn't exist, create it and add it to the seeker's list of skills
-                        seeker.skills.Add(new Skill 
-                        { 
-                            skill_id = 0, 
-                            skill_name = skill 
+                        seeker.skills.Add(new Skill
+                        {
+                            skill_id = 0,
+                            skill_name = skill
                         });
                     }
                 }
@@ -114,7 +132,7 @@ namespace FirstStep.Services
             dbSeeker.email = seeker.email;
             dbSeeker.phone_number = seeker.phone_number;
             dbSeeker.bio = seeker.bio;
-            dbSeeker.description = seeker.description; 
+            dbSeeker.description = seeker.description;
             dbSeeker.university = seeker.university;
             dbSeeker.CVurl = seeker.CVurl;
             dbSeeker.profile_picture = seeker.profile_picture;
@@ -146,18 +164,5 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-
- 
-      
-        public async Task<SeekerApplicationDto> GetSeekerDetails(int seekerId)
-        {
-            Seeker seeker = await GetById(seekerId);
-
-            SeekerApplicationDto seekerApplicationDto = _mapper.Map<SeekerApplicationDto>(seeker);
-
-            return seekerApplicationDto;
-        }
-
-   
     }
 }
