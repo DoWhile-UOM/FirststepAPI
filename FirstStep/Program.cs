@@ -1,6 +1,7 @@
 using FirstStep.Data;
 using FirstStep.Services;
 using FirstStep.Services.BackgroundServices;
+using FirstStep.Services.UserServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -61,6 +62,7 @@ builder.Services.AddScoped<ISystemAdminService, SystemAdminService>();
 builder.Services.AddScoped<ISeekerService, SeekerService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IRevisionService, RevisionService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IFileService, FileService>();
 
