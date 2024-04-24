@@ -74,7 +74,7 @@ namespace FirstStep.Services
 
             if (advertisement is null)
             {
-                throw new Exception("Advertisement not found.");
+                throw new NullReferenceException("Advertisement not found.");
             }
 
             return advertisement;
@@ -93,7 +93,7 @@ namespace FirstStep.Services
 
             if (advertisementList is null)
             {
-                throw new Exception("No advertisements found under this company.");
+                throw new NullReferenceException("No advertisements found under this company.");
             }
 
             return advertisementList;
@@ -206,13 +206,13 @@ namespace FirstStep.Services
             // validate hrManagerID
             if (await _context.HRManagers.FindAsync(advertisementDto.hrManager_id) is null)
             {
-                throw new Exception("Invalid HR Manager ID.");
+                throw new InvalidDataException("Invalid HR Manager ID.");
             }
 
             // validate job field id
             if (await _context.JobFields.FindAsync(advertisementDto.field_id) is null)
             {
-                throw new Exception("Invalid job field ID.");
+                throw new InvalidDataException("Invalid job field ID.");
             }
             
             // map the AddAdvertisementDto to a Advertisement object
@@ -462,7 +462,7 @@ namespace FirstStep.Services
 
             if (!possibleStatuses.Contains(status))
             {
-                throw new Exception("Invalid status.");
+                throw new InvalidDataException("Invalid status.");
             }
         }
 
@@ -608,7 +608,7 @@ namespace FirstStep.Services
 
             if (seeker == null)
             {
-                throw new Exception("Seeker not found.");
+                throw new NullReferenceException("Seeker not found.");
             }
 
             return seeker.field_id;
