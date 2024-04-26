@@ -1,4 +1,4 @@
-﻿namespace FirstStep.Models
+﻿namespace FirstStep.Models.DTOs
 {
     public struct HRManagerApplicationListDto
     {

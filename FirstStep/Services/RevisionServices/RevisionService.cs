@@ -29,13 +29,13 @@ namespace FirstStep.Services
             return revision;
         }
 
+        /*
         public async Task<List<Revision>> GetByApplicationID(int applicationID)
         {
-            /*
             return await _context.Revisions
                 .Where(r => r.application_id == applicationID)
-                .ToListAsync();*/
-        }
+                .ToListAsync();
+        }*/
 
         public async Task Create(Revision revision)
         {
