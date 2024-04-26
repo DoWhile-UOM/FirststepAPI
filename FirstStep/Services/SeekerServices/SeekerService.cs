@@ -43,7 +43,7 @@ namespace FirstStep.Services
             return seeker;
         }
 
-        public async Task<int> GetSeekerField(int seekerId)
+        public async Task<JobField> GetSeekerField(int seekerId)
         {
             Seeker seeker = await GetById(seekerId);
 
@@ -52,7 +52,12 @@ namespace FirstStep.Services
                 throw new NullReferenceException("Seeker not found.");
             }
 
-            return seeker.field_id;
+            if (seeker.job_Field == null)
+            {
+                throw new NullReferenceException("Seeker's job field not found.");
+            }
+
+            return seeker.job_Field;
         }
 
         public async Task Create(AddSeekerDto newSeeker)
