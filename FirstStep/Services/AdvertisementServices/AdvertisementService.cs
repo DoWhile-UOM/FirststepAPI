@@ -201,11 +201,23 @@ namespace FirstStep.Services
             }
         }
 
-        public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfresultsPerPage)
+        public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfResultsPerPage)
         {
-            var matchingAds = await FindMatchingAdvertisement(seekerID);
+            var matchingAds = await FindMatchingAdvertisement(seekerID, "");
 
-            return await CreateFirstPageResults(matchingAds, seekerID, noOfresultsPerPage);
+            return await CreateFirstPageResults(matchingAds, seekerID, noOfResultsPerPage);
+        }
+
+        public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfResultsPerPage, string city)
+        {
+            if (city == null || city == "")
+            {
+                return await GetFirstPage(seekerID, noOfResultsPerPage);
+            }
+
+            var matchingAds = await FindMatchingAdvertisement(seekerID, city);
+
+            return await CreateFirstPageResults(matchingAds, seekerID, noOfResultsPerPage);
         }
 
         public async Task Create(AddAdvertisementDto advertisementDto)
@@ -593,8 +605,11 @@ namespace FirstStep.Services
             return filteredAdvertisements;
         }
 
-        private async Task<List<Advertisement>> FindMatchingAdvertisement(int seekerID)
+        private async Task<List<Advertisement>> FindMatchingAdvertisement(int seekerID, string city)
         {
+            // need to consider the distance between given city
+
+
             var seeker = await _seekerService.GetById(seekerID);
 
             // get all active advertisements in seeker's field
