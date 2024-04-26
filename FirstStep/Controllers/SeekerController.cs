@@ -42,21 +42,7 @@ namespace FirstStep.Controllers
             return Ok($"Suessfully added new seeker: {newSeeker.first_name} {newSeeker.last_name}");
         }
 
-        //[HttpPut]
-        //[Route("UpdateSeeker/{seekerId:int}")]
-
-        //public async Task<IActionResult> UpdateSeeker(Seeker reqseeker, int seekerId)
-        //{
-        //    if (seekerId != reqseeker.user_id)
-        //    {
-        //        return BadRequest("Context is not matching");
-        //    }
-
-        //    await _service.Update(seekerId, reqseeker);
-        //    return Ok($"Successfully Updated SeekerID: {reqseeker.first_name} {reqseeker.last_name}");
-        //}
-
-
+      
         [HttpPut]
         [Route("UpdateSeeker/{seekerId:int}")]
         public async Task<IActionResult> UpdateSeeker(int seekerId, UpdateSeekerDto updateDto)

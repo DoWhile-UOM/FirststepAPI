@@ -45,30 +45,24 @@ namespace FirstStep.Services
 
         public async Task Create(AddSeekerDto newSeeker)
         {
-            // map the AddSeekerDto to a Seeker object
             var seeker = _mapper.Map<Seeker>(newSeeker);
 
-            // user type is seeker
             seeker.user_type = "seeker";
 
-            // Add skills to seeker
             if (newSeeker.seekerSkills != null)
             {
                 seeker.skills = new List<Skill>();
 
                 foreach (var skill in newSeeker.seekerSkills)
                 {
-                    // check whether the skill exists in the database
                     var dbSkill = await _seekerSkillService.GetByName(skill);
 
                     if (dbSkill != null)
                     {
-                        // if it exists, add it to the seeker's list of skills
                         seeker.skills.Add(dbSkill);
                     }
                     else
                     {
-                        // if it doesn't exist, create it and add it to the seeker's list of skills
                         seeker.skills.Add(new Skill
                         {
                             skill_id = 0,
@@ -85,10 +79,8 @@ namespace FirstStep.Services
         public async Task Update(int seekerId, UpdateSeekerDto updateDto)
         {
             
-            // for get the seeker object from the database
             Seeker dbSeeker = await GetById(seekerId);
 
-            // update the Seeker object with the new values
             dbSeeker.first_name = updateDto.first_name;
             dbSeeker.last_name = updateDto.last_name;
             dbSeeker.email = updateDto.email;
@@ -100,11 +92,9 @@ namespace FirstStep.Services
             dbSeeker.profile_picture = updateDto.profile_picture;
             dbSeeker.linkedin = updateDto.linkedin;
 
-            // update the Seeker's skills
             dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
 
 
-            // save the changes
             await _context.SaveChangesAsync();
         }
 
@@ -120,16 +110,14 @@ namespace FirstStep.Services
 
                     if (dbSkill != null)
                     {
-                        // if it exists, add it to the seeker's list of skills
                         skills.Add(dbSkill);
                     }
                     else
                     {
-                        // if it doesn't exist, create a new skill and add it to the seeker's list of skills
                         var newSkill = new Skill
                         {
                             skill_id = 0,
-                            skill_name = skillName.ToLower()  // Assuming the Skill class has a SkillName property
+                            skill_name = skillName.ToLower()  
                         };
                    
                     }
