@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.Design;
+﻿using AutoMapper;
 using FirstStep.Data;
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +8,12 @@ namespace FirstStep.Services
     public class ApplicationService : IApplicationService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public ApplicationService(DataContext context)
+        public ApplicationService(DataContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         enum AdvertisementStatus { Evaluated, NotEvaluated, Accepted, Rejected }
@@ -49,14 +51,38 @@ namespace FirstStep.Services
         }
 
 
-        public async Task<IEnumerable<Application>> GetByAdvertisementId(int id)
+        private async Task<IEnumerable<Application>> FindByAdvertisementId(int id)
         {
-            ICollection<Application> applications = await _context.Applications.Where(a => a.advertisement_id == id).ToListAsync();
+            ICollection<Application> applications = await _context.Applications
+                .Include("seeker")
+                .Where(a => a.advertisement_id == id)
+                .ToListAsync();
+            
             if (applications is null)
             {
                 throw new Exception("There are no applications under the advertisement");
             }
+            
             return applications;
+        }
+
+        public async Task<IEnumerable<HRManagerApplicationListDto>> GetHRManagerAdertisementListByJobID(int jobID)
+        {
+            var applications = await FindByAdvertisementId(jobID);
+
+            IEnumerable<HRManagerApplicationListDto> applicationList = new List<HRManagerApplicationListDto>();
+
+            for (int i = 0; i < applications.Count(); i++)
+            {
+                HRManagerApplicationListDto application = _mapper.Map<HRManagerApplicationListDto>(applications.ElementAt(i));
+
+                // find application is evaluated or not
+
+
+                applicationList.Append(application);
+            }
+
+            return applicationList;
         }
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)
