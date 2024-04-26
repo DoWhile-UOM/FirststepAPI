@@ -102,13 +102,13 @@ namespace FirstStep.Services
         private async Task<IEnumerable<Advertisement>> FindBySeekerJobFieldID(int seekerID)
         {
             // get all active advertisements
-            var advertisements = await FindAll(true);
+            IEnumerable<Advertisement> advertisements = await FindAll(true);
 
             // find the seeker's field
-            int seekerFieldId = await FindSeekerField(seekerID);
+            JobField seekerField = await _seekerService.GetSeekerField(seekerID);
 
             // filter advertisements by seeker's field
-            return advertisements.Where(x => x.field_id == seekerFieldId).ToList();
+            return advertisements.Where(x => x.field_id == seekerField.field_id).ToList();
         }
 
         public async Task<AdvertisementFirstPageDto> GetAllWithPages(int seekerID, int noOfresultsPerPage)
@@ -460,7 +460,7 @@ namespace FirstStep.Services
         public async Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID, int pageLength)
         {
             // validate and find the seeker's field
-            int reqFieldId = await FindSeekerField(seekerID);
+            JobField reqField = await _seekerService.GetSeekerField(seekerID);
 
             // get all active advertisements with filtering by country and field
             List<Advertisement> advertisements = await _context.Advertisements
@@ -471,7 +471,7 @@ namespace FirstStep.Services
                 .Where(ad =>
                     ad.current_status == AdvertisementStatus.active.ToString() &&
                     ad.country == requestAdsDto.country &&
-                    ad.field_id == reqFieldId)
+                    ad.field_id == reqField.field_id)
                 .ToListAsync();
 
             List<Advertisement> filteredAdvertisements = new List<Advertisement> { };
@@ -636,18 +636,6 @@ namespace FirstStep.Services
             matchingAdvertisements = matchingAdvertisements.OrderBy(e => e.Value).ToDictionary(e => e.Key, e => e.Value);
 
             return matchingAdvertisements.Keys.ToList();
-        }
-
-        private async Task<int> FindSeekerField(int seekerID)
-        {
-            var seeker = await _seekerService.GetById(seekerID);
-
-            if (seeker == null)
-            {
-                throw new NullReferenceException("Seeker not found.");
-            }
-
-            return seeker.field_id;
         }
 
         public async Task CloseExpiredAdvertisements()

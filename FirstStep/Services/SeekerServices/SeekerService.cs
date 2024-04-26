@@ -43,6 +43,18 @@ namespace FirstStep.Services
             return seeker;
         }
 
+        public async Task<int> GetSeekerField(int seekerId)
+        {
+            Seeker seeker = await GetById(seekerId);
+
+            if (seeker == null)
+            {
+                throw new NullReferenceException("Seeker not found.");
+            }
+
+            return seeker.field_id;
+        }
+
         public async Task Create(AddSeekerDto newSeeker)
         {
             // map the AddSeekerDto to a Seeker object
