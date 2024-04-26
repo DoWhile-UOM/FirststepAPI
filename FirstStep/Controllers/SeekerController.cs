@@ -19,7 +19,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllSeekers")]
-
         public async Task<ActionResult<IEnumerable<Seeker>>> GetAllSeekers()
         {
             return Ok(await _service.GetAll());
@@ -27,15 +26,20 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetSeeker/{seekerId:int}")]
-
         public async Task<ActionResult<Seeker>> GetSeekerById(int seekerId)
         {
             return Ok(await _service.GetById(seekerId));
         }
 
+        [HttpGet]
+        [Route("GetSeekerProfile/{seekerId:int}")]
+        public async Task<ActionResult<UpdateSeekerDto>> GetSeekerProfile(int seekerId)
+        {
+            return Ok(await _service.GetSeekerProfile(seekerId));
+        }
+
         [HttpPost]
         [Route("AddSeeker")]
-
         public async Task<IActionResult> AddSeeker(AddSeekerDto newSeeker)
         {
             await _service.Create(newSeeker);
@@ -50,16 +54,10 @@ namespace FirstStep.Controllers
             await _service.Update(seekerId, updateDto);
             return Ok();
         }
-        public class SeekerUpdateRequest
-        {
-            public Seeker Seeker { get; set; }
-            public UpdateSeekerDto UpdateDto { get; set; }
-        }
 
 
         [HttpDelete]
         [Route("DeleteSeeker/{seekerId:int}")]
-
         public async Task<IActionResult> DeleteSeeker(int seekerId)
         {
             await _service.Delete(seekerId);

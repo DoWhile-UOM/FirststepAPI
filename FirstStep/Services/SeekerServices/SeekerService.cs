@@ -2,6 +2,7 @@
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -43,42 +44,27 @@ namespace FirstStep.Services
             return seeker;
         }
 
+        public async Task<UpdateSeekerDto> GetSeekerProfile(int id)
+        {
+            Seeker seeker = await GetById(id);
+
+            return _mapper.Map<UpdateSeekerDto>(seeker);
+        }
+
         public async Task Create(AddSeekerDto newSeeker)
         {
             var seeker = _mapper.Map<Seeker>(newSeeker);
 
             seeker.user_type = "seeker";
 
-            if (newSeeker.seekerSkills != null)
-            {
-                seeker.skills = new List<Skill>();
-
-                foreach (var skill in newSeeker.seekerSkills)
-                {
-                    var dbSkill = await _seekerSkillService.GetByName(skill);
-
-                    if (dbSkill != null)
-                    {
-                        seeker.skills.Add(dbSkill);
-                    }
-                    else
-                    {
-                        seeker.skills.Add(new Skill
-                        {
-                            skill_id = 0,
-                            skill_name = skill
-                        });
-                    }
-                }
-            }
+            seeker.skills = await IncludeSkillsToSeeker(newSeeker.seekerSkills);
 
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
         }
 
         public async Task Update(int seekerId, UpdateSeekerDto updateDto)
-        {
-            
+        {   
             Seeker dbSeeker = await GetById(seekerId);
 
             dbSeeker.first_name = updateDto.first_name;
@@ -93,7 +79,6 @@ namespace FirstStep.Services
             dbSeeker.linkedin = updateDto.linkedin;
 
             dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
-
 
             await _context.SaveChangesAsync();
         }
@@ -114,11 +99,11 @@ namespace FirstStep.Services
                     }
                     else
                     {
-                        var newSkill = new Skill
+                        skills.Add(new Skill
                         {
                             skill_id = 0,
                             skill_name = skillName.ToLower()  
-                        };
+                        });
                    
                     }
                 }
