@@ -13,6 +13,8 @@ namespace FirstStep.Services
             _context = context;
         }
 
+        enum AdvertisementStatus { Evaluated, NotEvaluated, Accepted, Rejected }
+
         public async Task<IEnumerable<Revision>> GetAll()
         {
             return await _context.Revisions.ToListAsync();
@@ -29,13 +31,29 @@ namespace FirstStep.Services
             return revision;
         }
 
-        /*
         public async Task<List<Revision>> GetByApplicationID(int applicationID)
         {
             return await _context.Revisions
+                .Include("application")
+                .Include("employee")
                 .Where(r => r.application_id == applicationID)
                 .ToListAsync();
-        }*/
+        }
+
+        public async Task<string> GetCurrentStatus(int applicationID)
+        {
+            Revision? revision = await _context.Revisions
+                .Where(r => r.application_id == applicationID)
+                .OrderByDescending(r => r.date)
+                .FirstOrDefaultAsync();
+
+            if (revision is null)
+            {
+                return AdvertisementStatus.NotEvaluated.ToString();
+            }
+
+            return revision.status;
+        }
 
         public async Task Create(Revision revision)
         {

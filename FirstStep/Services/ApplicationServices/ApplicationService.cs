@@ -10,11 +10,16 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly IRevisionService _revisionService;
 
-        public ApplicationService(DataContext context, IMapper mapper)
+        public ApplicationService(
+            DataContext context, 
+            IMapper mapper, 
+            IRevisionService revisionService)
         {
             _context = context;
             _mapper = mapper;
+            _revisionService = revisionService;
         }
 
         enum AdvertisementStatus { Evaluated, NotEvaluated, Accepted, Rejected }
@@ -51,7 +56,6 @@ namespace FirstStep.Services
             return application;
         }
 
-
         private async Task<IEnumerable<Application>> FindByAdvertisementId(int id)
         {
             ICollection<Application> applications = await _context.Applications
@@ -77,8 +81,13 @@ namespace FirstStep.Services
             {
                 HRManagerApplicationListDto application = _mapper.Map<HRManagerApplicationListDto>(applications.ElementAt(i));
 
-                // find application is evaluated or not
+                // find application status
+                application.status = await _revisionService.GetCurrentStatus(application.application_Id);
 
+                if (application.status != AdvertisementStatus.NotEvaluated.ToString())
+                {
+                    application.is_evaluated = true;
+                }
 
                 applicationList.Append(application);
             }
