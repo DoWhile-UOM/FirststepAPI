@@ -99,16 +99,23 @@ namespace FirstStep.Services
             return advertisementList;
         }
 
-        private async Task<IEnumerable<Advertisement>> FindBySeekerID(int seekerID)
+        private async Task<IEnumerable<Advertisement>> FindBySeekerJobFieldID(int seekerID)
         {
             // get all active advertisements
             var advertisements = await FindAll(true);
 
             // find the seeker's field
-            int seekerFieldId = await findSeekerField(seekerID);
+            int seekerFieldId = await FindSeekerField(seekerID);
 
             // filter advertisements by seeker's field
             return advertisements.Where(x => x.field_id == seekerFieldId).ToList();
+        }
+
+        public async Task<AdvertisementFirstPageDto> GetAllWithPages(int seekerID, int noOfresultsPerPage)
+        {
+            var dbAds = await FindBySeekerJobFieldID(seekerID);
+
+            return await CreateFirstPageResults(dbAds, seekerID, noOfresultsPerPage);
         }
 
         public async Task<AdvertisementDto> GetById(int id)
@@ -196,9 +203,9 @@ namespace FirstStep.Services
 
         public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfresultsPerPage)
         {
-            var dbAds = await FindBySeekerID(seekerID);
+            var matchingAds = await FindMatchingAdvertisement(seekerID);
 
-            return await CreateFirstPageResults(dbAds, seekerID, noOfresultsPerPage);
+            return await CreateFirstPageResults(matchingAds, seekerID, noOfresultsPerPage);
         }
 
         public async Task Create(AddAdvertisementDto advertisementDto)
@@ -450,26 +457,10 @@ namespace FirstStep.Services
             return jobOfferDtos;
         }
 
-        // validate status
-        private void ValidateStatus(string status)
-        {
-            var possibleStatuses = new List<string> 
-            { 
-                AdvertisementStatus.active.ToString(), 
-                AdvertisementStatus.closed.ToString(), 
-                "all" 
-            };
-
-            if (!possibleStatuses.Contains(status))
-            {
-                throw new InvalidDataException("Invalid status.");
-            }
-        }
-
         public async Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID, int pageLength)
         {
             // validate and find the seeker's field
-            int reqFieldId = await findSeekerField(seekerID);
+            int reqFieldId = await FindSeekerField(seekerID);
 
             // get all active advertisements with filtering by country and field
             List<Advertisement> advertisements = await _context.Advertisements
@@ -602,7 +593,52 @@ namespace FirstStep.Services
             return filteredAdvertisements;
         }
 
-        private async Task<int> findSeekerField(int seekerID)
+        private async Task<List<Advertisement>> FindMatchingAdvertisement(int seekerID)
+        {
+            var seeker = await _seekerService.GetById(seekerID);
+
+            // get all active advertisements in seeker's field
+            var advertisements = await FindBySeekerJobFieldID(seekerID);
+            
+            if (seeker.skills == null)
+            {
+                // when seeker has no skills, return all advertisements in the seeker's field
+                return advertisements.ToList();
+            }
+
+            Dictionary<Advertisement, int> matchingAdvertisements = new Dictionary<Advertisement, int>();
+
+            // find the seeker's skills
+            var seekerSkills = seeker.skills.Select(e => e.skill_name).ToList();
+
+            // count and add advertisements that match the seeker's skills
+            foreach (var ad in advertisements)
+            {
+                var adSkills = ad.skills!.Select(e => e.skill_name).ToList();
+
+                int matchingSkills = 0;
+
+                foreach (var skill in seekerSkills)
+                {
+                    if (adSkills.Contains(skill))
+                    {
+                        matchingSkills++;
+                    }
+                }
+
+                if (matchingSkills > 0)
+                {
+                    matchingAdvertisements.Add(ad, matchingSkills);
+                }
+            }
+
+            // sort by a number of matching skills in acending order
+            matchingAdvertisements = matchingAdvertisements.OrderBy(e => e.Value).ToDictionary(e => e.Key, e => e.Value);
+
+            return matchingAdvertisements.Keys.ToList();
+        }
+
+        private async Task<int> FindSeekerField(int seekerID)
         {
             var seeker = await _seekerService.GetById(seekerID);
 
@@ -657,6 +693,21 @@ namespace FirstStep.Services
             }
 
             return true;
+        }
+
+        private void ValidateStatus(string status)
+        {
+            var possibleStatuses = new List<string>
+            {
+                AdvertisementStatus.active.ToString(),
+                AdvertisementStatus.closed.ToString(),
+                "all"
+            };
+
+            if (!possibleStatuses.Contains(status))
+            {
+                throw new InvalidDataException("Invalid status.");
+            }
         }
 
         public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)
