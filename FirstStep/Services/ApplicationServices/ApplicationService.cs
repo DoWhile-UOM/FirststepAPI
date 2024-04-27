@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
@@ -10,12 +10,18 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly IRevisionService _revisionService;
         private readonly ISeekerService _seekerService;
 
-        public ApplicationService(DataContext context, IMapper mapper, ISeekerService seekerService)
+        public ApplicationService(
+            DataContext context, 
+            IMapper mapper, 
+            IRevisionService revisionService,
+            ISeekerService seekerService)
         {
             _context = context;
             _mapper = mapper;
+            _revisionService = revisionService;
             _seekerService = seekerService;
         }
 
@@ -68,9 +74,12 @@ namespace FirstStep.Services
             return application;
         }
 
-        public async Task<IEnumerable<Application>> GetByAdvertisementId(int id)
+        private async Task<IEnumerable<Application>> FindByAdvertisementId(int id)
         {
-            ICollection<Application> applications = await _context.Applications.Where(a => a.advertisement_id == id).ToListAsync();
+            ICollection<Application> applications = await _context.Applications
+                .Include("seeker")
+                .Where(a => a.advertisement_id == id)
+                .ToListAsync();
             
             if (applications is null)
             {
@@ -78,6 +87,30 @@ namespace FirstStep.Services
             }
 
             return applications;
+        }
+
+        public async Task<IEnumerable<HRManagerApplicationListDto>> GetHRManagerAdertisementListByJobID(int jobID)
+        {
+            var applications = await FindByAdvertisementId(jobID);
+
+            IEnumerable<HRManagerApplicationListDto> applicationList = new List<HRManagerApplicationListDto>();
+
+            for (int i = 0; i < applications.Count(); i++)
+            {
+                HRManagerApplicationListDto application = _mapper.Map<HRManagerApplicationListDto>(applications.ElementAt(i));
+
+                // find application status
+                application.status = await _revisionService.GetCurrentStatus(application.application_Id);
+
+                if (application.status != AdvertisementStatus.NotEvaluated.ToString())
+                {
+                    application.is_evaluated = true;
+                }
+
+                applicationList.Append(application);
+            }
+
+            return applicationList;
         }
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)

@@ -40,6 +40,12 @@ namespace FirstStep.MapperProfile
             CreateMap<AddEmployeeDto, HRAssistant>();
             CreateMap<Company, CompanyProfileDetailsDto>();
 
+
+            CreateMap<Application, HRManagerApplicationListDto>()
+                .ForMember(
+                    des => des.seekerName,
+                    opt => opt.MapFrom(src => src.seeker!.first_name + " " + src.seeker!.last_name));
+
         }
     }
 }
