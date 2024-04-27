@@ -2,6 +2,7 @@
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Helper;
 using Microsoft.EntityFrameworkCore;
 using KdTree;
 using KdTree.Math;
@@ -35,20 +36,32 @@ namespace FirstStep.Services
 
         enum AdvertisementStatus { active, closed }
 
-        public async Task<IEnumerable<Advertisement>> FindAll()
+        private async Task<IEnumerable<Advertisement>> FindAll(bool isActivatedOnly)
         {
-            // get all active advertisements
-            return await _context.Advertisements
-                .Include("professionKeywords")
-                .Include("job_Field")
-                .Include("hrManager")
-                .Include("skills")
-                .Include("savedSeekers")
-                .Where(x => x.current_status == AdvertisementStatus.active.ToString())
-                .ToListAsync();
+            if (isActivatedOnly)
+            {
+                return await _context.Advertisements
+                    .Include("professionKeywords")
+                    .Include("job_Field")
+                    .Include("hrManager")
+                    .Include("skills")
+                    .Include("savedSeekers")
+                    .Where(x => x.current_status == AdvertisementStatus.active.ToString())
+                    .ToListAsync();
+            }
+            else
+            {
+                return await _context.Advertisements
+                    .Include("professionKeywords")
+                    .Include("job_Field")
+                    .Include("hrManager")
+                    .Include("skills")
+                    .Include("savedSeekers")
+                    .ToListAsync();
+            }
         }
 
-        public async Task<Advertisement> FindById(int id)
+        private async Task<Advertisement> FindById(int id)
         {
             Advertisement? advertisement =
                 await _context.Advertisements
@@ -61,13 +74,13 @@ namespace FirstStep.Services
 
             if (advertisement is null)
             {
-                throw new Exception("Advertisement not found.");
+                throw new NullReferenceException("Advertisement not found.");
             }
 
             return advertisement;
         }
         
-        public async Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID)
+        private async Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID)
         {
             var advertisementList = await _context.Advertisements
                 .Include("professionKeywords")
@@ -80,15 +93,22 @@ namespace FirstStep.Services
 
             if (advertisementList is null)
             {
-                throw new Exception("No advertisements found under this company.");
+                throw new NullReferenceException("No advertisements found under this company.");
             }
 
             return advertisementList;
         }
 
-        public async Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID)
+        private async Task<IEnumerable<Advertisement>> FindBySeekerID(int seekerID)
         {
-            return await CreateAdvertisementList(await FindAll(), seekerID);
+            // get all active advertisements
+            var advertisements = await FindAll(true);
+
+            // find the seeker's field
+            int seekerFieldId = await findSeekerField(seekerID);
+
+            // filter advertisements by seeker's field
+            return advertisements.Where(x => x.field_id == seekerFieldId).ToList();
         }
 
         public async Task<AdvertisementDto> GetById(int id)
@@ -97,8 +117,21 @@ namespace FirstStep.Services
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
             advertisementDto.company_name = _context.Companies.Find(dbAdvertismeent.hrManager!.company_id)!.company_name;
+            advertisementDto.is_expired = IsExpired(dbAdvertismeent);
 
             return advertisementDto;
+        }
+
+        public async Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID)
+        {
+            var advertisements = new List<Advertisement>();
+
+            foreach (var adId in adList)
+            {
+                advertisements.Add(await FindById(adId));
+            }
+
+            return await CreateAdvertisementList(advertisements, seekerID, false);
         }
 
         // fill the advertisement form when updating an advertisement
@@ -106,25 +139,40 @@ namespace FirstStep.Services
         {
             var dbAdvertismeent = await FindById(id);
             var currentAdData = _mapper.Map<UpdateAdvertisementDto>(dbAdvertismeent);
-
+               
             currentAdData.reqSkills = dbAdvertismeent.skills!.Select(e => e.skill_name).ToList();
             currentAdData.reqKeywords = dbAdvertismeent.professionKeywords!.Select(e => e.profession_name).ToList();
 
             return currentAdData;
         }
 
-        public async Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status, string title)
+        public async Task<IEnumerable<Advertisement>> GetByCompanyID(int companyID)
+        {
+            var advertisements = await FindByCompanyID(companyID);
+
+            return advertisements.Where(e => e.current_status == AdvertisementStatus.active.ToString()).ToList();
+        }
+
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status)
+        {
+            ValidateStatus(status);
+
+            var dbAdvertisements = await FindByCompanyID(companyID);
+
+            return await CreateAdvertisementList(dbAdvertisements, status);
+        }
+
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title)
         {
             ValidateStatus(status);
 
             if (title != null)
             {
-
                 var dbAdvertisements = await FindByCompanyID(companyID);
-                
+
                 // filter advertisements by title
                 var filteredAdvertisements = dbAdvertisements.Where(x => x.title.ToLower().Contains(title.ToLower())).ToList();
-                
+
                 // split title into sub parts and filter advertisements by each sub part
                 List<string> titleSubParts = title.Split(' ').ToList();
                 foreach (string subPart in titleSubParts)
@@ -142,17 +190,15 @@ namespace FirstStep.Services
             }
             else
             {
-                return await GetAdvertisementsByCompany(companyID, status);
+                return await GetByCompanyID(companyID, status);
             }
         }
 
-        public async Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status)
+        public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfresultsPerPage)
         {
-            ValidateStatus(status);
+            var dbAds = await FindBySeekerID(seekerID);
 
-            var dbAdvertisements = await FindByCompanyID(companyID);
-
-            return await CreateAdvertisementList(dbAdvertisements, status);
+            return await CreateFirstPageResults(dbAds, seekerID, noOfresultsPerPage);
         }
 
         public async Task Create(AddAdvertisementDto advertisementDto)
@@ -160,13 +206,13 @@ namespace FirstStep.Services
             // validate hrManagerID
             if (await _context.HRManagers.FindAsync(advertisementDto.hrManager_id) is null)
             {
-                throw new Exception("Invalid HR Manager ID.");
+                throw new InvalidDataException("Invalid HR Manager ID.");
             }
 
             // validate job field id
             if (await _context.JobFields.FindAsync(advertisementDto.field_id) is null)
             {
-                throw new Exception("Invalid job field ID.");
+                throw new InvalidDataException("Invalid job field ID.");
             }
             
             // map the AddAdvertisementDto to a Advertisement object
@@ -188,6 +234,12 @@ namespace FirstStep.Services
             ValidateStatus(newStatus);
             var advertisement = await FindById(id);
 
+            if (newStatus == AdvertisementStatus.active.ToString() && IsExpired(advertisement))
+            {
+                // can't activate an expired advertisement, therefore first need to update the submission deadline
+                throw new InvalidDataException("Cannot activate an expired advertisement.");
+            }
+
             advertisement.current_status = newStatus;
             await _context.SaveChangesAsync();
         }
@@ -195,15 +247,16 @@ namespace FirstStep.Services
         public async Task Update(int jobID, UpdateAdvertisementDto reqAdvertisement)
         {
             Advertisement dbAdvertisement = await FindById(jobID);
-
+            
             dbAdvertisement.job_number = reqAdvertisement.job_number;
             dbAdvertisement.title = reqAdvertisement.title;
             dbAdvertisement.country = reqAdvertisement.country;
             dbAdvertisement.city = reqAdvertisement.city;
             dbAdvertisement.employeement_type = reqAdvertisement.employeement_type;
             dbAdvertisement.arrangement = reqAdvertisement.arrangement;
-            dbAdvertisement.is_experience_required = reqAdvertisement.is_experience_required;
+            dbAdvertisement.experience = reqAdvertisement.experience;
             dbAdvertisement.salary = reqAdvertisement.salary;
+            dbAdvertisement.currency_unit = reqAdvertisement.currency_unit;
             dbAdvertisement.submission_deadline = reqAdvertisement.submission_deadline;
             dbAdvertisement.job_description = reqAdvertisement.job_description;
             dbAdvertisement.field_id = reqAdvertisement.field_id;
@@ -247,35 +300,10 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID)
         {
-            var advertisements = await FindAll();
+            // get all advertisements (with closed advrtisements)
+            var advertisements = await FindAll(false);
 
-            var savedAds = new List<Advertisement>();
-
-            foreach (var ad in advertisements)
-            {
-                if (ad.savedSeekers != null && ad.savedSeekers.Any(e => e.user_id == seekerID))
-                {
-                    savedAds.Add(ad);
-                }
-            }
-
-            return await CreateAdvertisementList(savedAds, 0);
-        }
-
-        private async Task<bool> IsAdvertisementSaved(int advertisementId, int seekerId)
-        {
-            // find the seeker
-            var seeker = await _seekerService.GetById(seekerId);
-
-            // find the advertisement
-            var advertisement = await FindById(advertisementId);
-
-            if (advertisement.savedSeekers is null || !advertisement.savedSeekers.Contains(seeker))
-            {
-                return false;
-            }
-
-            return true;
+            return await CreateAdvertisementList(advertisements, seekerID, true);
         }
 
         public async Task Delete(int id)
@@ -355,19 +383,12 @@ namespace FirstStep.Services
             return null;
         }
 
-        public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfresultsPerPage)
-        {
-            var dbAds = await FindAll();
-
-            return await CreateFirstPageResults(dbAds, seekerID, noOfresultsPerPage);
-        }
-
-        private async Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage)
+        public async Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage)
         {
             AdvertisementFirstPageDto firstPageResults = new AdvertisementFirstPageDto();
 
             // select only number of advertisements per page
-            firstPageResults.FirstPageAdvertisements = await CreateAdvertisementList(dbAds.Take(noOfresultsPerPage), seekerID);
+            firstPageResults.FirstPageAdvertisements = await CreateAdvertisementList(dbAds.Take(noOfresultsPerPage), seekerID, false);
 
             // add all advertisement ids into a list
             firstPageResults.allAdvertisementIds = dbAds.Select(e => e.advertisement_id).ToList();
@@ -375,39 +396,25 @@ namespace FirstStep.Services
             return firstPageResults;
         }
 
-        public async Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID)
-        {
-            var advertisements = new List<Advertisement>();
-
-            foreach (var adId in adList)
-            {
-                advertisements.Add(await FindById(adId));
-            }
-
-            return await CreateAdvertisementList(advertisements, seekerID);
-        }
-
         // map the advertisements to a list of AdvertisementCardDtos and create advertisement list for the seeker
-        public async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID)
+        private async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID, bool isSaveOnly)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
+
+            Seeker seeker = await _seekerService.GetById(seekerID);
 
             foreach (var ad in dbAds)
             {
                 var adDto = _mapper.Map<AdvertisementShortDto>(ad);
 
+                // check whether the advertisement is saved by the seeker
+                adDto.is_saved = IsSaved(ad, seeker);
+                if (isSaveOnly && !adDto.is_saved) continue;
+
+                // check whether the advertisement is expired or not
+                adDto.is_expired = IsExpired(ad);
+
                 adDto.company_name = _context.Companies.Find(ad.hrManager!.company_id)!.company_name;
-                // when seekerID is 0, it means that the all advertisements are saved by the seeker
-                // from GetSavedAdvertisements method passed seekerID as 0
-                if (seekerID != 0)
-                {
-                    // check whether the advertisement is saved by the seeker
-                    adDto.is_saved = await IsAdvertisementSaved(ad.advertisement_id, seekerID);
-                }
-                else
-                {
-                    adDto.is_saved = true;
-                }
 
                 adCardDtos.Add(adDto);
             }
@@ -416,7 +423,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of JobOfferDtos and create advertisement list for the company
-        public async Task<IEnumerable<AdvertisementTableRowDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        private async Task<IEnumerable<AdvertisementTableRowDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
         {
             // map to jobofferDtos
             var jobOfferDtos = new List<AdvertisementTableRowDto>();
@@ -432,16 +439,9 @@ namespace FirstStep.Services
 
                 jobOfferDto.field_name = ad.job_Field!.field_name;
 
-                // search number of applications
                 jobOfferDto.no_of_applications = await _applicationService.NumberOfApplicationsByAdvertisementId(ad.advertisement_id);
-
-                // search number of evaluated applications
                 jobOfferDto.no_of_evaluated_applications = await _applicationService.TotalNotEvaluatedApplications(ad.advertisement_id);
-
-                // search number if accepted applications
                 jobOfferDto.no_of_accepted_applications = await _applicationService.AcceptedApplications(ad.advertisement_id);
-
-                // search number of rejected applications
                 jobOfferDto.no_of_rejected_applications = await _applicationService.RejectedApplications(ad.advertisement_id);
 
                 jobOfferDtos.Add(jobOfferDto);
@@ -462,89 +462,94 @@ namespace FirstStep.Services
 
             if (!possibleStatuses.Contains(status))
             {
-                throw new Exception("Invalid status.");
-            }
-        }
-
-        // temp function
-        // random function to add 10 advertisements to the database
-        private async Task AddRandomAdvertisements(int limit)
-        {
-            var keywordArray = new List<string>() { "C#", "python", "ASP.NET", "MVC", "SQL", "Azure", "Entity Framework", "LINQ", "Web API", "RESTful", "SOAP", "WCF", "WPF", "Xamarin", "Blazor", "Razor", "SignalR", "Angular", "React", "Vue", "Bootstrap", "jQuery", "HTML", "CSS", "JavaScript", "TypeScript", ".NET Core", ".NET Framework", ".NET Standard", "Visual Studio", "Git", "GitHub", "DevOps", "Agile", "Scrum", "TDD", "BDD", "SOLID", "Design Patterns", "OOP", "Microservices", "Docker", "Kubernetes", "AWS", "Machine Learning", "AI", "Data Science", "Python", "R", "TensorFlow" };
-            
-            var titleArray = new List<string>() { "Web Developer", "Software Engineer", "Data Analyst", "Network Administrator", "Database Administrator", "Cybersecurity Analyst", "Cloud Engineer", "Machine Learning Engineer", "Artificial Intelligence Engineer", "Software Tester", "Technical Support Specialist", "IT Project Manager", "Business Analyst", "UX Designer", "UI Developer", "Game Developer", "Blockchain Developer", "DevOps Engineer", "IT Consultant", "Webmaster" };
-
-            var random = new Random();
-
-            for (int i = 0; i < limit; i++)
-            {
-                var addAdvertisementDto = new AddAdvertisementDto
-                {
-                    job_number = random.Next(100, 999),
-                    title = titleArray[random.Next(0, titleArray.Count - 1)],
-                    country = "Sri Lanka",
-                    city = "Colombo",
-                    employeement_type = random.Next(0, 1) == 0 ? "Full-time" : "Part-time",
-                    arrangement = random.Next(0, 1) == 0 ? "Remote" : "On-site",
-                    is_experience_required = random.Next(0, 1) == 1 ? true: false,
-                    salary = random.Next(300000, 600000),
-                    submission_deadline = DateTime.Now.AddDays(random.Next(25, 45)),
-                    job_description = "We are looking for a software developer to join our team. We are a company that values its employees.",
-                    hrManager_id = 10, // under bistec
-                    field_id = 1, // it and cs
-                    keywords = new List<string>(),
-                    reqSkills = new List<string>()
-                };
-
-                for (int j = 0; j < random.Next(4, 11); j++)
-                {
-                    addAdvertisementDto.keywords.Add(keywordArray[random.Next(0, keywordArray.Count - 1)].ToLower());
-                }
-
-                for (int j = 0; j < random.Next(4, 11); j++)
-                {
-                    addAdvertisementDto.reqSkills.Add(keywordArray[random.Next(0, keywordArray.Count - 1)].ToLower());
-                }
-
-                await Create(addAdvertisementDto);
-
-                Console.Out.WriteLine($"Advertisement added. { i + 1 }");
+                throw new InvalidDataException("Invalid status.");
             }
         }
 
         public async Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID, int pageLength)
         {
-            var advertisements = await _context.Advertisements
+            // validate and find the seeker's field
+            int reqFieldId = await findSeekerField(seekerID);
+
+            // get all active advertisements with filtering by country and field
+            List<Advertisement> advertisements = await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
-                .Include("skills")
                 .Include("hrManager")
                 .Include("savedSeekers")
                 .Where(ad =>
+                    ad.current_status == AdvertisementStatus.active.ToString() &&
                     ad.country == requestAdsDto.country &&
-                    ad.city == requestAdsDto.city &&
-                        (ad.arrangement == requestAdsDto.arrangement ||
-                        ad.employeement_type == requestAdsDto.employeement_type) &&
-                    ad.current_status == AdvertisementStatus.active.ToString())
+                    ad.field_id == reqFieldId)
                 .ToListAsync();
 
-            if (requestAdsDto.title == null)
-            {
-                Console.Out.WriteLine($"Filtered advertisements: {advertisements.Count}");
+            List<Advertisement> filteredAdvertisements = new List<Advertisement> { };
 
-                return await CreateFirstPageResults(advertisements, seekerID, pageLength);
+            // filter advertisements by arrangement
+            if (requestAdsDto.arrangement != null)
+            {
+                filteredAdvertisements.AddRange(advertisements
+                    .Where(ad => requestAdsDto.arrangement.Contains(ad.arrangement))
+                    .ToList());
+            }
+
+            // filter advertisements by employeement type
+            if (requestAdsDto.employeement_type != null)
+            {
+                var ads = advertisements
+                    .Where(ad => requestAdsDto.employeement_type.Contains(ad.employeement_type))
+                    .ToList();
+
+                // check whether the advertisement is already in the list
+                foreach (var ad in ads)
+                {
+                    if (!filteredAdvertisements.Contains(ad))
+                    {
+                        filteredAdvertisements.Add(ad);
+                    }
+                }
+            }
+
+            // filter advertisements by title
+            filteredAdvertisements = FilterByTitle(filteredAdvertisements, requestAdsDto.title);
+
+            // filter advertisements by city
+            filteredAdvertisements = await FilterByCity(filteredAdvertisements, requestAdsDto.city, requestAdsDto.distance);
+
+            return await CreateFirstPageResults(filteredAdvertisements, seekerID, pageLength);
+        }
+
+        private List<Advertisement> FilterByTitle(List<Advertisement> advertisements, string? reqTitle)
+        {
+            if (reqTitle == null)
+            {
+                return advertisements;
             }
 
             var filteredAdvertisements = new List<Advertisement> { };
 
-            var titles = requestAdsDto.title.Split(' ');
+            filteredAdvertisements
+                .AddRange(advertisements
+                    .Where(ad => ad.title.ToLower().Contains(reqTitle.ToLower()))
+                    .ToList());
+
+            var titles = reqTitle.Split(' ');
 
             foreach (var title in titles)
             {
-                filteredAdvertisements
-                    .AddRange(advertisements
-                        .Where(ad => ad.title.ToLower().Contains(title.ToLower()))
-                        .ToList());
+                var ads = new List<Advertisement> { };
+
+                ads.AddRange(advertisements
+                    .Where(ad => ad.title.ToLower().Contains(title.ToLower()))
+                    .ToList());
+
+                for (int i = 0; i < ads.Count; i++)
+                {
+                    if (!filteredAdvertisements.Contains(ads[i]))
+                    {
+                        filteredAdvertisements.Add(ads[i]);
+                    }
+                }
             }
 
             foreach (var title in titles)
@@ -563,14 +568,100 @@ namespace FirstStep.Services
                 }
             }
 
-            Console.Out.WriteLine($"Filtered advertisements: {filteredAdvertisements.Count}");
+            return filteredAdvertisements;
+        }
 
-            return await CreateFirstPageResults(advertisements, seekerID, pageLength);
+        private async Task<List<Advertisement>> FilterByCity(List<Advertisement> advertisements, string? reqCity, float? reqDistance)
+        {
+            if (reqCity == null || reqDistance < 0)
+            {
+                return advertisements;
+            }
+
+            // reqDistance is 0, means that the seeker wants to search only in the requested city
+            if (reqDistance == 0)
+            {
+                return advertisements
+                    .Where(ad => ad.city.ToLower() == reqCity.ToLower())
+                    .ToList();
+            }
+
+            var filteredAdvertisements = new List<Advertisement> { };
+
+            // get coordinates of the requested city
+            var reqCityCoordinate = await MapAPI.GetCoordinates(reqCity.ToLower());
+
+            foreach (Advertisement advertisement in advertisements)
+            {
+                if (await MapAPI.GetDistance(advertisement.city, reqCityCoordinate) <= reqDistance)
+                {
+                    filteredAdvertisements.Add(advertisement);
+                }
+            }
+
+            return filteredAdvertisements;
+        }
+
+        private async Task<int> findSeekerField(int seekerID)
+        {
+            var seeker = await _seekerService.GetById(seekerID);
+
+            if (seeker == null)
+            {
+                throw new NullReferenceException("Seeker not found.");
+            }
+
+            return seeker.field_id;
+        }
+
+        public async Task CloseExpiredAdvertisements()
+        {
+            // get all active advertisements
+            var advertisements = await FindAll(true);
+
+            foreach (var ad in advertisements)
+            {
+                if (ad.submission_deadline == null) continue;
+
+                if (DateTime.Now > ad.submission_deadline)
+                {
+                    ad.current_status = AdvertisementStatus.closed.ToString();
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsExpired(int advertisementId)
+        {
+            var advertisement = await FindById(advertisementId);
+
+            return IsExpired(advertisement);
+        }
+
+        private bool IsExpired(Advertisement advertisement)
+        {
+            if (advertisement.submission_deadline == null)
+            {
+                return false;
+            }
+
+            return DateTime.Now > advertisement.submission_deadline;
+        }
+
+        private bool IsSaved(Advertisement advertisement, Seeker seeker)
+        {
+            if (advertisement.savedSeekers is null || !advertisement.savedSeekers.Contains(seeker))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)
         {
-            var advertisements = await FindAll();
+            var advertisements = await FindAll(true);
 
             // convert advertisements into kdtree
             var tree = new KdTree<float, Advertisement>(5, new FloatMath());
@@ -605,7 +696,7 @@ namespace FirstStep.Services
 
             var filteredAdvertisements = nearestAds.Select(e => e.Value).ToList();
 
-            return await CreateAdvertisementList(filteredAdvertisements, seekerID);
+            return await CreateAdvertisementList(filteredAdvertisements, seekerID, false);
         }
     }
 }

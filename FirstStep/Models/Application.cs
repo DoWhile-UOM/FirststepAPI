@@ -14,14 +14,24 @@ namespace FirstStep.Models
 
 
         [JsonIgnore]
-        public virtual Advertisement? advertisement { get; set; }//one to many
+        public virtual Advertisement? advertisement { get; set; }
 
         public required int advertisement_id { get; set; }
 
 
         [JsonIgnore]
-        public virtual Seeker? seeker { get; set; }//one to many
+        public virtual Seeker? seeker { get; set; }
 
         public required int user_id { get; set; }
+
+
+        [JsonIgnore]
+        public virtual HRAssistant? assigned_hrAssistant { get; set; }
+        
+        public int? assigned_hrAssistant_id { get; set; }
+
+
+        [JsonIgnore]
+        public virtual ICollection<Revision>? revisions { get; set; }
     }
 }

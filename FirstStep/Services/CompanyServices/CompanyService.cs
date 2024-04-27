@@ -51,12 +51,11 @@ namespace FirstStep.Services
         {
             return await _context.Companies.Where(c => c.verification_status).ToListAsync();
         }
-
         
-        public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID)
+        public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID, int pageLength)
         {
-            // get all advertisements under the company
-            IEnumerable<Advertisement> dbAdvertisements = await _advertisementService.FindByCompanyID(companyID);
+            // get all active advertisements under the company
+            IEnumerable<Advertisement> dbAdvertisements = await _advertisementService.GetByCompanyID(companyID);
 
             // get company details
             var dbCompany = await FindByID(companyID);
@@ -65,11 +64,10 @@ namespace FirstStep.Services
             var advertisementCompanyDto = _mapper.Map<CompanyProfileDto>(dbCompany);
 
             // feed all advertisments under the company to DTO as an array of advertisementCardDtos
-            advertisementCompanyDto.advertisementUnderCompany = await _advertisementService.CreateAdvertisementList(dbAdvertisements, seekerID);
+            advertisementCompanyDto.companyAdvertisements = await _advertisementService.CreateFirstPageResults(dbAdvertisements, seekerID, pageLength);
             
             return advertisementCompanyDto;
         }
-
 
         //Company Registration Starts here
         public async Task Create(AddCompanyDto newCompanyDto)
@@ -78,12 +76,12 @@ namespace FirstStep.Services
 
             if (await CheckCompnayEmailExist(company.company_email))
             {
-                throw new EmailAlreadyExistsException("Company email already exists");
+                throw new Exception("Company email already exists");
             }
 
             if (await CheckCompnayRegNo(company.business_reg_no.ToString()))
             {
-                throw new RegistrationNumberAlreadyExistsException("Company registration number already exists");
+                throw new Exception("Company registration number already exists");
             }
 
             company.verification_status = false;
@@ -93,17 +91,6 @@ namespace FirstStep.Services
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
         }
-
-        public class EmailAlreadyExistsException : Exception
-        {
-            public EmailAlreadyExistsException(string message) : base(message) { }
-        }
-
-        public class RegistrationNumberAlreadyExistsException : Exception
-        {
-            public RegistrationNumberAlreadyExistsException(string message) : base(message) { }
-        }
-
 
         private async Task<bool> CheckCompnayEmailExist(string Email) //Function to check company email exist
         {
