@@ -29,6 +29,8 @@ namespace FirstStep.MapperProfile
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
 
             CreateMap<Advertisement, AdvertisementTableRowDto>();
+
+            CreateMap<AddApplicationDto, Application>();
             
             CreateMap<Company, CompanyProfileDto>();
             CreateMap<Seeker, SeekerApplicationDto>();

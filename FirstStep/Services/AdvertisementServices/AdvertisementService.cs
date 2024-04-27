@@ -466,6 +466,25 @@ namespace FirstStep.Services
             }
         }
 
+        public async Task CreateApplication(AddApplicationDto newApplication)
+        {
+            var advertisement = await FindById(newApplication.advertisement_id);
+
+            if (!IsActive(advertisement))
+            {
+                throw new InvalidDataException("Cannot apply to a closed advertisement.");
+            }
+
+            if (!IsExpired(advertisement))
+            {
+                throw new InvalidDataException("Cannot apply to an expired advertisement.");
+            }
+
+            var seeker = await _seekerService.GetById(newApplication.seeker_id);
+
+            await _applicationService.Create(newApplication);
+        }
+
         public async Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID, int pageLength)
         {
             // validate and find the seeker's field
@@ -647,6 +666,16 @@ namespace FirstStep.Services
             }
 
             return DateTime.Now > advertisement.submission_deadline;
+        }
+
+        private bool IsActive(Advertisement advertisement)
+        {
+            if (advertisement.current_status != AdvertisementStatus.active.ToString())
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private bool IsSaved(Advertisement advertisement, Seeker seeker)

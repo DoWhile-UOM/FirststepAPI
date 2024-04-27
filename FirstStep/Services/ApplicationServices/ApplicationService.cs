@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.Design;
+﻿using AutoMapper;
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
@@ -9,36 +9,40 @@ namespace FirstStep.Services
     public class ApplicationService : IApplicationService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
+        private readonly ISeekerService _seekerService;
 
-        public ApplicationService(DataContext context)
+        public ApplicationService(DataContext context, IMapper mapper, ISeekerService seekerService)
         {
             _context = context;
+            _mapper = mapper;
+            _seekerService = seekerService;
         }
 
-        enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected }
+        enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected }
 
-        public async Task Create(Application application) 
-        { 
-            try
+        public async Task Create(AddApplicationDto newApplicationDto)
+        {
+            // validate application
+            var applications = await GetBySeekerId(newApplicationDto.seeker_id);
+
+            foreach (var application in applications)
             {
-                application.application_Id = 0;
-                application.status = ApplicationStatus.NotEvaluated.ToString();
-
-                // need to check the advertisement is exist
-
-                // need to check the seeker is exist
-
-
-                _context.Applications.Add(application);
-                await _context.SaveChangesAsync();
+                if (application.advertisement_id == newApplicationDto.advertisement_id 
+                    && application.seeker_id == newApplicationDto.seeker_id
+                    && application.status == ApplicationStatus.NotEvaluated.ToString())
+                {
+                    throw new Exception("Can't apply for an advertisement that is already applied and in the waiting list");
+                }
             }
-            catch (Exception e)
-            {
-                throw new Exception("Application not created", e);
-            }
+
+            Application newApplication = _mapper.Map<Application>(newApplicationDto);
+
+            newApplication.status = ApplicationStatus.NotEvaluated.ToString();
+
+            _context.Applications.Add(newApplication);
+            await _context.SaveChangesAsync();
         }
-
-    
 
         public async Task Delete(int id)
         {
@@ -64,24 +68,22 @@ namespace FirstStep.Services
             return application;
         }
 
-
         public async Task<IEnumerable<Application>> GetByAdvertisementId(int id)
         {
             ICollection<Application> applications = await _context.Applications.Where(a => a.advertisement_id == id).ToListAsync();
+            
             if (applications is null)
             {
                 throw new Exception("There are no applications under the advertisement");
             }
+
             return applications;
         }
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)
         {
-            ICollection<Application> applications = await _context.Applications.Where(a => a.user_id == id).ToListAsync();
-            if (applications is null)
-            {
-                throw new Exception("There are no applications under the seeker");
-            }
+            ICollection<Application> applications = await _context.Applications.Where(a => a.seeker_id == id).ToListAsync();
+
             return applications;
         }
 
@@ -103,7 +105,7 @@ namespace FirstStep.Services
 
         public async Task<int> TotalEvaluatedApplications(int id)
         {
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == ApplicationStatus.Evaluated.ToString()).CountAsync();
+            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status != ApplicationStatus.NotEvaluated.ToString()).CountAsync();
             return TolaEvaluatedApplications;
         }
 
@@ -123,11 +125,6 @@ namespace FirstStep.Services
         {
             int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == ApplicationStatus.Rejected.ToString()).CountAsync();
             return AcceptedApplications;
-        }
-
-        public Task<SeekerApplicationDto> GetSeekerDetails(int seekerID)
-        {
-            throw new NotImplementedException();
         }
     }
 }
