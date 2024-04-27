@@ -182,7 +182,7 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("ChangeStatus/{jobID:int}/status={newStatus}")]
         public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
         {
@@ -197,7 +197,7 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
         public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {
