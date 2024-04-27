@@ -18,6 +18,9 @@ namespace FirstStep.Services
         private readonly ISeekerService _seekerService;
         private readonly IApplicationService _applicationService;
 
+        private readonly int AdvertisementExpiredDays = 10;
+        private enum AdvertisementStatus { active, closed }
+
         public AdvertisementService(
             DataContext context, 
             IMapper mapper,
@@ -33,8 +36,6 @@ namespace FirstStep.Services
             _seekerService = seekerService;
             _applicationService = applicationService;
         }
-
-        enum AdvertisementStatus { active, closed }
 
         private async Task<IEnumerable<Advertisement>> FindAll(bool isActivatedOnly)
         {
@@ -259,14 +260,31 @@ namespace FirstStep.Services
                 throw new InvalidDataException("Cannot activate an expired advertisement.");
             }
 
+            // update the advertisement status
             advertisement.current_status = newStatus;
+
+            if (newStatus == AdvertisementStatus.closed.ToString())
+            {
+                // set the expired date to the current date
+                advertisement.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
+            }
+            else
+            {
+                advertisement.expired_date = null;
+            }
+
             await _context.SaveChangesAsync();
         }
 
         public async Task Update(int jobID, UpdateAdvertisementDto reqAdvertisement)
         {
             Advertisement dbAdvertisement = await FindById(jobID);
-            
+
+            if (reqAdvertisement.submission_deadline > dbAdvertisement.submission_deadline)
+            {
+                dbAdvertisement.expired_date = null;
+            }
+
             dbAdvertisement.job_number = reqAdvertisement.job_number;
             dbAdvertisement.title = reqAdvertisement.title;
             dbAdvertisement.country = reqAdvertisement.country;
@@ -665,6 +683,41 @@ namespace FirstStep.Services
                 if (DateTime.Now > ad.submission_deadline)
                 {
                     ad.current_status = AdvertisementStatus.closed.ToString();
+                    ad.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveSavedExpiredAdvertisements()
+        {
+            var advertisements = await FindAll(false);
+
+            foreach (var ad in advertisements)
+            {
+                if (ad.current_status == AdvertisementStatus.closed.ToString())
+                {
+                    // when closed advertisement has no expired date, set the expired date to the current date
+                    if (ad.expired_date == null) ad.expired_date = DateTime.Now;
+
+                    if (ad.expired_date <= DateTime.Now)
+                    {
+                        // there are no any seekers that saved this advertisement
+                        if (ad.savedSeekers == null) continue;
+
+                        foreach (var seeker in ad.savedSeekers)
+                        {
+                            if (seeker.savedAdvertisemnts == null) continue;
+
+                            // remove the advertisement from the seeker's saved advertisements
+                            seeker.savedAdvertisemnts.Remove(ad);
+                        }
+                    }
+                }
+                else
+                {
+                    ad.expired_date = null;
                 }
             }
 
