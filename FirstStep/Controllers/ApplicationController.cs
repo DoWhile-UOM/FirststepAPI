@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllApplications")]
-
         public async Task<ActionResult<IEnumerable<Application>>>GetAllApplications()
         {
             return Ok(await _service.GetAll());
@@ -26,12 +26,10 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetApplicationById/{id}")]
-
         public async Task<ActionResult<Application>> GetApplicationById(int id)
         {
             return Ok(await _service.GetById(id));
         }
-
 
         [HttpGet]
         [Route("GetHRManagerApplicationListByAdvertisementID/JobID={jobId:int}")]
@@ -47,50 +45,16 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetBySeekerId(id));
         }
 
-
-
-        [HttpGet]
-        [Route("TotalEvaluatedApplications/{advertisment_id}")]
-
-        public async Task<ActionResult<int>> TotalEvaluatedApplications(int advertisment_id)
-        {
-            return Ok(await _service.TotalEvaluatedApplications(advertisment_id));
-        }
-
-        [HttpGet]
-        [Route("TotalNotEvaluatedApplications/{advertisment_id}")]
-        public async Task<ActionResult<int>> TotalNotEvaluatedApplications(int advertisment_id)
-        {
-            return Ok(await _service.TotalNotEvaluatedApplications(advertisment_id));
-        }
-
-        [HttpGet]
-        [Route("AcceptedApplications/{advertisment_id}")]
-        public async Task<ActionResult<int>> AcceptedApplications(int advertisment_id)
-        {
-            return Ok(await _service.AcceptedApplications(advertisment_id));
-        }
-
-        [HttpGet]
-        [Route("RejectedApplications/{advertisment_id}")]
-        public async Task<ActionResult<int>> RejectedApplications(int advertisment_id)
-        {
-            return Ok(await _service.RejectedApplications(advertisment_id));
-        }
-
-
         [HttpPost]
         [Route("AddApplication")]
-
-        public async Task<IActionResult> AddApplication(Application application)
+        public async Task<IActionResult> AddApplication(AddApplicationDto newApplication)
         {
-            await _service.Create(application);
+            await _service.Create(newApplication);
             return Ok();
         }
 
         [HttpPut]
         [Route("UpdateApplication")]
-
         public async Task<IActionResult> UpdateCApplication(Application reqApplication)
         {
             await _service.Update(reqApplication);            
@@ -99,12 +63,10 @@ namespace FirstStep.Controllers
 
         [HttpDelete]
         [Route("DeleteApplication/{id}")]
-
         public async Task<IActionResult> DeleteApplication(int id)
         {
             await _service.Delete(id);
             return Ok();
         }
-
     }
 }
