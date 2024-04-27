@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel.Design;
-using AutoMapper;
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
-using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -11,7 +9,6 @@ namespace FirstStep.Services
     public class ApplicationService : IApplicationService
     {
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
 
         public ApplicationService(DataContext context)
         {
@@ -20,33 +17,21 @@ namespace FirstStep.Services
 
         enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected }
 
-        /* public async Task Create(Application application) 
-         { 
-         try
-         {
-
-             _context.Applications.Add(application);
-             await _context.SaveChangesAsync();
-         }
-             catch (Exception e)
-             {
-             throw new Exception("Application not created", e);
-         }
-         }*/
-
-        public async Task Create(AddApplicationDto application)
+        public async Task Create(Application application) 
+        { 
+        try
         {
-            Application newApplication = new Application
-            {
-                advertisement_id = application.advertisement_id,
-                user_id = application.user_id,
-                submitted_date = application.submitted_date,
-                status = application.status
-            };
 
-            _context.Applications.Add(newApplication);
+            _context.Applications.Add(application);
             await _context.SaveChangesAsync();
-        }   
+        }
+            catch (Exception e)
+            {
+            throw new Exception("Application not created", e);
+        }
+        }
+
+    
 
         public async Task Delete(int id)
         {
@@ -137,7 +122,5 @@ namespace FirstStep.Services
         {
             throw new NotImplementedException();
         }
-
-     
     }
 }
