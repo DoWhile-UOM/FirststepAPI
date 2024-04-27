@@ -19,16 +19,23 @@ namespace FirstStep.Services
 
         public async Task Create(Application application) 
         { 
-        try
-        {
+            try
+            {
+                application.application_Id = 0;
+                application.status = ApplicationStatus.NotEvaluated.ToString();
 
-            _context.Applications.Add(application);
-            await _context.SaveChangesAsync();
-        }
+                // need to check the advertisement is exist
+
+                // need to check the seeker is exist
+
+
+                _context.Applications.Add(application);
+                await _context.SaveChangesAsync();
+            }
             catch (Exception e)
             {
-            throw new Exception("Application not created", e);
-        }
+                throw new Exception("Application not created", e);
+            }
         }
 
     
