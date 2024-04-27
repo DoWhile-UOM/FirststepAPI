@@ -5,7 +5,10 @@
 
 trigger:
 - production
-
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
 pool:
   vmImage: ubuntu-latest
 
