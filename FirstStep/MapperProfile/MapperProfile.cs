@@ -30,6 +30,7 @@ namespace FirstStep.MapperProfile
 
             CreateMap<Advertisement, AdvertisementTableRowDto>();
             
+            
             CreateMap<Company, CompanyProfileDto>();
             CreateMap<Seeker, SeekerApplicationDto>();
             CreateMap<AddSeekerDto, Seeker>();
@@ -37,6 +38,8 @@ namespace FirstStep.MapperProfile
             CreateMap<AddEmployeeDto, HRManager>();
             CreateMap<AddEmployeeDto, HRAssistant>();
             CreateMap<Company, CompanyProfileDetailsDto>();
+
+            CreateMap<AddApplicationDto, Application>();
 
         }
     }

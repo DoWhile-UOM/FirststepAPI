@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -45,11 +46,11 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("AddApplication")]
-        public async Task<IActionResult> AddApplication(Application application)
+        [Route("CreateApplication")]
+        public async Task<IActionResult> CreateApplication(AddApplicationDto reqApplication)
         {
-            await _service.Create(application);
-            return Ok();
+            await _service.Create(reqApplication);
+            return Ok("Successfully Created Application");
         }
 
         [HttpPut]
