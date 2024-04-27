@@ -4,16 +4,41 @@
 # https://aka.ms/yaml
 
 trigger:
-- production
+- none
 
 pool:
-  vmImage: ubuntu-latest
+ vmImage: 'windows-latest'
+ 
+variables:
+ buildPlatform: 'Any CPU'
+ buildConfiguration: 'Release'
+ solution: '**/FirstStep/Firststep.sln'
+ project:  '**/FirstStep/Firststep.csproj'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: NuGetToolInstaller@1
+  name: 'NuGetToolInstaller'
+  displayName: 'NuGet tool Installer'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: NuGetCommand@2
+  name: 'NuGetRestore'
+  displayName: 'NuGet restore Packages'
+  inputs:
+    command: 'restore'
+    restoreSolution: '$(solution)'
+    feedsToUse: 'select'
+
+- task: DotNetCoreCLI@2
+  name: 'Publish'
+  displayName: 'Publish'
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+
+- task: PublishBuildArtifacts@1
+  name: 'PublishBuildArtifacts'
+  displayName: 'Publish Build Artifacts'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'FirstStep'
+    publishLocation: 'Container'
