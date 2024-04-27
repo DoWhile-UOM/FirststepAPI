@@ -15,15 +15,23 @@ namespace FirstStep.Services
             _context = context;
         }
 
-        enum AdvertisementStatus { Evaluated, NotEvaluated, Accepted, Rejected }
+        enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected }
 
-        public async Task Create(Application application) //task=>await _context
+        public async Task Create(Application application) 
+        { 
+        try
         {
-            application.application_Id = 0;
 
             _context.Applications.Add(application);
             await _context.SaveChangesAsync();
         }
+            catch (Exception e)
+            {
+            throw new Exception("Application not created", e);
+        }
+        }
+
+    
 
         public async Task Delete(int id)
         {
@@ -88,25 +96,25 @@ namespace FirstStep.Services
 
         public async Task<int> TotalEvaluatedApplications(int id)
         {
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == AdvertisementStatus.Evaluated.ToString()).CountAsync();
+            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == ApplicationStatus.Evaluated.ToString()).CountAsync();
             return TolaEvaluatedApplications;
         }
 
         public async Task<int> TotalNotEvaluatedApplications(int id)
         {
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == AdvertisementStatus.NotEvaluated.ToString()).CountAsync();
+            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == ApplicationStatus.NotEvaluated.ToString()).CountAsync();
             return TolaEvaluatedApplications;
         }
 
         public async Task<int> AcceptedApplications(int id)
         {
-            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == AdvertisementStatus.Accepted.ToString()).CountAsync();
+            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == ApplicationStatus.Accepted.ToString()).CountAsync();
             return AcceptedApplications;
         }
 
         public async Task<int> RejectedApplications(int id)
         {
-            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == AdvertisementStatus.Rejected.ToString()).CountAsync();
+            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == ApplicationStatus.Rejected.ToString()).CountAsync();
             return AcceptedApplications;
         }
 
