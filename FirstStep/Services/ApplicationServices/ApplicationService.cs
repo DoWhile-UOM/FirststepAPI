@@ -102,7 +102,7 @@ namespace FirstStep.Services
                 // find application status
                 application.status = await _revisionService.GetCurrentStatus(application.application_Id);
 
-                if (application.status != AdvertisementStatus.NotEvaluated.ToString())
+                if (application.status != ApplicationStatus.NotEvaluated.ToString())
                 {
                     application.is_evaluated = true;
                 }
