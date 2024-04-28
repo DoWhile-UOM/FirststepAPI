@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public class UpdateAdvertisementDto
+    public struct UpdateAdvertisementDto
     {
         public int advertisement_id { get; set; }
         public int job_number { get; set; }

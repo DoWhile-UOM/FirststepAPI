@@ -26,13 +26,12 @@
             using (var scope = _scopeFactory.CreateScope())
             {
                 var advertisementService = scope.ServiceProvider.GetRequiredService<IAdvertisementService>();
-                // var OTPService = scope.ServiceProvider.GetRequiredService<CleanOTPCacheService>();
-
-                // Clean OTP cache
-                // await OTPService.CleanOTPCache();
 
                 // Close expired advertisements
                 await advertisementService.CloseExpiredAdvertisements();
+
+                // remove expired advertisements from seeker's saved list
+                await advertisementService.RemoveSavedExpiredAdvertisements();
             }
         }
 

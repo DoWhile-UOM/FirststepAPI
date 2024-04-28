@@ -8,9 +8,15 @@ namespace FirstStep.Models
         [Key]
         public int application_Id { get; set; }
 
-        public required string status { get; set; }
+        public required string status { get; set; } // need to be removed
 
         public required DateTime submitted_date { get; set; } = DateTime.Now;
+
+        public required string CVurl { get; set; }
+
+        public string? doc1_url { get; set; }
+
+        public string? doc2_url { get; set; }
 
 
         [JsonIgnore]
@@ -22,7 +28,7 @@ namespace FirstStep.Models
         [JsonIgnore]
         public virtual Seeker? seeker { get; set; }
 
-        public required int user_id { get; set; }
+        public required int seeker_id { get; set; }
 
 
         [JsonIgnore]

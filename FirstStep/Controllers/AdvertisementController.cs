@@ -18,11 +18,11 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAdvertisements(int seekerID, int pageLength)
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAllAdvertisements(int seekerID, int pageLength)
         {
             try
             {
-                return Ok(await _service.GetFirstPage(seekerID, pageLength));
+                return Ok(await _service.GetAllWithPages(seekerID, pageLength));
             }
             catch (Exception e)
             {
@@ -37,6 +37,20 @@ namespace FirstStep.Controllers
             try
             {
                 return Ok(await _service.GetById(jobIDs.Split(',').Select(int.Parse), seekerID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetAdvertisementsBySeeker/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAdvertisementsBySeeker(int seekerID, int pageLength)
+        {
+            try
+            {
+                return Ok(await _service.GetFirstPage(seekerID, pageLength));
             }
             catch (Exception e)
             {
@@ -114,9 +128,23 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetAppliedAdvertisements/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AppliedAdvertisementShortDto>>> GetAppliedAdvertisements(int seekerID)
+        {
+            try
+            {
+                return Ok(await _service.GetAppliedAdvertisements(seekerID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
         [HttpPost]
         [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<AdvertisementFirstPageDto>> SearchAdvertisementsBasic(int seekerID, int pageLength, SearchJobRequestDto requestDto)
+        public async Task<ActionResult<AdvertisementFirstPageDto>> SearchAdvertisements(int seekerID, int pageLength, SearchJobRequestDto requestDto)
         {
             try
             {
@@ -143,15 +171,25 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("SendApplication")]
+        public async Task<IActionResult> SendApplication(AddApplicationDto addApplicationDto)
+        {
+            await _service.CreateApplication(addApplicationDto);
+            try
+            {  
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
         [HttpPut]
         [Route("UpdateAdvertisement/{jobID:int}")]
         public async Task<IActionResult> UpdateAdvertisement(UpdateAdvertisementDto reqAdvertisement, int jobID)
         {
-            if (reqAdvertisement is null)
-            {
-                return StatusCode(StatusCodes.Status404NotFound, "Null Reference");
-            }
-
             if (jobID != reqAdvertisement.advertisement_id)
             {
                 return StatusCode(StatusCodes.Status406NotAcceptable, "Advertisement ID in the request body does not match the ID in the URL.");
@@ -168,7 +206,7 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("ChangeStatus/{jobID:int}/status={newStatus}")]
         public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
         {
@@ -183,7 +221,7 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
         public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {

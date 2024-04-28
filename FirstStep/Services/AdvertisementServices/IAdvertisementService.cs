@@ -5,6 +5,8 @@ namespace FirstStep.Services
 {
     public interface IAdvertisementService
     {
+        Task<AdvertisementFirstPageDto> GetAllWithPages(int seekerID, int pageLength);
+
         Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int pageLength);
 
         Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID);
@@ -21,6 +23,8 @@ namespace FirstStep.Services
 
         Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID);
 
+        Task<IEnumerable<AppliedAdvertisementShortDto>> GetAppliedAdvertisements(int seekerID);
+
         Task Create(AddAdvertisementDto advertisement);
 
         Task ChangeStatus(int id, string newStatus);
@@ -36,6 +40,10 @@ namespace FirstStep.Services
         Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto searchRequest, int seekerID, int pageLength);
 
         Task CloseExpiredAdvertisements();
+
+        Task RemoveSavedExpiredAdvertisements();
+
+        Task CreateApplication(AddApplicationDto newApplication);
 
         Task<bool> IsExpired(int jobID);
     }
