@@ -29,6 +29,14 @@ namespace FirstStep.MapperProfile
                     des => des.field_name,
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
 
+            CreateMap<Advertisement, AppliedAdvertisementShortDto>()
+                .ForMember(
+                    des => des.company_id,
+                    opt => opt.MapFrom(src => src.hrManager!.company_id))
+                .ForMember(
+                    des => des.field_name,
+                    opt => opt.MapFrom(src => src.job_Field!.field_name));
+
             CreateMap<Advertisement, AdvertisementTableRowDto>();
             
             CreateMap<Company, CompanyProfileDto>();

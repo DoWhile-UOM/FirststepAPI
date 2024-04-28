@@ -19,6 +19,8 @@ namespace FirstStep.Services
 
         public Task Delete(int id);
 
+        public string GetCurrentApplicationStatus(Application application);
+
         public Task<int> NumberOfApplicationsByAdvertisementId(int id);
 
         public Task<int> TotalEvaluatedApplications(int id);

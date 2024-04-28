@@ -128,9 +128,23 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetAppliedAdvertisements/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AppliedAdvertisementShortDto>>> GetAppliedAdvertisements(int seekerID)
+        {
+            try
+            {
+                return Ok(await _service.GetAppliedAdvertisements(seekerID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
         [HttpPost]
         [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<AdvertisementFirstPageDto>> SearchAdvertisementsBasic(int seekerID, int pageLength, SearchJobRequestDto requestDto)
+        public async Task<ActionResult<AdvertisementFirstPageDto>> SearchAdvertisements(int seekerID, int pageLength, SearchJobRequestDto requestDto)
         {
             try
             {
@@ -157,15 +171,25 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("SendApplication")]
+        public async Task<IActionResult> SendApplication(AddApplicationDto addApplicationDto)
+        {
+            await _service.CreateApplication(addApplicationDto);
+            try
+            {  
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
         [HttpPut]
         [Route("UpdateAdvertisement/{jobID:int}")]
         public async Task<IActionResult> UpdateAdvertisement(UpdateAdvertisementDto reqAdvertisement, int jobID)
         {
-            if (reqAdvertisement is null)
-            {
-                return StatusCode(StatusCodes.Status404NotFound, "Null Reference");
-            }
-
             if (jobID != reqAdvertisement.advertisement_id)
             {
                 return StatusCode(StatusCodes.Status406NotAcceptable, "Advertisement ID in the request body does not match the ID in the URL.");

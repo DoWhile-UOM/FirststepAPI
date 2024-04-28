@@ -43,20 +43,9 @@ namespace FirstStep.Services
             return seeker;
         }
 
-        public async Task<Seeker> FindByID(int id)
-        {
-            Seeker? seeker = await _context.Seekers.FindAsync(id);
-            if (seeker is null)
-            {
-                throw new Exception("Seeker not found.");
-            }
-
-            return seeker;
-        }
-
         public async Task<SeekerApplicationDto> GetSeekerDetails(int id)
         {
-            Seeker seeker = await FindByID(id);
+            Seeker seeker = await GetById(id);
             SeekerApplicationDto seekerdto = _mapper.Map<SeekerApplicationDto>(seeker);
             return seekerdto;
         }
@@ -177,6 +166,18 @@ namespace FirstStep.Services
 
             _context.Seekers.Remove(seeker);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsValidSeeker(int seekerId)
+        {
+            var seeker = await _context.Seekers.Where(e => e.user_id == seekerId).FirstOrDefaultAsync();
+
+            if (seeker == null)
+            {
+                return false;
+            }
+
+            return true;
         }
 
     }

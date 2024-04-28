@@ -25,7 +25,7 @@ namespace FirstStep.Services
             _seekerService = seekerService;
         }
 
-        enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected }
+        public enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected, Done }
 
         public async Task Create(AddApplicationDto newApplicationDto)
         {
@@ -38,7 +38,7 @@ namespace FirstStep.Services
                     && application.seeker_id == newApplicationDto.seeker_id
                     && application.status == ApplicationStatus.NotEvaluated.ToString())
                 {
-                    throw new Exception("Can't apply for an advertisement that is already applied and in the waiting list");
+                    throw new InvalidDataException("Can't apply for an advertisement that is already applied and in the waiting list");
                 }
             }
 
@@ -115,7 +115,10 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)
         {
-            ICollection<Application> applications = await _context.Applications.Where(a => a.seeker_id == id).ToListAsync();
+            // get all applications that send by the seeker and not completed
+            var applications = await _context.Applications
+                .Include("advertisement")
+                .Where(a => a.seeker_id == id && a.status != ApplicationStatus.Done.ToString()).ToListAsync();
 
             return applications;
         }
@@ -128,6 +131,19 @@ namespace FirstStep.Services
             dbApplication.submitted_date = application.submitted_date;
 
             await _context.SaveChangesAsync();           
+        }
+
+        public string GetCurrentApplicationStatus(Application application)
+        {
+            if (application.revisions == null)
+            {
+                return ApplicationStatus.NotEvaluated.ToString();
+            }
+
+            // get last revision
+            Revision lastRevision = application.revisions.OrderBy(a => a.date).Last();
+
+            return lastRevision.status;
         }
 
         public async Task<int> NumberOfApplicationsByAdvertisementId(int id)

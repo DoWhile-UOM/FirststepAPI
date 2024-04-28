@@ -23,6 +23,8 @@ namespace FirstStep.Services
 
         Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID);
 
+        Task<IEnumerable<AppliedAdvertisementShortDto>> GetAppliedAdvertisements(int seekerID);
+
         Task Create(AddAdvertisementDto advertisement);
 
         Task ChangeStatus(int id, string newStatus);
@@ -40,6 +42,8 @@ namespace FirstStep.Services
         Task CloseExpiredAdvertisements();
 
         Task RemoveSavedExpiredAdvertisements();
+
+        Task CreateApplication(AddApplicationDto newApplication);
 
         Task<bool> IsExpired(int jobID);
     }

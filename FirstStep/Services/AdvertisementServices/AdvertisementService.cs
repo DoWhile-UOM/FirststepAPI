@@ -343,20 +343,32 @@ namespace FirstStep.Services
             return await CreateAdvertisementList(advertisements, seekerID, true);
         }
 
-        /*
+        
         public async Task<IEnumerable<AppliedAdvertisementShortDto>> GetAppliedAdvertisements(int seekerID)
         {
             Seeker seeker = await _seekerService.GetById(seekerID);
-            
-            var advertisements = await FindAll(false);
 
-            foreach (var ad in advertisements)
+            var appliedAdvertismentList = new List<AppliedAdvertisementShortDto>();
+
+            // find all the applications that send by the seeker
+            var submittedApplications = await _applicationService.GetBySeekerId(seeker.user_id);
+
+            foreach (var submitApplication in submittedApplications)
             {
-                // check whether the given seeker has applied to the advertisement
-                var applications = await _applicationService.GetByAdvertisementId(ad.advertisement_id);
+                var dbAdvertisement = await FindById(submitApplication.advertisement_id);
+                var appliedAdvertisement = _mapper.Map<AppliedAdvertisementShortDto>(dbAdvertisement);
+
+                // find the current application status by checking the last revision for the application
+                appliedAdvertisement.application_status = _applicationService.GetCurrentApplicationStatus(submitApplication);
+
+                appliedAdvertisement.application_id = submitApplication.application_Id;
+                appliedAdvertisement.company_name = _context.Companies.Find(dbAdvertisement.hrManager!.company_id)!.company_name;
+
+                appliedAdvertismentList.Add(appliedAdvertisement);
             }
 
-        }*/
+            return appliedAdvertismentList;
+        }
 
         public async Task Delete(int id)
         {
@@ -502,22 +514,6 @@ namespace FirstStep.Services
             return jobOfferDtos;
         }
 
-        // validate status
-        private void ValidateStatus(string status)
-        {
-            var possibleStatuses = new List<string> 
-            { 
-                AdvertisementStatus.active.ToString(), 
-                AdvertisementStatus.closed.ToString(), 
-                "all" 
-            };
-
-            if (!possibleStatuses.Contains(status))
-            {
-                throw new InvalidDataException("Invalid status.");
-            }
-        }
-
         public async Task CreateApplication(AddApplicationDto newApplication)
         {
             var advertisement = await FindById(newApplication.advertisement_id);
@@ -527,12 +523,15 @@ namespace FirstStep.Services
                 throw new InvalidDataException("Cannot apply to a closed advertisement.");
             }
 
-            if (!IsExpired(advertisement))
+            if (IsExpired(advertisement))
             {
                 throw new InvalidDataException("Cannot apply to an expired advertisement.");
             }
 
-            var seeker = await _seekerService.GetById(newApplication.seeker_id);
+            if (!(await _seekerService.IsValidSeeker(newApplication.seeker_id)))
+            {
+                throw new NullReferenceException("Can't find the seeker");
+            }
 
             await _applicationService.Create(newApplication);
         }
