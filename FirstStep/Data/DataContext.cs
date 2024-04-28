@@ -124,7 +124,7 @@ namespace FirstStep.Data
 
                 entity.HasOne(e => e.seeker)
                     .WithMany(e => e.applications)
-                    .HasForeignKey(e => e.user_id)
+                    .HasForeignKey(e => e.seeker_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
 
                 entity.HasOne(e => e.assigned_hrAssistant)

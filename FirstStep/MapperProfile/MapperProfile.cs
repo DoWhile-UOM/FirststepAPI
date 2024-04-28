@@ -13,7 +13,8 @@ namespace FirstStep.MapperProfile
             CreateMap<AddAdvertisementDto, Advertisement>();
 
             CreateMap<Advertisement, UpdateAdvertisementDto>();
-            CreateMap<UpdateAdvertisementDto, Advertisement>().ForMember(ad => ad.advertisement_id, act => act.Ignore());
+            CreateMap<UpdateAdvertisementDto, Advertisement>()
+                .ForMember(ad => ad.advertisement_id, act => act.Ignore());
 
             CreateMap<Advertisement, AdvertisementDto>()
                 .ForMember(
@@ -31,13 +32,20 @@ namespace FirstStep.MapperProfile
             CreateMap<Advertisement, AdvertisementTableRowDto>();
             
             CreateMap<Company, CompanyProfileDto>();
-            CreateMap<SeekerApplicationDto, Seeker>();
+            CreateMap<Seeker, SeekerApplicationDto>();
             CreateMap<AddSeekerDto, Seeker>();
             CreateMap<AddCompanyDto, Company>();
             CreateMap<AddEmployeeDto, HRManager>();
             CreateMap<AddEmployeeDto, HRAssistant>();
             CreateMap<Company, CompanyProfileDetailsDto>();
 
+
+            CreateMap<Application, HRManagerApplicationListDto>()
+                .ForMember(
+                    des => des.seekerName,
+                    opt => opt.MapFrom(src => src.seeker!.first_name + " " + src.seeker!.last_name));
+
+            CreateMap<AddApplicationDto, Application>();
         }
     }
 }

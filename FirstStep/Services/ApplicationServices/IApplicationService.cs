@@ -1,4 +1,5 @@
-﻿using FirstStep.Models;
+using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -8,11 +9,11 @@ namespace FirstStep.Services
 
         public Task<Application> GetById(int id);
 
-        public Task<IEnumerable<Application>> GetByAdvertisementId(int id);
+        public Task<IEnumerable<HRManagerApplicationListDto>> GetHRManagerAdertisementListByJobID(int jobID);
 
         public Task<IEnumerable<Application>> GetBySeekerId(int id);
 
-        public Task Create(Application application);
+        public Task Create(AddApplicationDto newApplicationDto);
 
         public Task Update(Application application);
 
