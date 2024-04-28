@@ -343,6 +343,21 @@ namespace FirstStep.Services
             return await CreateAdvertisementList(advertisements, seekerID, true);
         }
 
+        /*
+        public async Task<IEnumerable<AppliedAdvertisementShortDto>> GetAppliedAdvertisements(int seekerID)
+        {
+            Seeker seeker = await _seekerService.GetById(seekerID);
+            
+            var advertisements = await FindAll(false);
+
+            foreach (var ad in advertisements)
+            {
+                // check whether the given seeker has applied to the advertisement
+                var applications = await _applicationService.GetByAdvertisementId(ad.advertisement_id);
+            }
+
+        }*/
+
         public async Task Delete(int id)
         {
             Advertisement advertisement = await FindById(id);
