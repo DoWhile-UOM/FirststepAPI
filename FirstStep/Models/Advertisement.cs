@@ -37,6 +37,8 @@ namespace FirstStep.Models
 
         public DateTime? submission_deadline { get; set; }
 
+        public DateTime? expired_date { get; set; }
+
         [MaxLength(7)]
         public required string current_status { get; set; }
 

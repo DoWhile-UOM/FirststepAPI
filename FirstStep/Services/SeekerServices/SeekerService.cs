@@ -43,7 +43,6 @@ namespace FirstStep.Services
             return seeker;
         }
 
-
         public async Task<Seeker> FindByID(int id)
         {
             Seeker? seeker = await _context.Seekers.FindAsync(id);
@@ -62,6 +61,22 @@ namespace FirstStep.Services
             return seekerdto;
         }
 
+        public async Task<JobField> GetSeekerField(int seekerId)
+        {
+            Seeker seeker = await GetById(seekerId);
+
+            if (seeker == null)
+            {
+                throw new NullReferenceException("Seeker not found.");
+            }
+
+            if (seeker.job_Field == null)
+            {
+                throw new NullReferenceException("Seeker's job field not found.");
+            }
+
+            return seeker.job_Field;
+        }
 
         public async Task Create(AddSeekerDto newSeeker)
         {

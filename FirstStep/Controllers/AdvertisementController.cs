@@ -18,11 +18,11 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAdvertisements(int seekerID, int pageLength)
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAllAdvertisements(int seekerID, int pageLength)
         {
             try
             {
-                return Ok(await _service.GetFirstPage(seekerID, pageLength));
+                return Ok(await _service.GetAllWithPages(seekerID, pageLength));
             }
             catch (Exception e)
             {
@@ -37,6 +37,20 @@ namespace FirstStep.Controllers
             try
             {
                 return Ok(await _service.GetById(jobIDs.Split(',').Select(int.Parse), seekerID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetAdvertisementsBySeeker/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAdvertisementsBySeeker(int seekerID, int pageLength)
+        {
+            try
+            {
+                return Ok(await _service.GetFirstPage(seekerID, pageLength));
             }
             catch (Exception e)
             {
@@ -168,7 +182,7 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("ChangeStatus/{jobID:int}/status={newStatus}")]
         public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
         {
@@ -183,7 +197,7 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
         public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {
