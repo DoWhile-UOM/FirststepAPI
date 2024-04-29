@@ -45,12 +45,26 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementsBySeeker/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAdvertisementsBySeeker(int seekerID, int pageLength)
+        [Route("GetRecommendedAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetRecommendedAdvertisements(int seekerID, int pageLength)
         {
             try
             {
                 return Ok(await _service.GetFirstPage(seekerID, pageLength));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetRecommendedAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}/city={city}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetRecommendedAdvertisements(int seekerID, string city, int pageLength)
+        {
+            try
+            {
+                return Ok(await _service.GetFirstPage(seekerID, city, pageLength));
             }
             catch (Exception e)
             {
