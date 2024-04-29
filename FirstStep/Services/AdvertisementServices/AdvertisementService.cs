@@ -2,6 +2,7 @@
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Helper;
 using Microsoft.EntityFrameworkCore;
 using KdTree;
 using KdTree.Math;
@@ -106,7 +107,7 @@ namespace FirstStep.Services
         {
             var dbAdvertismeent = await FindById(id);
             var currentAdData = _mapper.Map<UpdateAdvertisementDto>(dbAdvertismeent);
-
+               
             currentAdData.reqSkills = dbAdvertismeent.skills!.Select(e => e.skill_name).ToList();
             currentAdData.reqKeywords = dbAdvertismeent.professionKeywords!.Select(e => e.profession_name).ToList();
 
@@ -119,7 +120,6 @@ namespace FirstStep.Services
 
             if (title != null)
             {
-
                 var dbAdvertisements = await FindByCompanyID(companyID);
                 
                 // filter advertisements by title
@@ -195,7 +195,7 @@ namespace FirstStep.Services
         public async Task Update(int jobID, UpdateAdvertisementDto reqAdvertisement)
         {
             Advertisement dbAdvertisement = await FindById(jobID);
-
+            
             dbAdvertisement.job_number = reqAdvertisement.job_number;
             dbAdvertisement.title = reqAdvertisement.title;
             dbAdvertisement.country = reqAdvertisement.country;
@@ -204,6 +204,7 @@ namespace FirstStep.Services
             dbAdvertisement.arrangement = reqAdvertisement.arrangement;
             dbAdvertisement.is_experience_required = reqAdvertisement.is_experience_required;
             dbAdvertisement.salary = reqAdvertisement.salary;
+            dbAdvertisement.currency_unit = reqAdvertisement.currency_unit;
             dbAdvertisement.submission_deadline = reqAdvertisement.submission_deadline;
             dbAdvertisement.job_description = reqAdvertisement.job_description;
             dbAdvertisement.field_id = reqAdvertisement.field_id;
@@ -466,85 +467,62 @@ namespace FirstStep.Services
             }
         }
 
-        // temp function
-        // random function to add 10 advertisements to the database
-        private async Task AddRandomAdvertisements(int limit)
-        {
-            var keywordArray = new List<string>() { "C#", "python", "ASP.NET", "MVC", "SQL", "Azure", "Entity Framework", "LINQ", "Web API", "RESTful", "SOAP", "WCF", "WPF", "Xamarin", "Blazor", "Razor", "SignalR", "Angular", "React", "Vue", "Bootstrap", "jQuery", "HTML", "CSS", "JavaScript", "TypeScript", ".NET Core", ".NET Framework", ".NET Standard", "Visual Studio", "Git", "GitHub", "DevOps", "Agile", "Scrum", "TDD", "BDD", "SOLID", "Design Patterns", "OOP", "Microservices", "Docker", "Kubernetes", "AWS", "Machine Learning", "AI", "Data Science", "Python", "R", "TensorFlow" };
-            
-            var titleArray = new List<string>() { "Web Developer", "Software Engineer", "Data Analyst", "Network Administrator", "Database Administrator", "Cybersecurity Analyst", "Cloud Engineer", "Machine Learning Engineer", "Artificial Intelligence Engineer", "Software Tester", "Technical Support Specialist", "IT Project Manager", "Business Analyst", "UX Designer", "UI Developer", "Game Developer", "Blockchain Developer", "DevOps Engineer", "IT Consultant", "Webmaster" };
-
-            var random = new Random();
-
-            for (int i = 0; i < limit; i++)
-            {
-                var addAdvertisementDto = new AddAdvertisementDto
-                {
-                    job_number = random.Next(100, 999),
-                    title = titleArray[random.Next(0, titleArray.Count - 1)],
-                    country = "Sri Lanka",
-                    city = "Colombo",
-                    employeement_type = random.Next(0, 1) == 0 ? "Full-time" : "Part-time",
-                    arrangement = random.Next(0, 1) == 0 ? "Remote" : "On-site",
-                    is_experience_required = random.Next(0, 1) == 1 ? true: false,
-                    salary = random.Next(300000, 600000),
-                    submission_deadline = DateTime.Now.AddDays(random.Next(25, 45)),
-                    job_description = "We are looking for a software developer to join our team. We are a company that values its employees.",
-                    hrManager_id = 10, // under bistec
-                    field_id = 1, // it and cs
-                    keywords = new List<string>(),
-                    reqSkills = new List<string>()
-                };
-
-                for (int j = 0; j < random.Next(4, 11); j++)
-                {
-                    addAdvertisementDto.keywords.Add(keywordArray[random.Next(0, keywordArray.Count - 1)].ToLower());
-                }
-
-                for (int j = 0; j < random.Next(4, 11); j++)
-                {
-                    addAdvertisementDto.reqSkills.Add(keywordArray[random.Next(0, keywordArray.Count - 1)].ToLower());
-                }
-
-                await Create(addAdvertisementDto);
-
-                Console.Out.WriteLine($"Advertisement added. { i + 1 }");
-            }
-        }
-
         public async Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID, int pageLength)
         {
-            var advertisements = await _context.Advertisements
+            List<Advertisement> advertisements = await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
                 .Include("skills")
                 .Include("hrManager")
                 .Include("savedSeekers")
                 .Where(ad =>
-                    ad.country == requestAdsDto.country &&
-                    ad.city == requestAdsDto.city &&
+                    ad.current_status == AdvertisementStatus.active.ToString() &&
                         (ad.arrangement == requestAdsDto.arrangement ||
                         ad.employeement_type == requestAdsDto.employeement_type) &&
-                    ad.current_status == AdvertisementStatus.active.ToString())
+                    ad.country == requestAdsDto.country
+                    )
                 .ToListAsync();
 
-            if (requestAdsDto.title == null)
-            {
-                Console.Out.WriteLine($"Filtered advertisements: {advertisements.Count}");
+            // filter advertisements by title
+            var filteredAdvertisements = FilterByTitle(advertisements, requestAdsDto.title);
 
-                return await CreateFirstPageResults(advertisements, seekerID, pageLength);
+            // filter advertisements by city
+            filteredAdvertisements = await FilterByCity(filteredAdvertisements, requestAdsDto.city, requestAdsDto.distance);
+
+            return await CreateFirstPageResults(filteredAdvertisements, seekerID, pageLength);
+        }
+
+        private List<Advertisement> FilterByTitle(List<Advertisement> advertisements, string? reqTitle)
+        {
+            if (reqTitle == null)
+            {
+                return advertisements;
             }
 
             var filteredAdvertisements = new List<Advertisement> { };
 
-            var titles = requestAdsDto.title.Split(' ');
+            filteredAdvertisements
+                .AddRange(advertisements
+                    .Where(ad => ad.title.ToLower().Contains(reqTitle.ToLower()))
+                    .ToList());
+
+            var titles = reqTitle.Split(' ');
 
             foreach (var title in titles)
             {
-                filteredAdvertisements
-                    .AddRange(advertisements
-                        .Where(ad => ad.title.ToLower().Contains(title.ToLower()))
-                        .ToList());
+                var ads = new List<Advertisement> { };
+
+                ads.AddRange(advertisements
+                    .Where(ad => ad.title.ToLower().Contains(title.ToLower()))
+                    .ToList());
+
+                for (int i = 0; i < ads.Count; i++)
+                {
+                    if (!filteredAdvertisements.Contains(ads[i]))
+                    {
+                        filteredAdvertisements.Add(ads[i]);
+                    }
+                }
             }
 
             foreach (var title in titles)
@@ -563,9 +541,38 @@ namespace FirstStep.Services
                 }
             }
 
-            Console.Out.WriteLine($"Filtered advertisements: {filteredAdvertisements.Count}");
+            return filteredAdvertisements;
+        }
 
-            return await CreateFirstPageResults(advertisements, seekerID, pageLength);
+        private async Task<List<Advertisement>> FilterByCity(List<Advertisement> advertisements, string? reqCity, float? reqDistance)
+        {
+            if (reqCity == null || reqDistance < 0)
+            {
+                return advertisements;
+            }
+
+            // reqDistance is 0, means that the seeker wants to search only in the requested city
+            if (reqDistance == 0)
+            {
+                return advertisements
+                    .Where(ad => ad.city.ToLower() == reqCity.ToLower())
+                    .ToList();
+            }
+
+            var filteredAdvertisements = new List<Advertisement> { };
+
+            // get coordinates of the requested city
+            var reqCityCoordinate = await MapAPI.GetCoordinates(reqCity.ToLower());
+
+            foreach (Advertisement advertisement in advertisements)
+            {
+                if (await MapAPI.GetDistance(advertisement.city, reqCityCoordinate) <= reqDistance)
+                {
+                    filteredAdvertisements.Add(advertisement);
+                }
+            }
+
+            return filteredAdvertisements;
         }
 
         public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)

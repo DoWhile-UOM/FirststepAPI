@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240411151605_Isuranga_ChangeAdvertisementDescriptionLength")]
+    partial class Isuranga_ChangeAdvertisementDescriptionLength
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,32 +80,23 @@ namespace FirstStep.Migrations
 
                     b.Property<string>("arrangement")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("city")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("country")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
-
-                    b.Property<string>("currency_unit")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("current_status")
                         .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("nvarchar(7)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("employeement_type")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("field_id")
                         .HasColumnType("int");
@@ -123,7 +117,7 @@ namespace FirstStep.Migrations
                     b.Property<DateTime>("posted_date")
                         .HasColumnType("datetime2");
 
-                    b.Property<float?>("salary")
+                    b.Property<float>("salary")
                         .HasColumnType("real");
 
                     b.Property<DateTime>("submission_deadline")
@@ -131,8 +125,7 @@ namespace FirstStep.Migrations
 
                     b.Property<string>("title")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("advertisement_id");
 
@@ -154,6 +147,9 @@ namespace FirstStep.Migrations
                     b.Property<int>("advertisement_id")
                         .HasColumnType("int");
 
+                    b.Property<int?>("seekeruser_id")
+                        .HasColumnType("int");
+
                     b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -168,7 +164,7 @@ namespace FirstStep.Migrations
 
                     b.HasIndex("advertisement_id");
 
-                    b.HasIndex("user_id");
+                    b.HasIndex("seekeruser_id");
 
                     b.ToTable("Applications");
                 });
@@ -229,9 +225,6 @@ namespace FirstStep.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("company_website")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("registration_url")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("verification_status")
@@ -548,9 +541,7 @@ namespace FirstStep.Migrations
 
                     b.HasOne("FirstStep.Models.Seeker", "seeker")
                         .WithMany("applications")
-                        .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
+                        .HasForeignKey("seekeruser_id");
 
                     b.Navigation("advertisement");
 
