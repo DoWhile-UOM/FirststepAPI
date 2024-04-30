@@ -4,6 +4,6 @@ namespace FirstStep.Models
 {
     public class HRAssistant : Employee
     {
-
     }
+
 }
