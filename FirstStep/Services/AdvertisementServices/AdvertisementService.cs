@@ -202,18 +202,18 @@ namespace FirstStep.Services
             }
         }
 
-        public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfResultsPerPage)
+        public async Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, int noOfResultsPerPage)
         {
             var matchingAds = await FindMatchingAdvertisement(seekerID);
 
             return await CreateFirstPageResults(matchingAds, seekerID, noOfResultsPerPage);
         }
 
-        public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, string city, int noOfResultsPerPage)
+        public async Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, string city, int noOfResultsPerPage)
         {
             if (city == null || city == "")
             {
-                return await GetFirstPage(seekerID, noOfResultsPerPage);
+                return await GetRecommendedAdvertisements(seekerID, noOfResultsPerPage);
             }
 
             var matchingAds = await FindMatchingAdvertisement(seekerID, city);
@@ -686,7 +686,7 @@ namespace FirstStep.Services
             }
 
             // hold advertisements that match with the seeker's skills
-            Dictionary<Advertisement, int> matchingAdvertisements = FindAdvertisementsMatchingWithSkills(seeker, advertisements);
+            Dictionary<Advertisement, float> matchingAdvertisements = FindAdvertisementsMatchingWithSkills(seeker, advertisements);
 
             return matchingAdvertisements.Keys.ToList();
         }
@@ -705,7 +705,7 @@ namespace FirstStep.Services
             }
 
             // find advertisements matching with the seeker's skills
-            Dictionary<Advertisement, int> filteredAds = FindAdvertisementsMatchingWithSkills(seeker, advertisements);
+            Dictionary<Advertisement, float> filteredAds = FindAdvertisementsMatchingWithSkills(seeker, advertisements);
 
             if (city == "")
             {
@@ -716,7 +716,7 @@ namespace FirstStep.Services
             Dictionary<int, float> advertisementDistances = await FindAdvertisementsMatchingWithDistance(city, filteredAds.Keys);
 
             // calculate the mean of the matching skills and distances
-            int meanSkills = filteredAds.Values.Sum() / filteredAds.Count;
+            float meanSkills = filteredAds.Values.Sum() / filteredAds.Count;
             float meanDistance = advertisementDistances.Values.Sum() / advertisementDistances.Count;
 
             // select only advertisements that have greater than the mean of the matching skills
@@ -726,7 +726,7 @@ namespace FirstStep.Services
             advertisementDistances = advertisementDistances.Where(e => e.Value <= meanDistance).ToDictionary(e => e.Key, e => e.Value);
 
             // find the common advertisements between the two dictionaries
-            var matchingAdvertisements = new Dictionary<Advertisement, (int noOfSkills, float distance) > { };
+            var matchingAdvertisements = new Dictionary<Advertisement, (float skillsMatchingPercentage, float distance)> { };
 
             foreach (var ad in filteredAds)
             {
@@ -736,7 +736,31 @@ namespace FirstStep.Services
                 }
             }
 
-            return matchingAdvertisements.Keys.ToList();
+            // sort by lowest distance with highest matching skills ratio to highest distance with lowest matching skills ratio
+            return SortByNearestNeighbor(matchingAdvertisements);
+        }
+
+        private List<Advertisement> SortByNearestNeighbor(Dictionary<Advertisement, (float skillsMatchingPercentage, float distance)> matchingAdvertisements)
+        {
+            // select the advertisement that has the highest matching skills percentage
+            float highestMatchingSkillPercentage = matchingAdvertisements.Values.Max(e => e.skillsMatchingPercentage);
+
+            // select the advertisement that has the lowest distance
+            float lowestDistance = matchingAdvertisements.Values.Min(e => e.distance);
+
+            // insert into kd-tree
+            var tree = new KdTree<float, Advertisement>(2, new FloatMath());
+
+            foreach (var ad in matchingAdvertisements)
+            {
+                var key = new[] { ad.Value.skillsMatchingPercentage, ad.Value.distance };
+                tree.Add(key, ad.Key);
+            }
+
+            // find the nearest neighbors with 80% coverage
+            var nearestAds = tree.GetNearestNeighbours(new[] { highestMatchingSkillPercentage, lowestDistance }, (int)(matchingAdvertisements.Count * 0.8));
+
+            return nearestAds.Select(e => e.Value).ToList();
         }
 
         private async Task<Dictionary<int, float>> FindAdvertisementsMatchingWithDistance(string city, IEnumerable<Advertisement> advertisements)
@@ -771,9 +795,9 @@ namespace FirstStep.Services
             return advertisementDistances;
         }
 
-        private Dictionary<Advertisement, int> FindAdvertisementsMatchingWithSkills(Seeker seeker, IEnumerable<Advertisement> advertisements)
+        private Dictionary<Advertisement, float> FindAdvertisementsMatchingWithSkills(Seeker seeker, IEnumerable<Advertisement> advertisements)
         {
-            Dictionary<Advertisement, int> matchingAdvertisements = new Dictionary<Advertisement, int>();
+            Dictionary<Advertisement, float> matchingAdvertisements = new Dictionary<Advertisement, float>();
 
             // find the seeker's skills
             var seekerSkills = seeker.skills!.Select(e => e.skill_name).ToList();
@@ -781,7 +805,9 @@ namespace FirstStep.Services
             // count and add advertisements that match the seeker's skills
             foreach (var ad in advertisements)
             {
-                var adSkills = ad.skills!.Select(e => e.skill_name).ToList();
+                if (ad.skills == null) continue;
+
+                var adSkills = ad.skills.Select(e => e.skill_name).ToList();
 
                 int matchingSkills = 0;
 
@@ -793,9 +819,12 @@ namespace FirstStep.Services
                     }
                 }
 
-                if (matchingSkills > 0)
+                float matchingSkillsPercentage = (float)matchingSkills / ad.skills.Count();
+
+                // select only when matching skills percentage is greater than 50%
+                if (matchingSkillsPercentage > 50)
                 {
-                    matchingAdvertisements.Add(ad, matchingSkills);
+                    matchingAdvertisements.Add(ad, matchingSkillsPercentage);
                 }
             }
 

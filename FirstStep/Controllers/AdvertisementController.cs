@@ -50,7 +50,7 @@ namespace FirstStep.Controllers
         {
             try
             {
-                return Ok(await _service.GetFirstPage(seekerID, pageLength));
+                return Ok(await _service.GetRecommendedAdvertisements(seekerID, pageLength));
             }
             catch (Exception e)
             {
@@ -64,7 +64,7 @@ namespace FirstStep.Controllers
         {
             try
             {
-                return Ok(await _service.GetFirstPage(seekerID, city, pageLength));
+                return Ok(await _service.GetRecommendedAdvertisements(seekerID, city, pageLength));
             }
             catch (Exception e)
             {
