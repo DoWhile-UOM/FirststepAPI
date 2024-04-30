@@ -679,7 +679,7 @@ namespace FirstStep.Services
             // get all active advertisements in seeker's field
             var advertisements = await FindBySeekerJobFieldID(seekerID);
 
-            if (seeker.skills == null)
+            if (seeker.skills!.Count <= 0)
             {
                 // when seeker has no skills, return all advertisements in the seeker's field
                 return advertisements.ToList();
@@ -697,7 +697,9 @@ namespace FirstStep.Services
 
             // get all active advertisements in seeker's field
             var advertisements = await FindBySeekerJobFieldID(seekerID);
-            
+
+            Console.WriteLine(seeker.skills);
+
             if (seeker.skills == null)
             {
                 // when seeker has no skills, return all advertisements in the seeker's field
@@ -772,9 +774,10 @@ namespace FirstStep.Services
             Dictionary<int, float> advertisementDistances = new Dictionary<int, float>();
 
             // recent calculated distances
-            Dictionary<string, Coordinate> recentCalculatedDistances = new Dictionary<string, Coordinate>();
+            Dictionary<string, float> recentCalculatedDistances = new Dictionary<string, float>();
 
             Coordinate adCityCoordinate;
+            float adDistance;
 
             // calculate the distance between the seeker's city and the advertisement's city
             foreach (var ad in advertisements)
@@ -782,14 +785,16 @@ namespace FirstStep.Services
                 if (recentCalculatedDistances.ContainsKey(ad.city.ToLower()))
                 {
                     adCityCoordinate = await MapAPI.GetCoordinates(ad.city.ToLower());
-                    recentCalculatedDistances.Add(ad.city.ToLower(), adCityCoordinate);
+                    adDistance = MapAPI.GetDistance(seekerCityCoordinate, adCityCoordinate);
+
+                    recentCalculatedDistances.Add(ad.city.ToLower(), adDistance);
                 }
                 else
                 {
-                    adCityCoordinate = recentCalculatedDistances[ad.city.ToLower()];
+                    adDistance = recentCalculatedDistances[ad.city.ToLower()];
                 }
 
-                advertisementDistances.Add(ad.advertisement_id, MapAPI.GetDistance(seekerCityCoordinate, adCityCoordinate));
+                advertisementDistances.Add(ad.advertisement_id, adDistance);
             }
 
             return advertisementDistances;
