@@ -18,66 +18,143 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAdvertisements(int seekerID, int pageLength)
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAllAdvertisements(int seekerID, int pageLength)
         {
-            return Ok(await _service.GetFirstPage(seekerID, pageLength));
+            try
+            {
+                return Ok(await _service.GetAllWithPages(seekerID, pageLength));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
         [HttpGet]
         [Route("GetAllAdvertisements/seekerID={seekerID:int}/advertisements={jobIDs}")]
         public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetAdvertisementsById(string jobIDs, int seekerID)
         {
-            return Ok(await _service.GetById(jobIDs.Split(',').Select(int.Parse), seekerID));
+            try
+            {
+                return Ok(await _service.GetById(jobIDs.Split(',').Select(int.Parse), seekerID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetAdvertisementsBySeeker/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAdvertisementsBySeeker(int seekerID, int pageLength)
+        {
+            try
+            {
+                return Ok(await _service.GetFirstPage(seekerID, pageLength));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
         [HttpGet]
         [Route("GetAdvertisementById/{jobID:int}")]
         public async Task<ActionResult<AdvertisementDto>> GetAdvertisementById(int jobID)
-        {            
-            return Ok(await _service.GetById(jobID));
+        {
+            try
+            {
+                return Ok(await _service.GetById(jobID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
         [HttpGet]
         [Route("GetAdvertisementById/update/{jobID:int}")]
         public async Task<ActionResult<UpdateAdvertisementDto>> GetAdvertisementByIdWithKeywords(int jobID)
         {
-            return Ok(await _service.GetByIdWithKeywords(jobID));
+            try
+            {
+                return Ok(await _service.GetByIdWithKeywords(jobID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
         [HttpGet]
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}")]
         public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
         {
-            return Ok(await _service.GetByCompanyID(companyID, status));
+            try
+            {
+                return Ok(await _service.GetByCompanyID(companyID, status));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
         [HttpGet]
         [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}/title={title}")]
         public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status, string title)
         {
-            return Ok(await _service.GetByCompanyID(companyID, status, title));
+            try
+            {
+                return Ok(await _service.GetByCompanyID(companyID, status, title));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
         [HttpGet]
         [Route("GetSavedAdvertisements/seekerID={seekerID:int}")]
         public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetSavedAdvertisements(int seekerID)
         {
-            return Ok(await _service.GetSavedAdvertisements(seekerID));
+            try
+            {
+                return Ok(await _service.GetSavedAdvertisements(seekerID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
         [HttpPost]
         [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}/pageLength={pageLength:int}")]
         public async Task<ActionResult<AdvertisementFirstPageDto>> SearchAdvertisementsBasic(int seekerID, int pageLength, SearchJobRequestDto requestDto)
         {
-            return Ok(await _service.BasicSearch(requestDto, seekerID, pageLength));
+            try
+            {
+                return Ok(await _service.BasicSearch(requestDto, seekerID, pageLength));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
         [HttpPost]
         [Route("AddAdvertisement")]
         public async Task<IActionResult> AddAdvertisement(AddAdvertisementDto advertisementDto)
         {
-            await _service.Create(advertisementDto);
-            return Ok();
+            try
+            {
+                await _service.Create(advertisementDto);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
         [HttpPut]
@@ -86,19 +163,26 @@ namespace FirstStep.Controllers
         {
             if (reqAdvertisement is null)
             {
-                return BadRequest("Advertisement cannot be null.");
+                return StatusCode(StatusCodes.Status404NotFound, "Null Reference");
             }
 
             if (jobID != reqAdvertisement.advertisement_id)
             {
-                return BadRequest("Advertisement ID mismatch.");
+                return StatusCode(StatusCodes.Status406NotAcceptable, "Advertisement ID in the request body does not match the ID in the URL.");
             }
 
-            await _service.Update(jobID, reqAdvertisement);
-            return Ok();
+            try
+            {
+                await _service.Update(jobID, reqAdvertisement);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("ChangeStatus/{jobID:int}/status={newStatus}")]
         public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
         {
@@ -107,31 +191,61 @@ namespace FirstStep.Controllers
                 await _service.ChangeStatus(jobID, newStatus);
                 return Ok();
             }
-            catch (InvalidDataException e)
+            catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status422UnprocessableEntity, e.Message);
+                return ReturnStatusCode(e);
             }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
         public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {
             if (await _service.IsExpired(jobID))
             {
-                return BadRequest("Advertisement is expired.");
+                return StatusCode(StatusCodes.Status406NotAcceptable, "Advertisement is expired.");
             }
 
-            await _service.SaveAdvertisement(jobID, seekerId, isSave);
-            return Ok();
+            try
+            {
+                await _service.SaveAdvertisement(jobID, seekerId, isSave);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
 
         [HttpDelete]
         [Route("DeleteAdvertisement/{jobID:int}")]
         public async Task<IActionResult> DeleteAdvertisement(int jobID)
         {
-            await _service.Delete(jobID);
-            return Ok();
+            try
+            {
+                await _service.Delete(jobID);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        private ActionResult ReturnStatusCode(Exception e)
+        {
+            if (e is InvalidDataException)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.Message);
+            }
+            else if (e is NullReferenceException)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, e.Message);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
     }
 }
