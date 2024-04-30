@@ -62,10 +62,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetCompanyProfile/{companyID:int}/seekerID={seekerID:int}")]
-        public async Task<ActionResult<CompanyProfileDto>> GetCompanyProfile(int companyID, int seekerID)
+        [Route("GetCompanyProfile/{companyID:int}/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<CompanyProfileDto>> GetCompanyProfile(int companyID, int seekerID, int pageLength)
         {
-            return Ok(await _service.GetCompanyProfile(companyID, seekerID));
+            return Ok(await _service.GetCompanyProfile(companyID, seekerID, pageLength));
         }
 
         [HttpPost]
@@ -76,14 +76,6 @@ namespace FirstStep.Controllers
             {
                 await _service.Create(newCompany);
                 return Ok("Company Application successfully submitted!");
-            }
-            catch (EmailAlreadyExistsException ex)//Handle Email Already Exists Exception
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (RegistrationNumberAlreadyExistsException ex)// Handle Registration Number Already Exists Exception
-            {
-                return BadRequest(ex.Message);
             }
             catch (Exception ex)//Handle other errors
             {

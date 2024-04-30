@@ -25,7 +25,8 @@ namespace FirstStep.Models
         [MaxLength(15)]
         public required string arrangement { get; set; }
 
-        public required bool is_experience_required { get; set; }
+        [MaxLength(15)]
+        public required string experience { get; set; }
 
         public float? salary { get; set; }
 
@@ -34,7 +35,7 @@ namespace FirstStep.Models
 
         public required DateTime posted_date { get; set; } = DateTime.Now;
 
-        public DateTime submission_deadline { get; set; }
+        public DateTime? submission_deadline { get; set; }
 
         [MaxLength(7)]
         public required string current_status { get; set; }

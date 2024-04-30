@@ -13,5 +13,6 @@
         public string arrangement { get; set; }
         public DateTime posted_date { get; set; }
         public bool is_saved { get; set; }
+        public bool is_expired { get; set; }
     }
 }
