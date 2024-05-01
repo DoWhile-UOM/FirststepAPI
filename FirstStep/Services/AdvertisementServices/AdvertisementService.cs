@@ -265,7 +265,10 @@ namespace FirstStep.Services
 
             if (newStatus == AdvertisementStatus.closed.ToString())
             {
-                // set the expired date to the current date
+                // set submission deadline to the current date, because need to block application submition anymore
+                advertisement.submission_deadline = DateTime.Now;
+
+                // set the expired date to 10 days after the current date, because need to hold saved advertisements for 10 days
                 advertisement.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
             }
             else
