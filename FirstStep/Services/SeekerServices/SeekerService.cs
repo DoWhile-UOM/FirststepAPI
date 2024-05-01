@@ -22,17 +22,17 @@ namespace FirstStep.Services
         public async Task<IEnumerable<Seeker>> GetAll()
         {
             return await _context.Seekers
-                .Include(e => e.job_Field)
-                .Include(e => e.skills)
+                .Include("job_Field")
+                .Include("skills")
                 .ToListAsync();
         }
 
         public async Task<Seeker> GetById(int id)
         {
             Seeker? seeker = await _context.Seekers
+                .Include("job_Field")
+                .Include("skills")
                 .Where(e => e.user_id == id)
-                .Include(e => e.job_Field)
-                .Include(e => e.skills)
                 .FirstOrDefaultAsync();
 
             if (seeker is null)

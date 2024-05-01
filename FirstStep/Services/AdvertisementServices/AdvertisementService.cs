@@ -202,18 +202,18 @@ namespace FirstStep.Services
             }
         }
 
-        public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfResultsPerPage)
+        public async Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, int noOfResultsPerPage)
         {
-            var matchingAds = await FindMatchingAdvertisement(seekerID, "");
+            var matchingAds = await FindMatchingAdvertisement(seekerID);
 
             return await CreateFirstPageResults(matchingAds, seekerID, noOfResultsPerPage);
         }
 
-        public async Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int noOfResultsPerPage, string city)
+        public async Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, string city, int noOfResultsPerPage)
         {
             if (city == null || city == "")
             {
-                return await GetFirstPage(seekerID, noOfResultsPerPage);
+                return await GetRecommendedAdvertisements(seekerID, noOfResultsPerPage);
             }
 
             var matchingAds = await FindMatchingAdvertisement(seekerID, city);
@@ -265,7 +265,10 @@ namespace FirstStep.Services
 
             if (newStatus == AdvertisementStatus.closed.ToString())
             {
-                // set the expired date to the current date
+                // set submission deadline to the current date, because need to block application submition anymore
+                advertisement.submission_deadline = DateTime.Now;
+
+                // set the expired date to 10 days after the current date, because need to hold saved advertisements for 10 days
                 advertisement.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
             }
             else
@@ -672,31 +675,147 @@ namespace FirstStep.Services
             return filteredAdvertisements;
         }
 
-        private async Task<List<Advertisement>> FindMatchingAdvertisement(int seekerID, string city)
+        private async Task<List<Advertisement>> FindMatchingAdvertisement(int seekerID)
         {
-            // need to consider the distance between given city
-
-
             var seeker = await _seekerService.GetById(seekerID);
 
             // get all active advertisements in seeker's field
             var advertisements = await FindBySeekerJobFieldID(seekerID);
-            
+
+            if (seeker.skills!.Count <= 0)
+            {
+                // when seeker has no skills, return all advertisements in the seeker's field
+                return advertisements.ToList();
+            }
+
+            // hold advertisements that match with the seeker's skills
+            Dictionary<Advertisement, float> matchingAdvertisements = FindAdvertisementsMatchingWithSkills(seeker, advertisements);
+
+            return matchingAdvertisements.Keys.ToList();
+        }
+
+        private async Task<List<Advertisement>> FindMatchingAdvertisement(int seekerID, string city)
+        {
+            var seeker = await _seekerService.GetById(seekerID);
+
+            // get all active advertisements in seeker's field
+            var advertisements = await FindBySeekerJobFieldID(seekerID);
+
+            Console.WriteLine(seeker.skills);
+
             if (seeker.skills == null)
             {
                 // when seeker has no skills, return all advertisements in the seeker's field
                 return advertisements.ToList();
             }
 
-            Dictionary<Advertisement, int> matchingAdvertisements = new Dictionary<Advertisement, int>();
+            // find advertisements matching with the seeker's skills
+            Dictionary<Advertisement, float> filteredAds = FindAdvertisementsMatchingWithSkills(seeker, advertisements);
+
+            if (city == "")
+            {
+                return filteredAds.Keys.ToList();
+            }
+
+            // find the distance between the seeker's city and the advertisement's city
+            Dictionary<int, float> advertisementDistances = await FindAdvertisementsMatchingWithDistance(city, filteredAds.Keys);
+
+            // calculate the mean of the matching skills and distances
+            float meanSkills = filteredAds.Values.Sum() / filteredAds.Count;
+            float meanDistance = advertisementDistances.Values.Sum() / advertisementDistances.Count;
+
+            // select only advertisements that have greater than the mean of the matching skills
+            filteredAds = filteredAds.Where(e => e.Value >= meanSkills).ToDictionary(e => e.Key, e => e.Value);
+
+            // select only advertisements that have less than the mean of the distance
+            advertisementDistances = advertisementDistances.Where(e => e.Value <= meanDistance).ToDictionary(e => e.Key, e => e.Value);
+
+            // find the common advertisements between the two dictionaries
+            var matchingAdvertisements = new Dictionary<Advertisement, (float skillsMatchingPercentage, float distance)> { };
+
+            foreach (var ad in filteredAds)
+            {
+                if (advertisementDistances.ContainsKey(ad.Key.advertisement_id))
+                {
+                    matchingAdvertisements.Add(ad.Key, (ad.Value, advertisementDistances[ad.Key.advertisement_id]));
+                }
+            }
+
+            // sort by lowest distance with highest matching skills ratio to highest distance with lowest matching skills ratio
+            return SortByNearestNeighbor(matchingAdvertisements);
+        }
+
+        private List<Advertisement> SortByNearestNeighbor(Dictionary<Advertisement, (float skillsMatchingPercentage, float distance)> matchingAdvertisements)
+        {
+            // select the advertisement that has the highest matching skills percentage
+            float highestMatchingSkillPercentage = matchingAdvertisements.Values.Max(e => e.skillsMatchingPercentage);
+
+            // select the advertisement that has the lowest distance
+            float lowestDistance = matchingAdvertisements.Values.Min(e => e.distance);
+
+            // insert into kd-tree
+            var tree = new KdTree<float, Advertisement>(2, new FloatMath());
+
+            foreach (var ad in matchingAdvertisements)
+            {
+                var key = new[] { ad.Value.skillsMatchingPercentage, ad.Value.distance };
+                tree.Add(key, ad.Key);
+            }
+
+            // find the nearest neighbors with 80% coverage
+            var nearestAds = tree.GetNearestNeighbours(new[] { highestMatchingSkillPercentage, lowestDistance }, (int)(matchingAdvertisements.Count * 0.8));
+
+            return nearestAds.Select(e => e.Value).ToList();
+        }
+
+        private async Task<Dictionary<int, float>> FindAdvertisementsMatchingWithDistance(string city, IEnumerable<Advertisement> advertisements)
+        {
+            // get distance from the seeker's city to matching advertisements' cities
+            Coordinate seekerCityCoordinate = await MapAPI.GetCoordinates(city.ToLower());
+
+            // hold advertisements that match with the seeker's skills and distance
+            Dictionary<int, float> advertisementDistances = new Dictionary<int, float>();
+
+            // recent calculated distances
+            Dictionary<string, float> recentCalculatedDistances = new Dictionary<string, float>();
+
+            Coordinate adCityCoordinate;
+            float adDistance;
+
+            // calculate the distance between the seeker's city and the advertisement's city
+            foreach (var ad in advertisements)
+            {
+                if (recentCalculatedDistances.ContainsKey(ad.city.ToLower()))
+                {
+                    adCityCoordinate = await MapAPI.GetCoordinates(ad.city.ToLower());
+                    adDistance = MapAPI.GetDistance(seekerCityCoordinate, adCityCoordinate);
+
+                    recentCalculatedDistances.Add(ad.city.ToLower(), adDistance);
+                }
+                else
+                {
+                    adDistance = recentCalculatedDistances[ad.city.ToLower()];
+                }
+
+                advertisementDistances.Add(ad.advertisement_id, adDistance);
+            }
+
+            return advertisementDistances;
+        }
+
+        private Dictionary<Advertisement, float> FindAdvertisementsMatchingWithSkills(Seeker seeker, IEnumerable<Advertisement> advertisements)
+        {
+            Dictionary<Advertisement, float> matchingAdvertisements = new Dictionary<Advertisement, float>();
 
             // find the seeker's skills
-            var seekerSkills = seeker.skills.Select(e => e.skill_name).ToList();
+            var seekerSkills = seeker.skills!.Select(e => e.skill_name).ToList();
 
             // count and add advertisements that match the seeker's skills
             foreach (var ad in advertisements)
             {
-                var adSkills = ad.skills!.Select(e => e.skill_name).ToList();
+                if (ad.skills == null) continue;
+
+                var adSkills = ad.skills.Select(e => e.skill_name).ToList();
 
                 int matchingSkills = 0;
 
@@ -708,16 +827,19 @@ namespace FirstStep.Services
                     }
                 }
 
-                if (matchingSkills > 0)
+                float matchingSkillsPercentage = (float)matchingSkills / ad.skills.Count();
+
+                // select only when matching skills percentage is greater than 50%
+                if (matchingSkillsPercentage > 50)
                 {
-                    matchingAdvertisements.Add(ad, matchingSkills);
+                    matchingAdvertisements.Add(ad, matchingSkillsPercentage);
                 }
             }
 
             // sort by a number of matching skills in acending order
             matchingAdvertisements = matchingAdvertisements.OrderBy(e => e.Value).ToDictionary(e => e.Key, e => e.Value);
 
-            return matchingAdvertisements.Keys.ToList();
+            return matchingAdvertisements;
         }
 
         public async Task CloseExpiredAdvertisements()
