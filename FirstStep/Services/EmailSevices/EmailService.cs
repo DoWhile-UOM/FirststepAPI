@@ -200,6 +200,23 @@ namespace FirstStep.Services
             _ = SendEmail(emailBody);
         }
 
+        public void CARegIsSuccessfull(string email, string firstName, string lastName)
+        {
+            EmailDto emailBody = new();
+            var builder = new BodyBuilder();
+            using (StreamReader SourceReader = File.OpenText("Template/CARegSuccessfull.html"))
+            {
+                builder.HtmlBody = SourceReader.ReadToEnd();
+            }
+            emailBody.To = email;
+            builder.HtmlBody = builder.HtmlBody.Replace("{first name}", firstName);
+            builder.HtmlBody = builder.HtmlBody.Replace("{last name}", lastName);
+
+            emailBody.Body = builder.HtmlBody;
+
+            _ = SendEmail(emailBody);
+        }
+
         private int GenerateOTP()//Generate OTP code to store
         {
             Random random = new Random();
