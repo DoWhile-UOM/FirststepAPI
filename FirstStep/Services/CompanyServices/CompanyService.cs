@@ -195,7 +195,8 @@ namespace FirstStep.Services
         public async Task UpdateCompanyVerification(int companyID, CompanyRegInfoDto companyRegInfo)
         {
             var unRegCompany = await FindByID(companyID);
-            var link="";
+            var link = "";
+
             var rejectedLink = unRegCompany.registration_url;
 
             unRegCompany.verification_status = companyRegInfo.verification_status;
@@ -207,7 +208,7 @@ namespace FirstStep.Services
 
             if (companyRegInfo.verification_status == true)
             {
-                link = "http://localhost:4200/RegCompanyAdmin";
+                link = "http://localhost:4200/RegCompanyAdmin?id=" + rejectedLink;
             }
             else
             {
