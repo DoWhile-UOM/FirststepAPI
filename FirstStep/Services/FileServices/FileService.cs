@@ -1,5 +1,7 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Storage;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 
 namespace FirstStep.Services
 {
@@ -46,32 +48,60 @@ namespace FirstStep.Services
             return items;
         }
 
-        public async Task<BlobItem?> GetBlobByETag(string eTag)
+        public async  Task<string> GenerateSasTokenAsync( string blobName)
         {
-            await foreach (BlobItem blob in _blobcontainerClient.GetBlobsAsync())
+            var blobClient = _blobcontainerClient.GetBlobClient(blobName);
+            var sasBuilder = new BlobSasBuilder
             {
-                var properties = await _blobcontainerClient.GetBlobClient(blob.Name).GetPropertiesAsync();
-                if (properties.Value.ETag.ToString() == eTag)
-                {
-                    return blob;
-                }
-               
-            }
-            return null;
+                BlobContainerName = _blobcontainerClient.Name,
+                BlobName = blobName,
+                Resource = "b",//blob
+                StartsOn = DateTimeOffset.UtcNow,
+                ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+            };
+
+            sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+           // Generate the SAS token
+            var sasQueryParamas = sasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential("firststep", "uufTzzJ+uB7BRnKG9cN2RUi0mw92n5lTl2EMvnOTw6xv7sfPQSWBqJxHll+Zn2FNc06cGf8Qgrkb+ASteH1KEQ==")).ToString();
+
+            var sasToken= sasQueryParamas.ToString();
+
+            return await Task.FromResult(sasToken);
 
         }
 
-        public Task<byte[]>? DownloadBlobByETag(string eTag)
-        {
-           
-            var blobItem = GetBlobByETag(eTag).Result;
-            if (blobItem != null)
-            {
-                var blobClient = _blobcontainerClient.GetBlobClient(blobItem.Name);
-                var download = blobClient.DownloadContent();
-                return Task.FromResult(download.Value.Content.ToArray());
-            }
-            return null;
-        }
+
+
+        /* public async Task<BlobItem?> GetBlobByETag(string eTag)
+         {
+             await foreach (BlobItem blob in _blobcontainerClient.GetBlobsAsync())
+             {
+                 var properties = await _blobcontainerClient.GetBlobClient(blob.Name).GetPropertiesAsync();
+                 if (properties.Value.ETag.ToString() == eTag)
+                 {
+                     return blob;
+                 }
+
+             }
+             return null;
+
+         }
+
+         public Task<byte[]>? DownloadBlobByETag(string eTag)
+         {
+
+             var blobItem = GetBlobByETag(eTag).Result;
+             if (blobItem != null)
+             {
+                 var blobClient = _blobcontainerClient.GetBlobClient(blobItem.Name);
+                 var download = blobClient.DownloadContent();
+                 return Task.FromResult(download.Value.Content.ToArray());
+             }
+             return null;
+         }*/
+
+
+
     }
 }
