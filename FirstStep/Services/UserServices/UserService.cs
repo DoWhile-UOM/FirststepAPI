@@ -101,7 +101,7 @@ namespace FirstStep.Services.UserServices
 
             string user_type;
 
-            switch (type)
+            switch (type) //use enum instead of string
             {
                 case "CA":
                     user_type = "CA";
