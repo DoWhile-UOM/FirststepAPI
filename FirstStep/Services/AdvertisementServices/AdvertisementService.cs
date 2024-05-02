@@ -386,6 +386,12 @@ namespace FirstStep.Services
         public async Task Delete(int id)
         {
             Advertisement advertisement = await FindById(id);
+
+            // check the advertisement had any applications
+            if (await _applicationService.TotalNotEvaluatedApplications(advertisement.advertisement_id) > 0)
+            {
+                throw new InvalidOperationException("Cannot delete an advertisement that has non evaluated applications.");
+            }
             
             _context.Advertisements.Remove(advertisement);
             _context.SaveChanges();
