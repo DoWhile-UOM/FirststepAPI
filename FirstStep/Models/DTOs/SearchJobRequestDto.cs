@@ -6,7 +6,7 @@
         public string? country { get; set; }
         public string? city { get; set; }
         public float? distance { get; set; }
-        public string? employeement_type { get; set; }
-        public string? arrangement { get; set; }
+        public List<string>? employeement_type { get; set; }
+        public List<string>? arrangement { get; set; }
     }
 }

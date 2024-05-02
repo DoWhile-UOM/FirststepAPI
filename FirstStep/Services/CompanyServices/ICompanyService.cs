@@ -19,7 +19,7 @@ namespace FirstStep.Services
   
         public Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList();
 
-        public Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID);
+        public Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID, int pageLength);
 
         public Task Create(AddCompanyDto company);
 
