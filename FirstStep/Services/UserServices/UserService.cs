@@ -17,12 +17,14 @@ namespace FirstStep.Services.UserServices
         private readonly DataContext _context;
         private readonly ICompanyService _companyService;
         private readonly IEmployeeService _employeeService;
+        private readonly IEmailService _emailService;
 
-        public UserService(DataContext context, ICompanyService companyService, IEmployeeService employeeService)
+        public UserService(DataContext context, ICompanyService companyService, IEmployeeService employeeService, IEmailService emailService)
         {
             _context = context;
             _companyService = companyService;
             _employeeService = employeeService;
+            _emailService = emailService;
         }
 
         //Authentication Result return types
@@ -134,13 +136,10 @@ namespace FirstStep.Services.UserServices
                     });//Register on employee service
 
                     //Call Email service to send success email
+                    _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
 
-                    return ("Company Admin Registered Successfully" + company.company_id);
+                    break;
 
-                    //if input id valid then call Company service to add company admin
-
-                    //Call Email service to send success email
-                    //break;
                 case "HRM":
                     user_type = "HRM";
                     //Check auth bearer token if bearer have access to add manager(company admin)

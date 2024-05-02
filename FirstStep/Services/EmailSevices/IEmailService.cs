@@ -17,6 +17,6 @@ namespace FirstStep.Services
         void EvaluatedCompanyRegistraionApplicationEmail( string email, bool HasAccepted, string? comment, string link, string company_name);//EmailDto request was removed
 
         void SendEmailCompanyRegistration(string email, string company_name, string applicationEvaluationStatusLink);//email for company regisrtation process
-        public void CARegIsSuccessfull(string email, string firstName, string lastName);
+        void CARegIsSuccessfull(string email, string firstName, string lastName);
     }
 }
