@@ -68,6 +68,7 @@ namespace FirstStep.Services
                 await _context.Advertisements
                 .Include("professionKeywords")
                 .Include("job_Field")
+                .Include("applications")
                 .Include("hrManager")
                 .Include("skills")
                 .Include("savedSeekers")
@@ -393,6 +394,13 @@ namespace FirstStep.Services
                 if (await _applicationService.TotalNotEvaluatedApplications(advertisement.advertisement_id) > 0)
                 {
                     throw new InvalidOperationException("Cannot delete an advertisement that has non evaluated applications.");
+                }
+            }
+            else if (advertisement.applications != null)
+            {
+                foreach (var application in advertisement.applications)
+                {
+                    await _applicationService.Delete(application);
                 }
             }
             

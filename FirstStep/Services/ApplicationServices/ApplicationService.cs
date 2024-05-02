@@ -58,6 +58,12 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task Delete(Application application)
+        {
+            _context.Applications.Remove(application);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<IEnumerable<Application>> GetAll()
         {
             return await _context.Applications.ToListAsync();
