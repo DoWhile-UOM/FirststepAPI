@@ -383,33 +383,19 @@ namespace FirstStep.Services
             return appliedAdvertismentList;
         }
 
-        public async Task Delete(int id)
+        public async Task Delete(int id, bool isConfirmed)
         {
             Advertisement advertisement = await FindById(id);
 
-            // check the advertisement had any applications
-            if (await _applicationService.TotalNotEvaluatedApplications(advertisement.advertisement_id) > 0)
+            if (!isConfirmed)
             {
-                throw new InvalidOperationException("Cannot delete an advertisement that has non evaluated applications.");
-            }
-            
-            _context.Advertisements.Remove(advertisement);
-            _context.SaveChanges();
-        }
-
-        public async Task DeleteWithApplications(int id)
-        {
-            Advertisement advertisement = await FindById(id);
-
-            // check the advertisement had any applications
-            if (advertisement.applications != null)
-            {
-                foreach (var application in advertisement.applications)
+                // check the advertisement had any applications
+                if (await _applicationService.TotalNotEvaluatedApplications(advertisement.advertisement_id) > 0)
                 {
-                    _context.Applications.Remove(application);
+                    throw new InvalidOperationException("Cannot delete an advertisement that has non evaluated applications.");
                 }
             }
-
+            
             _context.Advertisements.Remove(advertisement);
             _context.SaveChanges();
         }

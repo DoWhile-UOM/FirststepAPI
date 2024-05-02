@@ -35,9 +35,7 @@ namespace FirstStep.Services
 
         Task SaveAdvertisement(int advertisementId, int seekerId, bool isSave);
 
-        Task Delete(int id);
-
-        Task DeleteWithApplications(int id);
+        Task Delete(int id, bool isConfirmed);
 
         Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage);
 
