@@ -200,7 +200,7 @@ namespace FirstStep.Services
             _ = SendEmail(emailBody);
         }
 
-        public void CARegIsSuccessfull(string email, string firstName, string lastName)
+        public async Task<string> CARegIsSuccessfull(string email, string firstName, string lastName)
         {
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
@@ -209,12 +209,13 @@ namespace FirstStep.Services
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
             emailBody.To = email;
+            emailBody.Subject = "Company Admin Registration Sucess";
             builder.HtmlBody = builder.HtmlBody.Replace("{first name}", firstName);
             builder.HtmlBody = builder.HtmlBody.Replace("{last name}", lastName);
 
             emailBody.Body = builder.HtmlBody;
 
-            _ = SendEmail(emailBody);
+            return await SendEmail(emailBody);
         }
 
         private int GenerateOTP()//Generate OTP code to store

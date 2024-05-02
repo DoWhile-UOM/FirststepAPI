@@ -88,6 +88,10 @@ namespace FirstStep.Services.UserServices
         //Register User
         public async Task<string> RegisterUser(UserRegRequestDto userObj,string? type,string? company_id) // UserRegRequestDto must modify
         {
+
+            //var result = await _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
+            //Console.WriteLine(result);
+
             if (userObj == null)
                 return "Null User";
 
@@ -136,7 +140,8 @@ namespace FirstStep.Services.UserServices
                     });//Register on employee service
 
                     //Call Email service to send success email
-                    _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
+                    var result=await _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
+                    Console.WriteLine(result);
 
                     break;
 
