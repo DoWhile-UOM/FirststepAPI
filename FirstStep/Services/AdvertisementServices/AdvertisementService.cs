@@ -19,7 +19,7 @@ namespace FirstStep.Services
         private readonly IApplicationService _applicationService;
 
         private readonly int AdvertisementExpiredDays = 10;
-        private enum AdvertisementStatus { active, closed }
+        private enum AdvertisementStatus { active, hold, closed }
 
         public AdvertisementService(
             DataContext context, 
@@ -259,21 +259,31 @@ namespace FirstStep.Services
                 // can't activate an expired advertisement, therefore first need to update the submission deadline
                 throw new InvalidDataException("Cannot activate an expired advertisement.");
             }
+            else if (newStatus == advertisement.current_status)
+            {
+                // no need to update the status, because the advertisement is already in the requested status
+                return;
+            }
+            else if (newStatus == AdvertisementStatus.closed.ToString() && IsActive(advertisement))
+            {
+                // can't close an active advertisement, therefore first need to update the submission deadline
+                throw new InvalidDataException("Cannot close an active advertisement.");
+            }
 
             // update the advertisement status
             advertisement.current_status = newStatus;
 
-            if (newStatus == AdvertisementStatus.closed.ToString())
+            if (IsActive(advertisement))
+            {
+                advertisement.expired_date = null;
+            }
+            else
             {
                 // set submission deadline to the current date, because need to block application submition anymore
                 advertisement.submission_deadline = DateTime.Now;
 
                 // set the expired date to 10 days after the current date, because need to hold saved advertisements for 10 days
                 advertisement.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
-            }
-            else
-            {
-                advertisement.expired_date = null;
             }
 
             await _context.SaveChangesAsync();
@@ -853,7 +863,7 @@ namespace FirstStep.Services
 
                 if (DateTime.Now > ad.submission_deadline)
                 {
-                    ad.current_status = AdvertisementStatus.closed.ToString();
+                    ad.current_status = AdvertisementStatus.hold.ToString();
                     ad.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
                 }
             }
@@ -867,7 +877,7 @@ namespace FirstStep.Services
 
             foreach (var ad in advertisements)
             {
-                if (ad.current_status == AdvertisementStatus.closed.ToString())
+                if (!IsActive(ad))
                 {
                     // when closed advertisement has no expired date, set the expired date to the current date
                     if (ad.expired_date == null) ad.expired_date = DateTime.Now;
@@ -938,6 +948,7 @@ namespace FirstStep.Services
             {
                 AdvertisementStatus.active.ToString(),
                 AdvertisementStatus.closed.ToString(),
+                AdvertisementStatus.hold.ToString(),
                 "all"
             };
 
