@@ -15,9 +15,14 @@ namespace FirstStep.Services.UserServices
     public class UserService: IUserService
     {
         private readonly DataContext _context;
-        public UserService(DataContext context)
+        private readonly ICompanyService _companyService;
+        private readonly IEmployeeService _employeeService;
+
+        public UserService(DataContext context, ICompanyService companyService, IEmployeeService employeeService)
         {
             _context = context;
+            _companyService = companyService;
+            _employeeService = employeeService;
         }
 
         //Authentication Result return types
@@ -105,10 +110,37 @@ namespace FirstStep.Services.UserServices
             {
                 case "CA":
                     user_type = "CA";
+                    if(company_id == null)
+                        return "Company ID is Null";
+
                     //Call Company service to find input id is valid by FindByRegCheckID(string id)
-                    //if input id valid then call Company service to add company admin
+                    var company = await _companyService.FindByRegCheckID(company_id);
+                    if (company == null)
+                        return "Company Not Found";
+
+                    if(company.verification_status==false)
+                        return "Company Not Verified";
+
+                    if(company.company_admin_id != null)
+                        return "Company Admin Already Exists";//should remove bcz service will handle this
+
+                    await _employeeService.CreateCompanyAdmin(new AddEmployeeDto
+                    {
+                        email = userObj.email,
+                        password = userObj.password_hash,
+                        first_name = userObj.first_name,
+                        last_name = userObj.last_name,
+                        company_id = company.company_id
+                    });//Register on employee service
+
                     //Call Email service to send success email
-                    break;
+
+                    return ("Company Admin Registered Successfully" + company.company_id);
+
+                    //if input id valid then call Company service to add company admin
+
+                    //Call Email service to send success email
+                    //break;
                 case "HRM":
                     user_type = "HRM";
                     //Check auth bearer token if bearer have access to add manager(company admin)

@@ -8,6 +8,7 @@ namespace FirstStep.Services.UserServices
         Task<AuthenticationResult> Authenticate(LoginRequestDto userObj);
 
         Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto);
+
         Task<string> RegisterUser(UserRegRequestDto userObj, string? type, string? company_id);
 
 
