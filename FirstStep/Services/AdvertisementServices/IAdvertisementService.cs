@@ -37,6 +37,8 @@ namespace FirstStep.Services
 
         Task Delete(int id);
 
+        Task DeleteWithApplications(int id);
+
         Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage);
 
         Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto searchRequest, int seekerID, int pageLength);

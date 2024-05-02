@@ -264,6 +264,36 @@ namespace FirstStep.Controllers
                 await _service.Delete(jobID);
                 return Ok();
             }
+            catch (InvalidOperationException e)
+            {
+                return StatusCode(StatusCodes.Status406NotAcceptable, e.Message);
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpDelete]
+        [Route("DeleteAdvertisement/{jobID:int}/{isDeleteApplications:bool}")]
+        public async Task<IActionResult> DeleteAdvertisement(int jobID, bool isDeleteApplications)
+        {
+            try
+            {
+                if (isDeleteApplications)
+                {
+                    await _service.DeleteWithApplications(jobID);
+                }
+                else
+                {
+                    await _service.Delete(jobID);
+                }
+                return Ok();
+            }
+            catch (InvalidOperationException e)
+            {
+                return StatusCode(StatusCodes.Status406NotAcceptable, e.Message);
+            }
             catch (Exception e)
             {
                 return ReturnStatusCode(e);

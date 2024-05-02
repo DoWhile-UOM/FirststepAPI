@@ -397,6 +397,23 @@ namespace FirstStep.Services
             _context.SaveChanges();
         }
 
+        public async Task DeleteWithApplications(int id)
+        {
+            Advertisement advertisement = await FindById(id);
+
+            // check the advertisement had any applications
+            if (advertisement.applications != null)
+            {
+                foreach (var application in advertisement.applications)
+                {
+                    _context.Applications.Remove(application);
+                }
+            }
+
+            _context.Advertisements.Remove(advertisement);
+            _context.SaveChanges();
+        }
+
         // Add keywords to the advertisement
         private async Task<ICollection<ProfessionKeyword>?> IncludeKeywordsToAdvertisement(ICollection<string>? newKeywords, int fieldId)
         {
