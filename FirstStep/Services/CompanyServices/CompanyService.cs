@@ -195,6 +195,8 @@ namespace FirstStep.Services
         public async Task UpdateCompanyVerification(int companyID, CompanyRegInfoDto companyRegInfo)
         {
             var unRegCompany = await FindByID(companyID);
+            var link="";
+            var rejectedLink = unRegCompany.registration_url;
 
             unRegCompany.verification_status = companyRegInfo.verification_status;
             unRegCompany.company_registered_date = companyRegInfo.company_registered_date;
@@ -202,6 +204,17 @@ namespace FirstStep.Services
             unRegCompany.comment = companyRegInfo.comment;
 
             await _context.SaveChangesAsync();
+
+            if (companyRegInfo.verification_status == true)
+            {
+                link = "http://localhost:4200/RegCompanyAdmin";
+            }
+            else
+            {
+                link = "http://localhost:4200/RegCheck?id=" + rejectedLink;
+            }
+            _emailService.EvaluatedCompanyRegistraionApplicationEmail(unRegCompany.company_email, companyRegInfo.verification_status, companyRegInfo.comment, link, unRegCompany.company_name);
+
         }
         public async Task UpdateCompanyApplication(int companyID, UpdateRegistrationStatusDto companyRegistrationInfo)
         {
@@ -211,6 +224,7 @@ namespace FirstStep.Services
             company.comment = companyRegistrationInfo.comment;
 
             await _context.SaveChangesAsync();
+
         }
 
         public async Task RegisterCompany(int companyID, AddDetailsCompanyDto company)
