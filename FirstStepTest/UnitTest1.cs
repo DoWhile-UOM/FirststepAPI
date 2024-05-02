@@ -1,3 +1,8 @@
+using FirstStep;
+using FirstStep.Services;
+using FirstStep.Data;
+using Xunit;
+
 namespace FirstStepTest
 {
     public class UnitTest1
@@ -5,7 +10,6 @@ namespace FirstStepTest
         [Fact]
         public void Test1()
         {
-
         }
     }
 }
