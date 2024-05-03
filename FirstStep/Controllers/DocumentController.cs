@@ -36,6 +36,14 @@ namespace FirstStep.Controllers
             return Ok(response);
         }
 
+        [HttpGet("url/{blobName}")]
+
+        public async Task<IActionResult> GetBlobUrl(string blobName)
+        {
+            var response = await _azureBlobService.GetBlobImageUrl(blobName);
+            return Ok(response);
+        }
+
      /*   [HttpGet("{eTag}")]
         public async Task<IActionResult> GetBlobByETag(string eTag)
         {

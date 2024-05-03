@@ -57,7 +57,7 @@ namespace FirstStep.Services
                 BlobName = blobName,
                 Resource = "b",//blob
                 StartsOn = DateTimeOffset.UtcNow,
-                ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+                ExpiresOn = DateTimeOffset.UtcNow.AddHours(24)
             };
 
             sasBuilder.SetPermissions(BlobSasPermissions.Read);
@@ -70,6 +70,17 @@ namespace FirstStep.Services
             return await Task.FromResult(sasToken);
 
         }
+
+        public async Task<string> GetBlobImageUrl(string blobName)
+        {
+            var sasToken = await GenerateSasTokenAsync(blobName);
+            var blobClient = _blobcontainerClient.GetBlobClient(blobName);
+
+            var blobUrlWithSas = $"{blobClient.Uri}?{sasToken}";
+            return blobUrlWithSas;
+        }
+
+
 
 
 

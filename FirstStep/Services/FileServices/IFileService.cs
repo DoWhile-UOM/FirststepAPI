@@ -14,5 +14,7 @@ namespace FirstStep.Services
 
         //generate SAS token
         public Task<string> GenerateSasTokenAsync( string blobName);
+
+        public Task<string> GetBlobImageUrl(string blobName);
     }
 }
