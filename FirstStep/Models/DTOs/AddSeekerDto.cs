@@ -18,7 +18,7 @@
 
         public string? university { get; set; }
 
-        public required string CVurl { get; set; }
+        public required string cVurl { get; set; }
 
         public string? profile_picture { get; set; }
 
