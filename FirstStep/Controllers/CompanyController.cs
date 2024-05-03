@@ -3,7 +3,6 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static FirstStep.Services.CompanyService;
 
 namespace FirstStep.Controllers
 {
@@ -26,7 +25,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetCompanyById/{companyId:int}")]
+        [Route("GetCompanyProfile/update=true/{companyId:int}")]
         public async Task<ActionResult<CompanyProfileDetailsDto>> GetCompanyById(int companyId)
         {
             return Ok(await _service.GetById(companyId));
