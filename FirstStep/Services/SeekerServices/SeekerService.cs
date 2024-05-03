@@ -63,7 +63,7 @@ namespace FirstStep.Services
             if (!string.IsNullOrEmpty(passCheck))
                 return passCheck.ToString();
 
-            newSeeker.password_hash = PasswordHasher.Hasher(newSeeker.password_hash);//Hash password before saving to database
+            seeker.password_hash = PasswordHasher.Hasher(newSeeker.password_hash);//Hash password before saving to database
 
             // Add skills to seeker
             if (newSeeker.seekerSkills != null)

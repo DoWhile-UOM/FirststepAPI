@@ -38,8 +38,9 @@ namespace FirstStep.Controllers
 
         public async Task<IActionResult> AddSeeker(AddSeekerDto newSeeker)
         {
-            await _service.Create(newSeeker);
-            return Ok($"Suessfully added new seeker: {newSeeker.first_name} {newSeeker.last_name}");
+            var result=await _service.Create(newSeeker);
+
+            return Ok($"Suessfully added new seeker: {newSeeker.first_name} {newSeeker.last_name}"+ result);
         }
 
         [HttpPut]
