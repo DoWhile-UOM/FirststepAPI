@@ -18,13 +18,15 @@ namespace FirstStep.Services.UserServices
         private readonly ICompanyService _companyService;
         private readonly IEmployeeService _employeeService;
         private readonly IEmailService _emailService;
+        private readonly ISeekerService _seekerService;
 
-        public UserService(DataContext context, ICompanyService companyService, IEmployeeService employeeService, IEmailService emailService)
+        public UserService(DataContext context, ICompanyService companyService, IEmployeeService employeeService, IEmailService emailService, ISeekerService seekerService)
         {
             _context = context;
             _companyService = companyService;
             _employeeService = employeeService;
             _emailService = emailService;
+            _seekerService = seekerService;
         }
 
         //Authentication Result return types
@@ -143,7 +145,7 @@ namespace FirstStep.Services.UserServices
                     var result=await _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
                     Console.WriteLine(result);
 
-                    break;
+                    return "Company Admin Registered Successfully";
 
                 case "HRM":
                     user_type = "HRM";
@@ -159,6 +161,7 @@ namespace FirstStep.Services.UserServices
                     break;
                 default:
                     user_type = "SEEKER";
+
                     //Call Email service to send email to user email
                     break;
             }

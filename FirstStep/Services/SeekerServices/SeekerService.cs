@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FirstStep.Data;
+using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
@@ -43,13 +44,26 @@ namespace FirstStep.Services
             return seeker;
         }
 
-        public async Task Create(AddSeekerDto newSeeker)
+        public async Task<string> Create(AddSeekerDto newSeeker)
         {
             // map the AddSeekerDto to a Seeker object
             var seeker = _mapper.Map<Seeker>(newSeeker);
 
             // user type is seeker
-            seeker.user_type = "seeker";
+            seeker.user_type = "SEEKER";
+
+            //check if email already exists
+            if (await CheckEmailExist(newSeeker.email))
+                return "Email Already exist";//email already exists
+
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newSeeker.password_hash);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                return passCheck.ToString();
+
+            newSeeker.password_hash = PasswordHasher.Hasher(newSeeker.password_hash);//Hash password before saving to database
 
             // Add skills to seeker
             if (newSeeker.seekerSkills != null)
@@ -80,6 +94,15 @@ namespace FirstStep.Services
 
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
+
+            return "Seeker added successfully";
+        }
+
+
+        //Check if email already exists
+        private async Task<bool> CheckEmailExist(string Email)
+        {
+            return await _context.Users.AnyAsync(x => x.email == Email);
         }
 
         public async Task Update(int seekerId, Seeker seeker)
