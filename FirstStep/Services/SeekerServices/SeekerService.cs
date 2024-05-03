@@ -52,6 +52,9 @@ namespace FirstStep.Services
             // user type is seeker
             seeker.user_type = "SEEKER";
 
+            if (newSeeker == null)
+                return "Null User";
+
             //check if email already exists
             if (await CheckEmailExist(newSeeker.email))
                 return "Email Already exist";//email already exists
