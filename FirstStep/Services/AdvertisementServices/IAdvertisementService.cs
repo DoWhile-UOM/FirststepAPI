@@ -7,7 +7,9 @@ namespace FirstStep.Services
     {
         Task<AdvertisementFirstPageDto> GetAllWithPages(int seekerID, int pageLength);
 
-        Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int pageLength);
+        Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, int pageLength);
+
+        Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, string city, int noOfResultsPerPage);
 
         Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID);
 
@@ -33,7 +35,7 @@ namespace FirstStep.Services
 
         Task SaveAdvertisement(int advertisementId, int seekerId, bool isSave);
 
-        Task Delete(int id);
+        Task Delete(int id, bool isConfirmed);
 
         Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage);
 
@@ -42,8 +44,6 @@ namespace FirstStep.Services
         Task CloseExpiredAdvertisements();
 
         Task RemoveSavedExpiredAdvertisements();
-
-        Task CreateApplication(AddApplicationDto newApplication);
 
         Task<bool> IsExpired(int jobID);
     }

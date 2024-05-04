@@ -2,6 +2,7 @@ using AutoMapper;
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -11,25 +12,39 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IRevisionService _revisionService;
-        private readonly ISeekerService _seekerService;
 
         public ApplicationService(
             DataContext context, 
             IMapper mapper, 
-            IRevisionService revisionService,
-            ISeekerService seekerService)
+            IRevisionService revisionService)
         {
             _context = context;
             _mapper = mapper;
             _revisionService = revisionService;
-            _seekerService = seekerService;
         }
 
         public enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected, Done }
 
         public async Task Create(AddApplicationDto newApplicationDto)
         {
-            // validate application
+            // get advertisement by id
+            var advertisement = await _context.Advertisements.FindAsync(newApplicationDto.advertisement_id);
+
+            // validate advertisement
+            if (advertisement is null)
+            {
+                throw new InvalidDataException("Advertisement not found.");
+            }
+            else if (AdvertisementValidation.IsExpired(advertisement))
+            {
+                throw new InvalidDataException("Advertisement is expired.");
+            }
+            else if (!AdvertisementValidation.IsActive(advertisement))
+            {
+                throw new InvalidDataException("Advertisement is not active.");
+            }
+
+            // get applications by seeker id
             var applications = await GetBySeekerId(newApplicationDto.seeker_id);
 
             foreach (var application in applications)
@@ -54,6 +69,12 @@ namespace FirstStep.Services
         {
             Application application = await GetById(id);
             
+            _context.Applications.Remove(application);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task Delete(Application application)
+        {
             _context.Applications.Remove(application);
             await _context.SaveChangesAsync();
         }
