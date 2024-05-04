@@ -659,11 +659,11 @@ namespace FirstStep.Services
             var filteredAdvertisements = new List<Advertisement> { };
 
             // get coordinates of the requested city
-            var reqCityCoordinate = await MapAPI.GetCoordinates(reqCity.ToLower());
+            var reqCityCoordinate = await Map.GetCoordinates(reqCity.ToLower());
 
             foreach (Advertisement advertisement in advertisements)
             {
-                if (await MapAPI.GetDistance(advertisement.city, reqCityCoordinate) <= reqDistance)
+                if (await Map.GetDistance(advertisement.city, reqCityCoordinate) <= reqDistance)
                 {
                     filteredAdvertisements.Add(advertisement);
                 }
@@ -768,7 +768,7 @@ namespace FirstStep.Services
         private async Task<Dictionary<int, float>> FindAdvertisementsMatchingWithDistance(string city, IEnumerable<Advertisement> advertisements)
         {
             // get distance from the seeker's city to matching advertisements' cities
-            Coordinate seekerCityCoordinate = await MapAPI.GetCoordinates(city.ToLower());
+            Coordinate seekerCityCoordinate = await Map.GetCoordinates(city.ToLower());
 
             // hold advertisements that match with the seeker's skills and distance
             Dictionary<int, float> advertisementDistances = new Dictionary<int, float>();
@@ -784,8 +784,8 @@ namespace FirstStep.Services
             {
                 if (recentCalculatedDistances.ContainsKey(ad.city.ToLower()))
                 {
-                    adCityCoordinate = await MapAPI.GetCoordinates(ad.city.ToLower());
-                    adDistance = MapAPI.GetDistance(seekerCityCoordinate, adCityCoordinate);
+                    adCityCoordinate = await Map.GetCoordinates(ad.city.ToLower());
+                    adDistance = Map.GetDistance(seekerCityCoordinate, adCityCoordinate);
 
                     recentCalculatedDistances.Add(ad.city.ToLower(), adDistance);
                 }
