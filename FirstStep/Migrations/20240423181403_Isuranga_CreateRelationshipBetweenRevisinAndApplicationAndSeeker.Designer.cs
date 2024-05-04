@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240423181403_Isuranga_CreateRelationshipBetweenRevisinAndApplicationAndSeeker")]
+    partial class Isuranga_CreateRelationshipBetweenRevisinAndApplicationAndSeeker
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -109,9 +112,6 @@ namespace FirstStep.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
-                    b.Property<DateTime?>("expired_date")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("field_id")
                         .HasColumnType("int");
 
@@ -156,23 +156,10 @@ namespace FirstStep.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("application_Id"));
 
-                    b.Property<string>("CVurl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("advertisement_id")
                         .HasColumnType("int");
 
                     b.Property<int?>("assigned_hrAssistant_id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("doc1_url")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("doc2_url")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("seeker_id")
                         .HasColumnType("int");
 
                     b.Property<string>("status")
@@ -182,13 +169,16 @@ namespace FirstStep.Migrations
                     b.Property<DateTime>("submitted_date")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("user_id")
+                        .HasColumnType("int");
+
                     b.HasKey("application_Id");
 
                     b.HasIndex("advertisement_id");
 
                     b.HasIndex("assigned_hrAssistant_id");
 
-                    b.HasIndex("seeker_id");
+                    b.HasIndex("user_id");
 
                     b.ToTable("Applications");
                 });
@@ -580,7 +570,7 @@ namespace FirstStep.Migrations
 
                     b.HasOne("FirstStep.Models.Seeker", "seeker")
                         .WithMany("applications")
-                        .HasForeignKey("seeker_id")
+                        .HasForeignKey("user_id")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 

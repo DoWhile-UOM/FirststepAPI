@@ -79,40 +79,5 @@ namespace FirstStep.Services
             var blobUrlWithSas = $"{blobClient.Uri}?{sasToken}";
             return blobUrlWithSas;
         }
-
-
-
-
-
-        /* public async Task<BlobItem?> GetBlobByETag(string eTag)
-         {
-             await foreach (BlobItem blob in _blobcontainerClient.GetBlobsAsync())
-             {
-                 var properties = await _blobcontainerClient.GetBlobClient(blob.Name).GetPropertiesAsync();
-                 if (properties.Value.ETag.ToString() == eTag)
-                 {
-                     return blob;
-                 }
-
-             }
-             return null;
-
-         }
-
-         public Task<byte[]>? DownloadBlobByETag(string eTag)
-         {
-
-             var blobItem = GetBlobByETag(eTag).Result;
-             if (blobItem != null)
-             {
-                 var blobClient = _blobcontainerClient.GetBlobClient(blobItem.Name);
-                 var download = blobClient.DownloadContent();
-                 return Task.FromResult(download.Value.Content.ToArray());
-             }
-             return null;
-         }*/
-
-
-
     }
 }
