@@ -8,8 +8,13 @@ namespace FirstStep.Services
 
         public Task<List<BlobItem>> GetUploadedBlobs();
 
-        Task<BlobItem?> GetBlobByETag(string eTag);
+        /*  Task<BlobItem?> GetBlobByETag(string eTag);
 
-        Task<byte[]>? DownloadBlobByETag(string eTag);
+          Task<byte[]>? DownloadBlobByETag(string eTag);*/
+
+        //generate SAS token
+        public Task<string> GenerateSasTokenAsync( string blobName);
+
+        public Task<string> GetBlobImageUrl(string blobName);
     }
 }
