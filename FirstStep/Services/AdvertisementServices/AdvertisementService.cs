@@ -3,6 +3,7 @@ using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Helper;
+using FirstStep.Validation;
 using Microsoft.EntityFrameworkCore;
 using KdTree;
 using KdTree.Math;
@@ -19,7 +20,6 @@ namespace FirstStep.Services
         private readonly IApplicationService _applicationService;
 
         private readonly int AdvertisementExpiredDays = 10;
-        private enum AdvertisementStatus { active, hold, closed }
 
         public AdvertisementService(
             DataContext context, 
@@ -47,7 +47,7 @@ namespace FirstStep.Services
                     .Include("hrManager")
                     .Include("skills")
                     .Include("savedSeekers")
-                    .Where(x => x.current_status == AdvertisementStatus.active.ToString())
+                    .Where(x => x.current_status == AdvertisementValidation.Status.active.ToString())
                     .ToListAsync();
             }
             else
@@ -126,7 +126,7 @@ namespace FirstStep.Services
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
             advertisementDto.company_name = _context.Companies.Find(dbAdvertismeent.hrManager!.company_id)!.company_name;
-            advertisementDto.is_expired = IsExpired(dbAdvertismeent);
+            advertisementDto.is_expired = AdvertisementValidation.IsExpired(dbAdvertismeent);
 
             return advertisementDto;
         }
@@ -159,12 +159,12 @@ namespace FirstStep.Services
         {
             var advertisements = await FindByCompanyID(companyID);
 
-            return advertisements.Where(e => e.current_status == AdvertisementStatus.active.ToString()).ToList();
+            return advertisements.Where(e => e.current_status == AdvertisementValidation.Status.active.ToString()).ToList();
         }
 
         public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status)
         {
-            ValidateStatus(status);
+            AdvertisementValidation.CheckStatus(status);
 
             var dbAdvertisements = await FindByCompanyID(companyID);
 
@@ -173,7 +173,7 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title)
         {
-            ValidateStatus(status);
+            AdvertisementValidation.CheckStatus(status);
 
             if (title != null)
             {
@@ -245,17 +245,17 @@ namespace FirstStep.Services
             // add skills to the advertisement
             newAdvertisement.skills = await IncludeSkillsToAdvertisement(advertisementDto.reqSkills);
 
-            newAdvertisement.current_status = AdvertisementStatus.active.ToString();
+            newAdvertisement.current_status = AdvertisementValidation.Status.active.ToString();
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
         }
 
         public async Task ChangeStatus(int id, string newStatus)
         {
-            ValidateStatus(newStatus);
+            AdvertisementValidation.CheckStatus(newStatus);
             var advertisement = await FindById(id);
 
-            if (newStatus == AdvertisementStatus.active.ToString() && IsExpired(advertisement))
+            if (newStatus == AdvertisementValidation.Status.active.ToString() && AdvertisementValidation.IsExpired(advertisement))
             {
                 // can't activate an expired advertisement, therefore first need to update the submission deadline
                 throw new InvalidDataException("Cannot activate an expired advertisement.");
@@ -265,7 +265,7 @@ namespace FirstStep.Services
                 // no need to update the status, because the advertisement is already in the requested status
                 return;
             }
-            else if (newStatus == AdvertisementStatus.closed.ToString() && IsActive(advertisement))
+            else if (newStatus == AdvertisementValidation.Status.closed.ToString() && AdvertisementValidation.IsActive(advertisement))
             {
                 // can't close an active advertisement, therefore first need to update the submission deadline
                 throw new InvalidDataException("Cannot close an active advertisement.");
@@ -274,7 +274,7 @@ namespace FirstStep.Services
             // update the advertisement status
             advertisement.current_status = newStatus;
 
-            if (IsActive(advertisement))
+            if (AdvertisementValidation.IsActive(advertisement))
             {
                 advertisement.expired_date = null;
             }
@@ -356,7 +356,6 @@ namespace FirstStep.Services
 
             return await CreateAdvertisementList(advertisements, seekerID, true);
         }
-
         
         public async Task<IEnumerable<AppliedAdvertisementShortDto>> GetAppliedAdvertisements(int seekerID)
         {
@@ -394,13 +393,6 @@ namespace FirstStep.Services
                 if (await _applicationService.TotalNotEvaluatedApplications(advertisement.advertisement_id) > 0)
                 {
                     throw new InvalidOperationException("Cannot delete an advertisement that has non evaluated applications.");
-                }
-            }
-            else if (advertisement.applications != null)
-            {
-                foreach (var application in advertisement.applications)
-                {
-                    await _applicationService.Delete(application);
                 }
             }
             
@@ -502,11 +494,11 @@ namespace FirstStep.Services
                 var adDto = _mapper.Map<AdvertisementShortDto>(ad);
 
                 // check whether the advertisement is saved by the seeker
-                adDto.is_saved = IsSaved(ad, seeker);
+                adDto.is_saved = AdvertisementValidation.IsSaved(ad, seeker);
                 if (isSaveOnly && !adDto.is_saved) continue;
 
                 // check whether the advertisement is expired or not
-                adDto.is_expired = IsExpired(ad);
+                adDto.is_expired = AdvertisementValidation.IsExpired(ad);
 
                 adDto.company_name = _context.Companies.Find(ad.hrManager!.company_id)!.company_name;
 
@@ -544,28 +536,6 @@ namespace FirstStep.Services
             return jobOfferDtos;
         }
 
-        public async Task CreateApplication(AddApplicationDto newApplication)
-        {
-            var advertisement = await FindById(newApplication.advertisement_id);
-
-            if (!IsActive(advertisement))
-            {
-                throw new InvalidDataException("Cannot apply to a closed advertisement.");
-            }
-
-            if (IsExpired(advertisement))
-            {
-                throw new InvalidDataException("Cannot apply to an expired advertisement.");
-            }
-
-            if (!(await _seekerService.IsValidSeeker(newApplication.seeker_id)))
-            {
-                throw new NullReferenceException("Can't find the seeker");
-            }
-
-            await _applicationService.Create(newApplication);
-        }
-
         public async Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto requestAdsDto, int seekerID, int pageLength)
         {
             // validate and find the seeker's field
@@ -578,7 +548,7 @@ namespace FirstStep.Services
                 .Include("hrManager")
                 .Include("savedSeekers")
                 .Where(ad =>
-                    ad.current_status == AdvertisementStatus.active.ToString() &&
+                    ad.current_status == AdvertisementValidation.Status.active.ToString() &&
                     ad.country == requestAdsDto.country &&
                     ad.field_id == reqField.field_id)
                 .ToListAsync();
@@ -880,7 +850,7 @@ namespace FirstStep.Services
 
                 if (DateTime.Now > ad.submission_deadline)
                 {
-                    ad.current_status = AdvertisementStatus.hold.ToString();
+                    ad.current_status = AdvertisementValidation.Status.hold.ToString();
                     ad.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
                 }
             }
@@ -894,7 +864,7 @@ namespace FirstStep.Services
 
             foreach (var ad in advertisements)
             {
-                if (!IsActive(ad))
+                if (!AdvertisementValidation.IsActive(ad))
                 {
                     // when closed advertisement has no expired date, set the expired date to the current date
                     if (ad.expired_date == null) ad.expired_date = DateTime.Now;
@@ -926,53 +896,7 @@ namespace FirstStep.Services
         {
             var advertisement = await FindById(advertisementId);
 
-            return IsExpired(advertisement);
-        }
-
-        private bool IsExpired(Advertisement advertisement)
-        {
-            if (advertisement.submission_deadline == null)
-            {
-                return false;
-            }
-
-            return DateTime.Now > advertisement.submission_deadline;
-        }
-
-        private bool IsActive(Advertisement advertisement)
-        {
-            if (advertisement.current_status != AdvertisementStatus.active.ToString())
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool IsSaved(Advertisement advertisement, Seeker seeker)
-        {
-            if (advertisement.savedSeekers is null || !advertisement.savedSeekers.Contains(seeker))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private void ValidateStatus(string status)
-        {
-            var possibleStatuses = new List<string>
-            {
-                AdvertisementStatus.active.ToString(),
-                AdvertisementStatus.closed.ToString(),
-                AdvertisementStatus.hold.ToString(),
-                "all"
-            };
-
-            if (!possibleStatuses.Contains(status))
-            {
-                throw new InvalidDataException("Invalid status.");
-            }
+            return AdvertisementValidation.IsExpired(advertisement);
         }
 
         public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)

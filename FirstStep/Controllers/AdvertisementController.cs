@@ -185,21 +185,6 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("SendApplication")]
-        public async Task<IActionResult> SendApplication(AddApplicationDto addApplicationDto)
-        {
-            await _service.CreateApplication(addApplicationDto);
-            try
-            {  
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return ReturnStatusCode(e);
-            }
-        }
-
         [HttpPut]
         [Route("UpdateAdvertisement/{jobID:int}")]
         public async Task<IActionResult> UpdateAdvertisement(UpdateAdvertisementDto reqAdvertisement, int jobID)
@@ -278,10 +263,9 @@ namespace FirstStep.Controllers
         [Route("DeleteAdvertisement/confirm=true/{jobID:int}")]
         public async Task<IActionResult> DeleteAdvertisementWithConfirmation(int jobID)
         {
-            await _service.Delete(jobID, true);
             try
             {
-//                await _service.Delete(jobID, true);
+                await _service.Delete(jobID, true);
                 return Ok();
             }
             catch (Exception e)

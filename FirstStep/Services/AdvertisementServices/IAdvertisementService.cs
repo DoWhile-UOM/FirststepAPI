@@ -45,8 +45,6 @@ namespace FirstStep.Services
 
         Task RemoveSavedExpiredAdvertisements();
 
-        Task CreateApplication(AddApplicationDto newApplication);
-
         Task<bool> IsExpired(int jobID);
     }
 }
