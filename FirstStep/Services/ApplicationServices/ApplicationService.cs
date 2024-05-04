@@ -2,6 +2,7 @@ using AutoMapper;
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -11,25 +12,39 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IRevisionService _revisionService;
-        private readonly ISeekerService _seekerService;
 
         public ApplicationService(
             DataContext context, 
             IMapper mapper, 
-            IRevisionService revisionService,
-            ISeekerService seekerService)
+            IRevisionService revisionService)
         {
             _context = context;
             _mapper = mapper;
             _revisionService = revisionService;
-            _seekerService = seekerService;
         }
 
-        enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected }
+        public enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected, Done }
 
         public async Task Create(AddApplicationDto newApplicationDto)
         {
-            // validate application
+            // get advertisement by id
+            var advertisement = await _context.Advertisements.FindAsync(newApplicationDto.advertisement_id);
+
+            // validate advertisement
+            if (advertisement is null)
+            {
+                throw new InvalidDataException("Advertisement not found.");
+            }
+            else if (AdvertisementValidation.IsExpired(advertisement))
+            {
+                throw new InvalidDataException("Advertisement is expired.");
+            }
+            else if (!AdvertisementValidation.IsActive(advertisement))
+            {
+                throw new InvalidDataException("Advertisement is not active.");
+            }
+
+            // get applications by seeker id
             var applications = await GetBySeekerId(newApplicationDto.seeker_id);
 
             foreach (var application in applications)
@@ -38,7 +53,7 @@ namespace FirstStep.Services
                     && application.seeker_id == newApplicationDto.seeker_id
                     && application.status == ApplicationStatus.NotEvaluated.ToString())
                 {
-                    throw new Exception("Can't apply for an advertisement that is already applied and in the waiting list");
+                    throw new InvalidDataException("Can't apply for an advertisement that is already applied and in the waiting list");
                 }
             }
 
@@ -54,6 +69,12 @@ namespace FirstStep.Services
         {
             Application application = await GetById(id);
             
+            _context.Applications.Remove(application);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task Delete(Application application)
+        {
             _context.Applications.Remove(application);
             await _context.SaveChangesAsync();
         }
@@ -115,7 +136,10 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)
         {
-            ICollection<Application> applications = await _context.Applications.Where(a => a.seeker_id == id).ToListAsync();
+            // get all applications that send by the seeker and not completed
+            var applications = await _context.Applications
+                .Include("advertisement")
+                .Where(a => a.seeker_id == id && a.status != ApplicationStatus.Done.ToString()).ToListAsync();
 
             return applications;
         }
@@ -128,6 +152,19 @@ namespace FirstStep.Services
             dbApplication.submitted_date = application.submitted_date;
 
             await _context.SaveChangesAsync();           
+        }
+
+        public string GetCurrentApplicationStatus(Application application)
+        {
+            if (application.revisions == null)
+            {
+                return ApplicationStatus.NotEvaluated.ToString();
+            }
+
+            // get last revision
+            Revision lastRevision = application.revisions.OrderBy(a => a.date).Last();
+
+            return lastRevision.status;
         }
 
         public async Task<int> NumberOfApplicationsByAdvertisementId(int id)

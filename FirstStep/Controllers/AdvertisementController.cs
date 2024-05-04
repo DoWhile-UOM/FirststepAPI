@@ -18,11 +18,11 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAdvertisements(int seekerID, int pageLength)
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAllAdvertisements(int seekerID, int pageLength)
         {
             try
             {
-                return Ok(await _service.GetFirstPage(seekerID, pageLength));
+                return Ok(await _service.GetAllWithPages(seekerID, pageLength));
             }
             catch (Exception e)
             {
@@ -37,6 +37,34 @@ namespace FirstStep.Controllers
             try
             {
                 return Ok(await _service.GetById(jobIDs.Split(',').Select(int.Parse), seekerID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetRecommendedAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetRecommendedAdvertisements(int seekerID, int pageLength)
+        {
+            try
+            {
+                return Ok(await _service.GetRecommendedAdvertisements(seekerID, pageLength));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetRecommendedAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}/city={city}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetRecommendedAdvertisements(int seekerID, string city, int pageLength)
+        {
+            try
+            {
+                return Ok(await _service.GetRecommendedAdvertisements(seekerID, city, pageLength));
             }
             catch (Exception e)
             {
@@ -114,9 +142,23 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetAppliedAdvertisements/seekerID={seekerID:int}")]
+        public async Task<ActionResult<IEnumerable<AppliedAdvertisementShortDto>>> GetAppliedAdvertisements(int seekerID)
+        {
+            try
+            {
+                return Ok(await _service.GetAppliedAdvertisements(seekerID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
         [HttpPost]
         [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<AdvertisementFirstPageDto>> SearchAdvertisementsBasic(int seekerID, int pageLength, SearchJobRequestDto requestDto)
+        public async Task<ActionResult<AdvertisementFirstPageDto>> SearchAdvertisements(int seekerID, int pageLength, SearchJobRequestDto requestDto)
         {
             try
             {
@@ -147,11 +189,6 @@ namespace FirstStep.Controllers
         [Route("UpdateAdvertisement/{jobID:int}")]
         public async Task<IActionResult> UpdateAdvertisement(UpdateAdvertisementDto reqAdvertisement, int jobID)
         {
-            if (reqAdvertisement is null)
-            {
-                return StatusCode(StatusCodes.Status404NotFound, "Null Reference");
-            }
-
             if (jobID != reqAdvertisement.advertisement_id)
             {
                 return StatusCode(StatusCodes.Status406NotAcceptable, "Advertisement ID in the request body does not match the ID in the URL.");
@@ -168,7 +205,7 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("ChangeStatus/{jobID:int}/status={newStatus}")]
         public async Task<IActionResult> ChangeStatus(int jobID, string newStatus)
         {
@@ -183,7 +220,7 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
         public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {
@@ -209,7 +246,26 @@ namespace FirstStep.Controllers
         {
             try
             {
-                await _service.Delete(jobID);
+                await _service.Delete(jobID, false);
+                return Ok();
+            }
+            catch (InvalidOperationException e)
+            {
+                return StatusCode(StatusCodes.Status406NotAcceptable, e.Message);
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpDelete]
+        [Route("DeleteAdvertisement/confirm=true/{jobID:int}")]
+        public async Task<IActionResult> DeleteAdvertisementWithConfirmation(int jobID)
+        {
+            try
+            {
+                await _service.Delete(jobID, true);
                 return Ok();
             }
             catch (Exception e)
