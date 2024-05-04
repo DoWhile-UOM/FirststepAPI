@@ -12,15 +12,18 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IRevisionService _revisionService;
+        private readonly IFileService _fileService;
 
         public ApplicationService(
             DataContext context, 
             IMapper mapper, 
-            IRevisionService revisionService)
+            IRevisionService revisionService,
+            IFileService fileService)
         {
             _context = context;
             _mapper = mapper;
             _revisionService = revisionService;
+            _fileService = fileService;
         }
 
         public enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected, Done }
