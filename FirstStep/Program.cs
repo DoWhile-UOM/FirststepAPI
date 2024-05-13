@@ -1,8 +1,10 @@
+using FirstStep.AuthHandler;
 using FirstStep.Data;
 using FirstStep.Services;
 using FirstStep.Services.BackgroundServices;
 using FirstStep.Services.UserServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -86,6 +88,23 @@ builder.Services.AddAuthentication(x =>
         //ClockSkew = TimeSpan.Zero
     };
 });
+
+//Authorization Handler
+builder.Services.AddSingleton<IAuthorizationHandler, AuthHandler>();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ShouldBeAdmin", policy =>
+    {
+        policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+        policy.RequireAuthenticatedUser();
+
+
+        // add the custom requirement to the policy
+        policy.Requirements.Add(new AuthRequirement("1075"));
+    });
+});
+
+
 
 var app = builder.Build();
 

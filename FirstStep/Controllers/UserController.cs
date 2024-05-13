@@ -99,7 +99,7 @@ namespace FirstStep.Controllers
         }
 
         //Test comments
-        [Authorize]
+        [Authorize(Policy = "ShouldBeAdmin")]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
