@@ -16,7 +16,7 @@ namespace FirstStep.Services
             _blobServiceClient = new BlobServiceClient(azureconnectionstring);
             _blobcontainerClient = _blobServiceClient.GetBlobContainerClient("firststep");
         }
-        
+       
         public async Task<List<Azure.Response<BlobContentInfo>>> UploadFiles(List<IFormFile> files)
         {
 
@@ -35,7 +35,22 @@ namespace FirstStep.Services
 
             return azureResponse;
         }
-        
+       
+
+        public async Task<string> UploadFileWithApplication(IFormFile file)
+        {
+         
+            
+            string fileName= $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var blobClient = _blobcontainerClient.GetBlobClient(fileName);
+            using (var stream = file.OpenReadStream())
+            {
+               await  blobClient.UploadAsync(stream, true);
+            }
+
+            return fileName;
+        }
+
         public async Task<List<BlobItem>> GetUploadedBlobs()
         {
             var items = new List<BlobItem>();
@@ -79,5 +94,7 @@ namespace FirstStep.Services
             var blobUrlWithSas = $"{blobClient.Uri}?{sasToken}";
             return blobUrlWithSas;
         }
+
+       
     }
 }

@@ -60,9 +60,15 @@ namespace FirstStep.Services
                 }
             }
 
+            //upload cv file to Azure Blob Storage
+            string cvBlobName = await _fileService.UploadFileWithApplication(newApplicationDto.cv);
+
             Application newApplication = _mapper.Map<Application>(newApplicationDto);
 
             newApplication.status = ApplicationStatus.NotEvaluated.ToString();
+
+            //store cv file name in the database
+            newApplication.cv_name= cvBlobName;
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();

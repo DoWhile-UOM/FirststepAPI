@@ -12,7 +12,7 @@ namespace FirstStep.Models
 
         public required DateTime submitted_date { get; set; } = DateTime.Now;
 
-        public required string CVurl { get; set; }
+        public required string cv_name { get; set; }
 
         public string? doc1_url { get; set; }
 
