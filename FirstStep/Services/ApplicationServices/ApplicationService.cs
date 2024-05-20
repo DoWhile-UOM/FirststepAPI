@@ -68,7 +68,7 @@ namespace FirstStep.Services
             newApplication.status = ApplicationStatus.NotEvaluated.ToString();
 
             //store cv file name in the database
-            newApplication.cv_name= cvBlobName;
+            newApplication.CVurl = cvBlobName;
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();
