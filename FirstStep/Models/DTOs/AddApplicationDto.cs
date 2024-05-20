@@ -3,9 +3,8 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace FirstStep.Models.DTOs
 {
-    public struct AddApplicationDto
+    public class AddApplicationDto
     {
-      
         
         public required int advertisement_id { get; set; }
 
