@@ -217,16 +217,6 @@ namespace FirstStep.Services
             _emailService.EvaluatedCompanyRegistraionApplicationEmail(unRegCompany.company_email, companyRegInfo.verification_status, companyRegInfo.comment, link, unRegCompany.company_name);
 
         }
-        public async Task UpdateCompanyApplication(int companyID, UpdateRegistrationStatusDto companyRegistrationInfo)
-        {
-            var company = await FindByID(companyID);
-            
-            company.verification_status = companyRegistrationInfo.verification_status;
-            company.comment = companyRegistrationInfo.comment;
-
-            await _context.SaveChangesAsync();
-
-        }
 
         public async Task RegisterCompany(int companyID, AddDetailsCompanyDto company)
         {
