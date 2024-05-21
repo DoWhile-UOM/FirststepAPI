@@ -4,7 +4,7 @@
     {
         public required string email { get; set; }
 
-        public required string password_hash { get; set; }
+        public required string password { get; set; }
 
         public required string first_name { get; set; }
 

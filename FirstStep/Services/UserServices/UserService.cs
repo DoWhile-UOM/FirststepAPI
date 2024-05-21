@@ -10,7 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
-namespace FirstStep.Services.UserServices
+namespace FirstStep.Services
 {
     public class UserService: IUserService
     {
@@ -18,26 +18,17 @@ namespace FirstStep.Services.UserServices
         private readonly ICompanyService _companyService;
         private readonly IEmployeeService _employeeService;
         private readonly IEmailService _emailService;
-        private readonly ISeekerService _seekerService;
 
-        public UserService(DataContext context, ICompanyService companyService, IEmployeeService employeeService, IEmailService emailService, ISeekerService seekerService)
+        public UserService(DataContext context, 
+            ICompanyService companyService, 
+            IEmployeeService employeeService, 
+            IEmailService emailService)
         {
             _context = context;
             _companyService = companyService;
             _employeeService = employeeService;
             _emailService = emailService;
-            _seekerService = seekerService;
         }
-
-        //Authentication Result return types
-        public class AuthenticationResult
-        {
-            public bool IsSuccessful { get; set; }
-            public TokenApiDto? Token { get; set; }
-            public string? ErrorMessage { get; set; }
-        }
-
-
 
         //User Authentication
         public async Task<AuthenticationResult> Authenticate(LoginRequestDto userObj)
@@ -60,7 +51,6 @@ namespace FirstStep.Services.UserServices
             return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken } };
         }
 
-
         //Refresh Token
         public async Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto)
         {
@@ -81,16 +71,11 @@ namespace FirstStep.Services.UserServices
             await _context.SaveChangesAsync();
 
             return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = await newAccessToken, RefreshToken = newRefreshToken } };
-
         }
 
-
-
-
         //Register User
-        public async Task<string> RegisterUser(UserRegRequestDto userObj,string? type,string? company_id) // UserRegRequestDto must modify
+        public async Task<string> RegisterUser(UserRegRequestDto userObj, string? type,string? company_id) // UserRegRequestDto must modify
         {
-
             //var result = await _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
             //Console.WriteLine(result);
 
@@ -109,8 +94,6 @@ namespace FirstStep.Services.UserServices
                 return passCheck.ToString();
 
             userObj.password_hash = PasswordHasher.Hasher(userObj.password_hash);//Hash password before saving to database
-            //userObj.Role = "User";
-            //userObj.token = CreateVerifyToken();
 
             string user_type;
 
@@ -181,9 +164,13 @@ namespace FirstStep.Services.UserServices
             _context.SaveChanges();
 
             return "User Registered Successfully";
-
         }
 
+        //Check if email already exists
+        public async Task<bool> CheckEmailExist(string Email)
+        {
+            return await _context.Users.AnyAsync(x => x.email == Email);
+        }
 
         ///Password Strength Checker
         private static string PasswordStrengthCheck(string pass)
@@ -196,12 +183,6 @@ namespace FirstStep.Services.UserServices
             if (!Regex.IsMatch(pass, "[<,>,@,!,#,$,%,^,&,*,(,),_,+,\\[,\\],{,},?,:,;,|,',\\,.,/,~,`,-,=]"))
                 sb.Append("Password should contain special charcter" + Environment.NewLine);
             return sb.ToString();
-        }
-
-        //Check if email already exists
-        private async Task<bool> CheckEmailExist(string Email)
-        {
-            return await _context.Users.AnyAsync(x => x.email == Email);
         }
 
         //Create JWT Token
@@ -274,19 +255,6 @@ namespace FirstStep.Services.UserServices
             if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("This is Invalid Token");
             return principal;
-
         }
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

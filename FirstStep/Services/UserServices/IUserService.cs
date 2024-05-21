@@ -1,7 +1,6 @@
 ﻿using FirstStep.Models.DTOs;
-using static FirstStep.Services.UserServices.UserService;
 
-namespace FirstStep.Services.UserServices
+namespace FirstStep.Services
 {
     public interface IUserService
     {
@@ -11,6 +10,6 @@ namespace FirstStep.Services.UserServices
 
         Task<string> RegisterUser(UserRegRequestDto userObj, string? type, string? company_id);
 
-
+        Task<bool> CheckEmailExist(string Email);
     }
 }

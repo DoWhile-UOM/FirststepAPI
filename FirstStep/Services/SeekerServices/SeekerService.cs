@@ -13,7 +13,7 @@ namespace FirstStep.Services
         private readonly IMapper _mapper;
         private readonly ISkillService _seekerSkillService;
 
-        public SeekerService(DataContext context, IMapper mapper, ISkillService seekerSkillService)
+        public SeekerService(DataContext context, IMapper mapper, ISkillService seekerSkillService, IUserService userService)
         {
             _context = context;
             _mapper = mapper;
@@ -50,23 +50,23 @@ namespace FirstStep.Services
             var seeker = _mapper.Map<Seeker>(newSeeker);
 
             // user type is seeker
-            seeker.user_type = "SEEKER";
+            seeker.user_type = "seeker";
 
             if (newSeeker == null)
                 return "Null User";
 
             //check if email already exists
-            if (await CheckEmailExist(newSeeker.email))
+            if (await _context.Users.AnyAsync(x => x.email == seeker.email))
                 return "Email Already exist";//email already exists
 
-
             //password strength check
-            var passCheck = UserCreateHelper.PasswordStrengthCheck(newSeeker.password_hash);
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newSeeker.password);
 
             if (!string.IsNullOrEmpty(passCheck))
                 return passCheck.ToString();
 
-            seeker.password_hash = PasswordHasher.Hasher(newSeeker.password_hash);//Hash password before saving to database
+            //Hash password before saving to database
+            seeker.password_hash = PasswordHasher.Hasher(newSeeker.password);
 
             // Add skills to seeker
             if (newSeeker.seekerSkills != null)
@@ -102,33 +102,10 @@ namespace FirstStep.Services
         }
 
 
-        //Check if email already exists
-        private async Task<bool> CheckEmailExist(string Email)
-        {
-            return await _context.Users.AnyAsync(x => x.email == Email);
-        }
+        
 
         public async Task Update(int seekerId, Seeker seeker)
         {
-            // For ruwandie, please follow these steps to update the Seeker object with relationships:
-
-            // first create a DTO called UpdateSeekerDto
-            // add all the properties that you want to update in the Seeker object
-            // in the Seeker object, add a property called seekerSkills of type List<string>
-            // in this function, need to map the Seeker object to the UpdateSeekerDto object
-            // then update the Seeker object with the new values wihout skills
-
-            // for to update skills, need to consider about relationship between Seeker and Skill (m to m)
-
-            // for update the seeker's skills
-            // first, find the already exists skill in the database
-            // if the skill exists, add it to the seeker's list of skills
-            // if the skill doesn't exist, create it and add it to the seeker's list of skills
-
-
-
-            // this is the update function without updating the skills
-
             // for get the seeker object from the database
             Seeker dbSeeker = await GetById(seekerId);
 
