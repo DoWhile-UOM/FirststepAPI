@@ -221,6 +221,21 @@ namespace FirstStep.Controllers
         }
 
         [HttpPatch]
+        [Route("ChangeStatus/{jobID:int}/reactivate/newSubmissionDeadline={newDeadline}")]
+        public async Task<IActionResult> ReactivateAdvertisement(int jobID, DateTime? newDeadline)
+        {
+            try
+            {
+                await _service.ReactivateAdvertisement(jobID, newDeadline);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpPatch]
         [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
         public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {

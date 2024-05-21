@@ -31,6 +31,8 @@ namespace FirstStep.Services
 
         Task ChangeStatus(int id, string newStatus);
 
+        Task ReactivateAdvertisement(int id, DateTime? submissionDeadline);
+
         Task Update(int jobID, UpdateAdvertisementDto advertisement);
 
         Task SaveAdvertisement(int advertisementId, int seekerId, bool isSave);

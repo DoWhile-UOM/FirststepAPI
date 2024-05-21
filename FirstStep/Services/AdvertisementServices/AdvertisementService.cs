@@ -250,6 +250,28 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task ReactivateAdvertisement(int id, DateTime? submissionDeadline)
+        {
+            var advertisement = await FindById(id);
+
+            if (AdvertisementValidation.IsActive(advertisement))
+            {
+                // no need to update the submission deadline, because the advertisement is already active
+                return;
+            }
+
+            if (submissionDeadline < DateTime.Now)
+            {
+                throw new InvalidDataException("Submission deadline cannot be in the past.");
+            }
+
+            advertisement.current_status = AdvertisementValidation.Status.active.ToString();
+            advertisement.submission_deadline = submissionDeadline;
+            advertisement.expired_date = null;
+
+            await _context.SaveChangesAsync();
+        }
+
         public async Task ChangeStatus(int id, string newStatus)
         {
             AdvertisementValidation.CheckStatus(newStatus);
