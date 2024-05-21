@@ -13,7 +13,7 @@ namespace FirstStep.Services
         private readonly IMapper _mapper;
         private readonly ISkillService _seekerSkillService;
 
-        public SeekerService(DataContext context, IMapper mapper, ISkillService seekerSkillService, IUserService userService)
+        public SeekerService(DataContext context, IMapper mapper, ISkillService seekerSkillService)
         {
             _context = context;
             _mapper = mapper;

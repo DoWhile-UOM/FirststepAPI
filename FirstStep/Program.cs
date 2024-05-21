@@ -1,7 +1,6 @@
 using FirstStep.Data;
 using FirstStep.Services;
 using FirstStep.Services.BackgroundServices;
-using FirstStep.Services.UserServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -48,7 +47,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 // DataContext Configuration
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("FITiotServerConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"));
 });
 
 // Services Configuration
