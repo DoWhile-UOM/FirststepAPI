@@ -3,6 +3,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Firststep.Exception.cs;
 
 namespace FirstStep.Controllers
 {
@@ -67,6 +68,20 @@ namespace FirstStep.Controllers
         {
             await _service.Delete(id);
             return Ok();
+        }
+        //task delegation
+        [HttpPost]
+        [Route("DelegateTask/{companyId,advertisement}")]
+        public async Task InitiateTaskDelegation(int company_id, Advertisement advertisement)
+        {
+            try
+            {
+                return Ok(await _service.InitiateTaskDelegation(company_id, advertisement));
+            } 
+            catch(Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
         }
     }
 }
