@@ -9,7 +9,7 @@ namespace FirstStep.Services
 
         public Task<Application> GetById(int id);
 
-        public Task<IEnumerable<HRManagerApplicationListDto>> GetHRManagerAdertisementListByJobID(int jobID);
+        public Task<ApplicationListingPageDto> GetApplicationList(int jobID, string status);
 
         public Task<IEnumerable<Application>> GetBySeekerId(int id);
 

@@ -38,6 +38,10 @@ namespace FirstStep.MapperProfile
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
 
             CreateMap<Advertisement, AdvertisementTableRowDto>();
+            CreateMap<Advertisement, ApplicationListingPageDto>()
+                .ForMember(
+                    des => des.field_name,
+                    opt => opt.MapFrom(src => src.job_Field!.field_name));
             
             CreateMap<Company, CompanyProfileDto>();
             CreateMap<Seeker, SeekerApplicationDto>();
@@ -48,7 +52,7 @@ namespace FirstStep.MapperProfile
             CreateMap<Company, CompanyProfileDetailsDto>();
 
 
-            CreateMap<Application, HRManagerApplicationListDto>()
+            CreateMap<Application, ApplicationListDto>()
                 .ForMember(
                     des => des.seekerName,
                     opt => opt.MapFrom(src => src.seeker!.first_name + " " + src.seeker!.last_name));
