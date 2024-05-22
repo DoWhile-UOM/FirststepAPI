@@ -24,7 +24,7 @@
 
         public string? linkedin { get; set; }
 
-        public required int field_id { get; set; }
+        public int field_id { get; set; }
 
         public List<string>? seekerSkills { get; set; }
     }
