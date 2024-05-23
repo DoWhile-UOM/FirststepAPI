@@ -222,11 +222,18 @@ namespace FirstStep.Controllers
 
         [HttpPatch]
         [Route("ChangeStatus/{jobID:int}/reactivate/newSubmissionDeadline={newDeadline}")]
-        public async Task<IActionResult> ReactivateAdvertisement(int jobID, DateTime? newDeadline)
+        public async Task<IActionResult> ReactivateAdvertisement(int jobID, string newDeadline)
         {
             try
             {
-                await _service.ReactivateAdvertisement(jobID, newDeadline);
+                if (newDeadline == "")
+                {
+                    await _service.ReactivateAdvertisement(jobID, null);
+                }
+                else
+                {
+                    await _service.ReactivateAdvertisement(jobID, DateTime.Parse(newDeadline));
+                }
                 return Ok();
             }
             catch (Exception e)
