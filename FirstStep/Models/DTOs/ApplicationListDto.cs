@@ -6,7 +6,7 @@
 
         public string seekerName { get; set; }
 
-        public string status { get; set; }
+        public string status { get; set; } // Yes, No, Pending
 
         public bool is_evaluated { get; set; }
 
