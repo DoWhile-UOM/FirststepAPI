@@ -226,7 +226,7 @@ namespace FirstStep.Controllers
         {
             try
             {
-                if (newDeadline == "")
+                if (newDeadline == "-1")
                 {
                     await _service.ReactivateAdvertisement(jobID, null);
                 }
