@@ -203,16 +203,29 @@ namespace FirstStep.Services
         //Task delegation strats here
 
         //selecting applcations for evalution
-        public async Task<IEnumerable<Application>> SelectApplicationsForEvaluation(Advertisement advertisement)
+        public async Task<IEnumerable<Application>> SelectApplicationsForEvaluation(int advertisement_id)
         {
+            //get the advertisement
+            var advertisement = await _context.Advertisements.FindAsync(advertisement_id);
             // Initialize applicationsOfTheAdvertisement as an empty list
             IEnumerable<Application> applicationsOfTheAdvertisement = new List<Application>();
-
-            //Validating the advertisment to check whether it is expired
-            if (AdvertisementValidation.IsExpired(advertisement))
+            
+            if (Enum.TryParse(advertisement.current_status, out AdvertisementValidation.Status status) &&
+            status == AdvertisementValidation.Status.hold)
             {
-                applicationsOfTheAdvertisement = (await FindByAdvertisementId(advertisement.advertisement_id)).Where(a => a.assigned_hrAssistant_id == null);
+                
+                    //Validating the advertisment to check whether it is expired
+                    if (advertisement != null)
+                    {
+                        if (AdvertisementValidation.IsExpired(advertisement))
+                        {
+                            applicationsOfTheAdvertisement = (await FindByAdvertisementId(advertisement.advertisement_id)).Where(a => a.assigned_hrAssistant_id == null);
+                        }
+                    }
+
+                
             }
+                
 
             return applicationsOfTheAdvertisement;
         }
@@ -221,31 +234,31 @@ namespace FirstStep.Services
         //selecting applications for evaluation ends here
 
         // initiating task delegation
-        public async Task InitiateTaskDelegation(int company_id,Advertisement advertisement)
+        public async Task InitiateTaskDelegation(int company_id,int advertisement_id)
         {
             // Get all HR assistants for the specified company
             IEnumerable<Employee> hrAssistants = await _employeeService.GetAllHRAssistants(company_id);
 
             // Get applications that need evaluation for the specified company
-            List<Application> applicationsForEvaluation = (await SelectApplicationsForEvaluation(advertisement)).ToList();
+            List<Application> applicationsForEvaluation = (await SelectApplicationsForEvaluation(advertisement_id)).ToList();
 
             // Check if there are no applications for evaluation
             if (!applicationsForEvaluation.Any())
             {
-                throw new NoApplicationsToEvaluateException("No applications for evaluation."); // HTTP 204 No Content
+                throw new NullReferenceException("No applications for evaluation."); // HTTP 204 No Content
             }
 
             // Check if there are fewer than 2 HR assistants
             if (hrAssistants.Count() < 2)
             {
-                throw new NotEnoughHRAssistantsForEvaluationException("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+                throw new NullReferenceException("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
             }
 
             // Delegate tasks to HR assistants
              await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
 
             // Return a success response
-            throw new SuccessfulTaskDelegationException("Task Delegation is successfully done."); // HTTP 200 OK
+             // HTTP 200 OK
         }
 
 

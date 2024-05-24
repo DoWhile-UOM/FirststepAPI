@@ -3,7 +3,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Firststep.Exception.cs;
+
 
 namespace FirstStep.Controllers
 {
@@ -71,17 +71,28 @@ namespace FirstStep.Controllers
         }
         //task delegation
         [HttpPost]
-        [Route("DelegateTask/{companyId,advertisement}")]
-        public async Task InitiateTaskDelegation(int company_id, Advertisement advertisement)
+        [Route("DelegateTask/{company_id},{advertisement}")]
+        public async Task<IActionResult> DelegateTaskToHRAssistants(int company_id, int advertisement_id)
         {
             try
             {
-                return Ok(await _service.InitiateTaskDelegation(company_id, advertisement));
-            } 
-            catch(Exception e)
+                //check whether that advertismentID exists
+                await _service.InitiateTaskDelegation(company_id, advertisement_id);
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
             {
-                return ReturnStatusCode(e);
+                return NoContent(); // HTTP 204 No Content
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
+                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
             }
         }
+
     }
 }
