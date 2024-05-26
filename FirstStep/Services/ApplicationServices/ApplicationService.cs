@@ -60,8 +60,18 @@ namespace FirstStep.Services
                 }
             }
 
+            string cvBlobName = null;
+            //use new cv
+            if(!newApplicationDto.UseDefaultCv)
+            {
+                if(newApplicationDto.cv == null)
+                {
+                    throw new InvalidDataException("cv file is required if not using the default cv");
+                }
+                cvBlobName = await _fileService.UploadFileWithApplication(newApplicationDto.cv);
+            }
+
             //upload cv file to Azure Blob Storage
-            string cvBlobName = await _fileService.UploadFileWithApplication(newApplicationDto.cv);
 
             Application newApplication = _mapper.Map<Application>(newApplicationDto);
 

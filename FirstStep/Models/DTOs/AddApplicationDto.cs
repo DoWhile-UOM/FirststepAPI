@@ -10,11 +10,13 @@ namespace FirstStep.Models.DTOs
 
         public required int seeker_id { get; set; }
        
-        public required IFormFile cv { get; set; }
+        public  IFormFile? cv { get; set; }
 
-        public string? doc1_url { get; set; }
+        public required bool UseDefaultCv { get; set; }
 
-        public string? doc2_url { get; set; }
+      /*  public string? doc1_url { get; set; }
+
+        public string? doc2_url { get; set; }*/
         
     }
 }
