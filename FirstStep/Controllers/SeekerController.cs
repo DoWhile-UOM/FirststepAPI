@@ -33,6 +33,14 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetById(seekerId));
         }
 
+        [HttpGet]
+        [Route("GetSeekerDetails/{seekerId:int}")]
+        public async Task<ActionResult<SeekerApplicationDto>> GetSeekerDetails(int seekerId)
+        {
+            return Ok(await _service.GetSeekerDetails(seekerId));
+        }
+
+
         [HttpPost]
         [Route("AddSeeker")]
 

@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public class SeekerApplicationDto
+    public struct SeekerApplicationDto
     {
         public required string email { get; set; }
 

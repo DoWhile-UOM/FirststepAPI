@@ -34,6 +34,13 @@ namespace FirstStep.Helper
             return (float)distance;
         }
 
+        public static float GetDistance(Coordinate cityCoordinate1, Coordinate cityCoordinate2)
+        {
+            double distance = CalculateDistance(cityCoordinate1, cityCoordinate2);
+
+            return (float)distance;
+        }
+
         public static async Task<Coordinate> GetCoordinates(string cityName)
         {
             // URL for the Nominatim API
