@@ -9,7 +9,7 @@ namespace FirstStep.Helper
         public double Longitude { get; set; }
     }
 
-    public static class MapAPI
+    public static class Map
     {
         private static HttpClient? client = null;
 

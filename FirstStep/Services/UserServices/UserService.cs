@@ -28,7 +28,7 @@ namespace FirstStep.Services.UserServices
             public string? ErrorMessage { get; set; }
         }
 
-
+        public enum UserType { seeker, ca, hrm, hra, sa }
 
         //User Authentication
         public async Task<AuthenticationResult> Authenticate(LoginRequestDto userObj)
@@ -171,23 +171,37 @@ namespace FirstStep.Services.UserServices
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes("AshanMatheeshaSecretKeythisisSecret");
 
-            User? dbUser = await _context.Users.FirstOrDefaultAsync(u => u.user_id == user.user_id);
+            var identity = new ClaimsIdentity();
 
-            if (dbUser == null)
+            if (user.user_type == UserType.ca.ToString() || user.user_type == UserType.hrm.ToString() || user.user_type == UserType.hra.ToString())
             {
-                throw new Exception("User not found");
+                Employee? emp = await _context.Employees.Include("company").Where(x => x.user_id == user.user_id).FirstOrDefaultAsync();
+
+                if (emp == null)
+                    return "Employee Not Found";
+                if (emp.company == null)
+                    return "Company Not Found";
+
+                identity = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, emp.user_id.ToString()),
+                    new Claim(ClaimTypes.Role, emp.user_type), //Store role in JWT Token (seeker ,sa ,HRM ,HRA, ca)
+                    new Claim(ClaimTypes.GivenName, emp.first_name + ' ' + emp.last_name),
+                    new Claim("CompanyName", emp.company.company_name),
+                    new Claim("CompanyID", emp.company.company_id.ToString()),
+                });
+            }
+            else
+            {
+                identity = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
+                    new Claim(ClaimTypes.Role, user.user_type), //Store role in JWT Token (seeker ,sa ,HRM ,HRA, ca)
+                    new Claim(ClaimTypes.GivenName, user.first_name + ' ' + user.last_name)
+                });
             }
 
-            var identity = new ClaimsIdentity(new Claim[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
-                new Claim(ClaimTypes.Role, dbUser.user_type),//Store role in JWT Token (seeker ,sa ,HRM ,HRA, ca)
-                new Claim(ClaimTypes.GivenName, user.first_name),
-                new Claim(ClaimTypes.Surname,user.last_name),
-                new Claim(ClaimTypes.Webpage, user.first_name)
-            });
-
-            identity.AddClaim(new Claim(ClaimTypes.Webpage, dbUser.user_type));
+            identity.AddClaim(new Claim(ClaimTypes.Webpage, user.user_type));
 
             var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
