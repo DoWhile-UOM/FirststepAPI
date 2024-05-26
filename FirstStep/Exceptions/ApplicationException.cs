@@ -1,4 +1,4 @@
-﻿namespace FirstStep.Validation
+﻿namespace FirstStep.Exceptions
 {
     // Base exception class, if you want to extend from it in the future
     public class ApplicationException : Exception
