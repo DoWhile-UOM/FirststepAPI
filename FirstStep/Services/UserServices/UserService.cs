@@ -30,8 +30,6 @@ namespace FirstStep.Services
             _emailService = emailService;
         }
 
-        public enum UserType { seeker, ca, hrm, hra, sa }
-
         //User Authentication
         public async Task<AuthenticationResult> Authenticate(LoginRequestDto userObj)
         {
@@ -195,7 +193,7 @@ namespace FirstStep.Services
 
             var identity = new ClaimsIdentity();
 
-            if (user.user_type == UserType.ca.ToString() || user.user_type == UserType.hrm.ToString() || user.user_type == UserType.hra.ToString())
+            if (user.user_type == User.UserType.ca.ToString() || user.user_type == User.UserType.hrm.ToString() || user.user_type == User.UserType.hra.ToString())
             {
                 Employee? emp = await _context.Employees.Include("company").Where(x => x.user_id == user.user_id).FirstOrDefaultAsync();
 

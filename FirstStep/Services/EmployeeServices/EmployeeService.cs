@@ -54,7 +54,10 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id)
         {
-            ICollection<Employee> hrManagers = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type == "HRM").ToListAsync();
+            ICollection<Employee> hrManagers = await _context.Employees
+                .Where(e => e.company_id == company_Id && e.user_type == User.UserType.hrm.ToString())
+                .ToListAsync();
+
             if (hrManagers is null)
             {
                 throw new Exception("There are no HR Managers under the company");
@@ -65,7 +68,9 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllHRAssistants(int company_Id)
         {
-            ICollection<HRAssistant> hrAssistants = await _context.HRAssistants.Where(e => e.company_id == company_Id && e.user_type == "HRA").ToListAsync();
+            ICollection<HRAssistant> hrAssistants = await _context.HRAssistants
+                .Where(e => e.company_id == company_Id && e.user_type == User.UserType.hra.ToString())
+                .ToListAsync();
             if (hrAssistants is null)
             {
                 throw new Exception("There are no HR Assistants under the company");
@@ -76,7 +81,9 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllEmployees(int company_Id)
         {
-            ICollection<Employee> employees = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type != "CA").ToListAsync();
+            ICollection<Employee> employees = await _context.Employees
+                .Where(e => e.company_id == company_Id && e.user_type != User.UserType.ca.ToString())
+                .ToListAsync();
             if (employees is null)
             {
                 throw new Exception("There are no employees under the company");
@@ -98,7 +105,7 @@ namespace FirstStep.Services
             var hrManager = _mapper.Map<HRManager>(newHRManager);
 
             hrManager.password_hash = newHRManager.password;
-            hrManager.user_type = "HRM";
+            hrManager.user_type = User.UserType.hrm.ToString();
 
             _context.HRManagers.Add(hrManager);
             await _context.SaveChangesAsync();
@@ -111,7 +118,7 @@ namespace FirstStep.Services
             var hrAssistant = _mapper.Map<HRAssistant>(newHRAssistant);
 
             hrAssistant.password_hash = newHRAssistant.password;
-            hrAssistant.user_type = "HRA";
+            hrAssistant.user_type = User.UserType.hra.ToString();
 
             _context.HRAssistants.Add(hrAssistant);
             await _context.SaveChangesAsync();
@@ -149,7 +156,7 @@ namespace FirstStep.Services
             //Hash password before saving to database
             companyAdmin.password_hash = PasswordHasher.Hasher(newCompanyAdmin.password);
 
-            companyAdmin.user_type = "ca";
+            companyAdmin.user_type = User.UserType.ca.ToString();
             companyAdmin.admin_company = company;
 
             _context.HRManagers.Add(companyAdmin);

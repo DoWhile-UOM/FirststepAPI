@@ -145,7 +145,7 @@ namespace Firststep.Migrations
 
                     b.HasIndex("hrManager_id");
 
-                    b.ToTable("Advertisements");
+                    b.ToTable("Advertisements", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Application", b =>
@@ -190,7 +190,7 @@ namespace Firststep.Migrations
 
                     b.HasIndex("seeker_id");
 
-                    b.ToTable("Applications");
+                    b.ToTable("Applications", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
@@ -251,9 +251,6 @@ namespace Firststep.Migrations
                     b.Property<string>("company_website")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("registration_url")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("verification_status")
                         .HasColumnType("bit");
 
@@ -268,7 +265,7 @@ namespace Firststep.Migrations
 
                     b.HasIndex("verified_system_admin_id");
 
-                    b.ToTable("Companies");
+                    b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.JobField", b =>
@@ -285,7 +282,7 @@ namespace Firststep.Migrations
 
                     b.HasKey("field_id");
 
-                    b.ToTable("JobFields");
+                    b.ToTable("JobFields", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.OTPRequest", b =>
@@ -301,7 +298,7 @@ namespace Firststep.Migrations
 
                     b.HasKey("email");
 
-                    b.ToTable("OTPRequests");
+                    b.ToTable("OTPRequests", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.ProfessionKeyword", b =>
@@ -323,7 +320,7 @@ namespace Firststep.Migrations
 
                     b.HasIndex("field_id");
 
-                    b.ToTable("ProfessionKeywords");
+                    b.ToTable("ProfessionKeywords", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Revision", b =>
@@ -356,7 +353,7 @@ namespace Firststep.Migrations
 
                     b.HasIndex("employee_id");
 
-                    b.ToTable("Revisions");
+                    b.ToTable("Revisions", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.Skill", b =>
@@ -373,7 +370,7 @@ namespace Firststep.Migrations
 
                     b.HasKey("skill_id");
 
-                    b.ToTable("Skills");
+                    b.ToTable("Skills", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.User", b =>
@@ -415,7 +412,7 @@ namespace Firststep.Migrations
 
                     b.HasKey("user_id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.UseTptMappingStrategy();
                 });
@@ -494,14 +491,14 @@ namespace Firststep.Migrations
                 {
                     b.HasBaseType("FirstStep.Models.Employee");
 
-                    b.ToTable("HRAssistants");
+                    b.ToTable("HRAssistants", (string)null);
                 });
 
             modelBuilder.Entity("FirstStep.Models.HRManager", b =>
                 {
                     b.HasBaseType("FirstStep.Models.Employee");
 
-                    b.ToTable("HRManagers");
+                    b.ToTable("HRManagers", (string)null);
                 });
 
             modelBuilder.Entity("AdvertisementProfessionKeyword", b =>

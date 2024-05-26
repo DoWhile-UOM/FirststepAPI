@@ -64,7 +64,7 @@ namespace FirstStep.Services
                 }
             }
 
-            string cvBlobName = null;
+            string cvBlobName = "";
             //use new cv
             if(!newApplicationDto.UseDefaultCv)
             {
