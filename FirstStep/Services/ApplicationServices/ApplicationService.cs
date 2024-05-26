@@ -5,8 +5,6 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MimeKit.Encodings;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FirstStep.Services
 {
@@ -16,16 +14,17 @@ namespace FirstStep.Services
         private readonly IMapper _mapper;
         private readonly IRevisionService _revisionService;
         private readonly IEmployeeService _employeeService;
-        
 
         public ApplicationService(
             DataContext context, 
             IMapper mapper, 
-            IRevisionService revisionService)
+            IRevisionService revisionService,
+            IEmployeeService employeeService)
         {
             _context = context;
             _mapper = mapper;
             _revisionService = revisionService;
+            _employeeService = employeeService;
         }
 
         public enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected, Done }
