@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FirstStep.Data;
+using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Validation;
@@ -129,8 +130,20 @@ namespace FirstStep.Services
 
             var companyAdmin = _mapper.Map<HRManager>(newCompanyAdmin);
 
-            companyAdmin.password_hash = newCompanyAdmin.password;
-            companyAdmin.user_type = "CA";
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == newCompanyAdmin.email))
+                throw new Exception("Email Already exist");
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newCompanyAdmin.password);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                throw new Exception(passCheck);
+
+            //Hash password before saving to database
+            companyAdmin.password_hash = PasswordHasher.Hasher(newCompanyAdmin.password);
+
+            companyAdmin.user_type = "ca";
             companyAdmin.admin_company = company;
 
             _context.HRManagers.Add(companyAdmin);

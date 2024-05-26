@@ -48,6 +48,7 @@ namespace FirstStep.MapperProfile
             CreateMap<AddEmployeeDto, HRAssistant>();
             CreateMap<Company, CompanyProfileDetailsDto>();
 
+            CreateMap<Application, HRManagerApplicationListDto>()
 
             CreateMap<Application, ApplicationListDto>()
                 .ForMember(
@@ -56,6 +57,10 @@ namespace FirstStep.MapperProfile
 
             CreateMap<AddApplicationDto, Application>();
             
+            CreateMap<Company, ViewCompanyListDto>();
+            CreateMap<Company, CompanyApplicationDto>();
+            CreateMap<Company, CompanyApplicationDto>();
+
             CreateMap<Advertisement, ApplicationListingPageDto>()
                 .ForMember(
                     des => des.field_name,

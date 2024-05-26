@@ -49,7 +49,7 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("AddApplication")]
-        public async Task<IActionResult> AddApplication(AddApplicationDto newApplication)
+        public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
         {
             await _service.Create(newApplication);
             return Ok();

@@ -13,17 +13,20 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IRevisionService _revisionService;
+        private readonly IFileService _fileService;
         private readonly IEmployeeService _employeeService;
 
         public ApplicationService(
             DataContext context, 
             IMapper mapper, 
             IRevisionService revisionService,
+            IFileService fileService)
             IEmployeeService employeeService)
         {
             _context = context;
             _mapper = mapper;
             _revisionService = revisionService;
+            _fileService = fileService;
             _employeeService = employeeService;
         }
 
@@ -61,9 +64,25 @@ namespace FirstStep.Services
                 }
             }
 
+            string cvBlobName = null;
+            //use new cv
+            if(!newApplicationDto.UseDefaultCv)
+            {
+                if(newApplicationDto.cv == null)
+                {
+                    throw new InvalidDataException("cv file is required if not using the default cv");
+                }
+                cvBlobName = await _fileService.UploadFileWithApplication(newApplicationDto.cv);
+            }
+
+            //upload cv file to Azure Blob Storage
+
             Application newApplication = _mapper.Map<Application>(newApplicationDto);
 
             newApplication.status = ApplicationStatus.NotEvaluated.ToString();
+
+            //store cv file name in the database
+            newApplication.CVurl = cvBlobName;
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();
