@@ -206,23 +206,16 @@ namespace FirstStep.Services
         //selecting applcations for evalution
         public async Task<IEnumerable<Application>> SelectApplicationsForEvaluation(int advertisement_id)
         {
-            
             //get the advertisement
             var advertisement = await _context.Advertisements.FindAsync(advertisement_id);
             // Initialize applicationsOfTheAdvertisement as an empty list
             IEnumerable<Application> applicationsOfTheAdvertisement = new List<Application>();
             if (advertisement != null) {
-                if (Enum.TryParse(advertisement.current_status, out AdvertisementValidation.Status status) &&
-                status == AdvertisementValidation.Status.hold)
-                {
-                    if (AdvertisementValidation.IsExpired(advertisement))
-                    {
-                        applicationsOfTheAdvertisement = (await FindByAdvertisementId(advertisement.advertisement_id)).Where(a => a.assigned_hrAssistant_id == null);
-                        return applicationsOfTheAdvertisement;
-                    }
-
+                var stauts = advertisement.current_status;
+                if (stauts == AdvertisementValidation.Status.hold.ToString()&& AdvertisementValidation.IsExpired(advertisement)){
+                    applicationsOfTheAdvertisement = (await FindByAdvertisementId(advertisement.advertisement_id)).Where(a => a.assigned_hrAssistant_id == null);
+                    return applicationsOfTheAdvertisement;
                 }
-                throw new NullReferenceException("No applications for evaluation."); // HTTP 204 No Content // should be replace with a suitable exception
             }
             throw new NullReferenceException("No applications for evaluation."); // HTTP 204 No Content
         }
