@@ -140,7 +140,7 @@ namespace FirstStep.Services
                 advertisements.Add(await FindById(adId));
             }
 
-            return await CreateAdvertisementList(advertisements, seekerID, false);
+            return await CreateSeekerAdvertisementList(advertisements, seekerID, false);
         }
 
         // fill the advertisement form when updating an advertisement
@@ -168,7 +168,7 @@ namespace FirstStep.Services
 
             var dbAdvertisements = await FindByCompanyID(companyID);
 
-            return await CreateAdvertisementList(dbAdvertisements, status);
+            return await CreateCompanyAdvertisementList(dbAdvertisements, status);
         }
 
         public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title)
@@ -195,12 +195,49 @@ namespace FirstStep.Services
                     }
                 }
 
-                return await CreateAdvertisementList(filteredAdvertisements, status);
+                return await CreateCompanyAdvertisementList(filteredAdvertisements, status);
             }
             else
             {
                 return await GetByCompanyID(companyID, status);
             }
+        }
+
+        public async Task<IEnumerable<AdvertisementHRATableRowDto>> GetAssignedAdvertisementsByHRA(int hra_userID)
+        {
+            // get hra by user id
+            HRAssistant? hra = await _context.HRAssistants
+                .Include("applications")
+                .Where(hra => hra.user_id == hra_userID)
+                .FirstOrDefaultAsync();
+
+            if (hra is null)
+            {
+                throw new NullReferenceException("HR Assistant not found.");
+            }
+
+            if (hra.applications is null)
+            {
+                return new List<AdvertisementHRATableRowDto>();
+            }
+
+            Dictionary<int, Advertisement> assignedAdvertisements = new Dictionary<int, Advertisement>();
+
+            foreach (var application in hra.applications)
+            {
+                if (!assignedAdvertisements.ContainsKey(application.advertisement_id))
+                {
+                    // find advertisement by id
+                    Advertisement? assignedAd = await FindById(application.advertisement_id);
+
+                    if (assignedAd is not null)
+                    {
+                        assignedAdvertisements.Add(application.advertisement_id, assignedAd);
+                    }
+                }
+            }
+
+            return await CreateHRAAdvertisementList(assignedAdvertisements.Values, hra);
         }
 
         public async Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, int noOfResultsPerPage)
@@ -247,6 +284,28 @@ namespace FirstStep.Services
 
             newAdvertisement.current_status = AdvertisementValidation.Status.active.ToString();
             _context.Advertisements.Add(newAdvertisement);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task ReactivateAdvertisement(int id, DateTime? submissionDeadline)
+        {
+            var advertisement = await FindById(id);
+
+            if (AdvertisementValidation.IsActive(advertisement))
+            {
+                // no need to update the submission deadline, because the advertisement is already active
+                return;
+            }
+
+            if (submissionDeadline < DateTime.Now)
+            {
+                throw new InvalidDataException("Submission deadline cannot be in the past.");
+            }
+
+            advertisement.current_status = AdvertisementValidation.Status.active.ToString();
+            advertisement.submission_deadline = submissionDeadline;
+            advertisement.expired_date = null;
+
             await _context.SaveChangesAsync();
         }
 
@@ -354,7 +413,7 @@ namespace FirstStep.Services
             // get all advertisements (with closed advrtisements)
             var advertisements = await FindAll(false);
 
-            return await CreateAdvertisementList(advertisements, seekerID, true);
+            return await CreateSeekerAdvertisementList(advertisements, seekerID, true);
         }
         
         public async Task<IEnumerable<AppliedAdvertisementShortDto>> GetAppliedAdvertisements(int seekerID)
@@ -474,7 +533,7 @@ namespace FirstStep.Services
             AdvertisementFirstPageDto firstPageResults = new AdvertisementFirstPageDto();
 
             // select only number of advertisements per page
-            firstPageResults.FirstPageAdvertisements = await CreateAdvertisementList(dbAds.Take(noOfresultsPerPage), seekerID, false);
+            firstPageResults.FirstPageAdvertisements = await CreateSeekerAdvertisementList(dbAds.Take(noOfresultsPerPage), seekerID, false);
 
             // add all advertisement ids into a list
             firstPageResults.allAdvertisementIds = dbAds.Select(e => e.advertisement_id).ToList();
@@ -483,7 +542,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of AdvertisementCardDtos and create advertisement list for the seeker
-        private async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID, bool isSaveOnly)
+        private async Task<IEnumerable<AdvertisementShortDto>> CreateSeekerAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID, bool isSaveOnly)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
 
@@ -508,27 +567,59 @@ namespace FirstStep.Services
             return adCardDtos;
         }
 
-        // map the advertisements to a list of JobOfferDtos and create advertisement list for the company
-        private async Task<IEnumerable<AdvertisementTableRowDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        // map the advertisements to a list of JobOfferDtos and create advertisement list for the company (Company Admin and HR Manager)
+        private async Task<IEnumerable<AdvertisementTableRowDto>> CreateCompanyAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
         {
-            // map to jobofferDtos
             var jobOfferDtos = new List<AdvertisementTableRowDto>();
 
             foreach (var ad in dbAds)
             {
-                var jobOfferDto = _mapper.Map<AdvertisementTableRowDto>(ad);
-
                 if (status != "all" && ad.current_status != status)
                 {
                     continue;
                 }
 
+                var jobOfferDto = _mapper.Map<AdvertisementTableRowDto>(ad);
+
                 jobOfferDto.field_name = ad.job_Field!.field_name;
 
                 jobOfferDto.no_of_applications = await _applicationService.NumberOfApplicationsByAdvertisementId(ad.advertisement_id);
-                jobOfferDto.no_of_evaluated_applications = await _applicationService.TotalNotEvaluatedApplications(ad.advertisement_id);
+                jobOfferDto.no_of_evaluated_applications = await _applicationService.TotalEvaluatedApplications(ad.advertisement_id);
                 jobOfferDto.no_of_accepted_applications = await _applicationService.AcceptedApplications(ad.advertisement_id);
                 jobOfferDto.no_of_rejected_applications = await _applicationService.RejectedApplications(ad.advertisement_id);
+
+                jobOfferDtos.Add(jobOfferDto);
+            }
+
+            return jobOfferDtos;
+        }
+
+        // map advertisements to a list of AdvertisementHRATableRowDto and create advertisement list for the HR Assistant
+        private async Task<IEnumerable<AdvertisementHRATableRowDto>> CreateHRAAdvertisementList(IEnumerable<Advertisement> dbAds, HRAssistant hra)
+        {
+            var jobOfferDtos = new List<AdvertisementHRATableRowDto>();
+
+            foreach (var ad in dbAds)
+            {
+                // select only advertisements that are in hold status
+                // because only hold advertisements are suitable for evaluating
+                if (ad.current_status != AdvertisementValidation.Status.hold.ToString())
+                {
+                    continue;
+                }
+
+                var jobOfferDto = _mapper.Map<AdvertisementHRATableRowDto>(ad);
+
+                jobOfferDto.field_name = ad.job_Field!.field_name;
+
+                jobOfferDto.no_of_applications = await _applicationService.NumberOfApplicationsByAdvertisementId(ad.advertisement_id);
+                jobOfferDto.no_of_assigned_applications = hra.applications!.Where(a => a.advertisement_id == ad.advertisement_id).Count();
+                jobOfferDto.no_of_evaluated_applications = hra.applications!
+                    .Where(a => 
+                        a.advertisement_id == ad.advertisement_id && 
+                        a.status != ApplicationService.ApplicationStatus.NotEvaluated.ToString())
+                    .Count();
+                jobOfferDto.no_of_nonevaluated_applications = jobOfferDto.no_of_assigned_applications - jobOfferDto.no_of_evaluated_applications;
 
                 jobOfferDtos.Add(jobOfferDto);
             }
@@ -659,11 +750,11 @@ namespace FirstStep.Services
             var filteredAdvertisements = new List<Advertisement> { };
 
             // get coordinates of the requested city
-            var reqCityCoordinate = await MapAPI.GetCoordinates(reqCity.ToLower());
+            var reqCityCoordinate = await Map.GetCoordinates(reqCity.ToLower());
 
             foreach (Advertisement advertisement in advertisements)
             {
-                if (await MapAPI.GetDistance(advertisement.city, reqCityCoordinate) <= reqDistance)
+                if (await Map.GetDistance(advertisement.city, reqCityCoordinate) <= reqDistance)
                 {
                     filteredAdvertisements.Add(advertisement);
                 }
@@ -768,7 +859,7 @@ namespace FirstStep.Services
         private async Task<Dictionary<int, float>> FindAdvertisementsMatchingWithDistance(string city, IEnumerable<Advertisement> advertisements)
         {
             // get distance from the seeker's city to matching advertisements' cities
-            Coordinate seekerCityCoordinate = await MapAPI.GetCoordinates(city.ToLower());
+            Coordinate seekerCityCoordinate = await Map.GetCoordinates(city.ToLower());
 
             // hold advertisements that match with the seeker's skills and distance
             Dictionary<int, float> advertisementDistances = new Dictionary<int, float>();
@@ -784,8 +875,8 @@ namespace FirstStep.Services
             {
                 if (recentCalculatedDistances.ContainsKey(ad.city.ToLower()))
                 {
-                    adCityCoordinate = await MapAPI.GetCoordinates(ad.city.ToLower());
-                    adDistance = MapAPI.GetDistance(seekerCityCoordinate, adCityCoordinate);
+                    adCityCoordinate = await Map.GetCoordinates(ad.city.ToLower());
+                    adDistance = Map.GetDistance(seekerCityCoordinate, adCityCoordinate);
 
                     recentCalculatedDistances.Add(ad.city.ToLower(), adDistance);
                 }
@@ -897,46 +988,6 @@ namespace FirstStep.Services
             var advertisement = await FindById(advertisementId);
 
             return AdvertisementValidation.IsExpired(advertisement);
-        }
-
-        public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)
-        {
-            var advertisements = await FindAll(true);
-
-            // convert advertisements into kdtree
-            var tree = new KdTree<float, Advertisement>(5, new FloatMath());
-
-            foreach (var ad in advertisements)
-            {
-                // Add each advertisement to the k-d tree
-                var key = new[]
-                {
-                    (float)ad.title.GetHashCode(),
-                    (float)ad.country.GetHashCode(),
-                    (float)ad.city.GetHashCode(),
-                    (float)ad.employeement_type.GetHashCode(),
-                    (float)ad.arrangement.GetHashCode()
-                };
-
-                tree.Add(key, ad);
-            }
-            
-            var userRequest = new[]
-            {
-                (float)requestAdsDto.title!.GetHashCode(),
-                (float)requestAdsDto.country!.GetHashCode(),
-                (float)requestAdsDto.city!.GetHashCode(),
-                (float)requestAdsDto.employeement_type!.GetHashCode(),
-                (float)requestAdsDto.arrangement!.GetHashCode()
-            };
-
-            var nearestAds = tree.GetNearestNeighbours(userRequest, 10);
-
-            //var closestAd = nearestAds.FirstOrDefault()?.Value;
-
-            var filteredAdvertisements = nearestAds.Select(e => e.Value).ToList();
-
-            return await CreateAdvertisementList(filteredAdvertisements, seekerID, false);
         }
     }
 }

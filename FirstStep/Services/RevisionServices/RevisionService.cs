@@ -13,7 +13,7 @@ namespace FirstStep.Services
             _context = context;
         }
 
-        enum AdvertisementStatus { Evaluated, NotEvaluated, Accepted, Rejected }
+        enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected }
 
         public async Task<IEnumerable<Revision>> GetAll()
         {
@@ -42,7 +42,7 @@ namespace FirstStep.Services
 
         public async Task<string> GetCurrentStatus(int applicationID)
         {
-            Revision? revision = await _context.Revisions
+            Revision? last_revision = await _context.Revisions
                 .Where(r => r.application_id == applicationID)
                 .OrderByDescending(r => r.date)
                 .FirstOrDefaultAsync();
@@ -52,12 +52,29 @@ namespace FirstStep.Services
             // when it added by HR assistant, need to check again any hr manager is added a revision before that
 
 
-            if (revision is null)
+            if (last_revision is null)
             {
-                return AdvertisementStatus.NotEvaluated.ToString();
+                return ApplicationStatus.NotEvaluated.ToString();
             }
 
-            return revision.status;
+            return last_revision.status;
+        }
+
+        public string GetCurrentStatus(Application application)
+        {
+            if (application.revisions is null)
+            {
+                return ApplicationStatus.NotEvaluated.ToString();
+            }
+
+            Revision? last_revision = application.revisions.OrderByDescending(r => r.date).FirstOrDefault();
+
+            if (last_revision is null)
+            {
+                return ApplicationStatus.NotEvaluated.ToString();
+            }
+
+            return last_revision.status;
         }
 
         public async Task Create(Revision revision)

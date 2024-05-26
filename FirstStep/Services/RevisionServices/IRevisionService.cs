@@ -12,6 +12,8 @@ namespace FirstStep.Services
 
         public Task<string> GetCurrentStatus(int applicationID);
 
+        public string GetCurrentStatus(Application application);
+
         public Task Create(Revision revision);
 
         public Task Update(Revision revision);
