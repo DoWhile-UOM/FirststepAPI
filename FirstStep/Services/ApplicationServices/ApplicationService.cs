@@ -61,7 +61,7 @@ namespace FirstStep.Services
             }
 
             string cvBlobName;
-            //use new cv
+       
             if(newApplicationDto.UseDefaultCv)
             {
                 //use a placeholder for the default cv
@@ -74,22 +74,17 @@ namespace FirstStep.Services
                     throw new InvalidDataException("cv is required if not using default cv");
                 }
                 cvBlobName = await _fileService.UploadFileWithApplication(newApplicationDto.cv);
-            }
-           
-
+            }          
             //upload cv file to Azure Blob Storage
-
             Application newApplication = _mapper.Map<Application>(newApplicationDto);
 
             newApplication.status = ApplicationStatus.NotEvaluated.ToString();
-
             //store cv file name in the database
             newApplication.CVurl = cvBlobName;
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();
         }
-
         public async Task Delete(int id)
         {
             Application application = await GetById(id);
