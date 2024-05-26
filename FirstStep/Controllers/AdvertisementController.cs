@@ -130,7 +130,7 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAssignedAdvertisementsByHRA/hra_id={hra_userID:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAssignedAdvertisementsByHRA(int hra_userID)
+        public async Task<ActionResult<IEnumerable<AdvertisementHRATableRowDto>>> GetAssignedAdvertisementsByHRA(int hra_userID)
         {
             try
             {

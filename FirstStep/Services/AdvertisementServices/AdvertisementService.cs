@@ -203,7 +203,7 @@ namespace FirstStep.Services
             }
         }
 
-        public async Task<IEnumerable<AdvertisementTableRowDto>> GetAssignedAdvertisementsByHRA(int hra_userID)
+        public async Task<IEnumerable<AdvertisementHRATableRowDto>> GetAssignedAdvertisementsByHRA(int hra_userID)
         {
             // get hra by user id
             HRAssistant? hra = await _context.HRAssistants
@@ -218,7 +218,7 @@ namespace FirstStep.Services
 
             if (hra.applications is null)
             {
-                return new List<AdvertisementTableRowDto>();
+                return new List<AdvertisementHRATableRowDto>();
             }
 
             Dictionary<int, Advertisement> assignedAdvertisements = new Dictionary<int, Advertisement>();
@@ -237,9 +237,7 @@ namespace FirstStep.Services
                 }
             }
 
-            // create advertisement list by selecting only hold advertisements
-            // because only hold advertisements are suitable for evaluating
-            return await CreateCompanyAdvertisementList(assignedAdvertisements.Values, AdvertisementValidation.Status.hold.ToString());
+            return await CreateHRAAdvertisementList(assignedAdvertisements.Values, hra);
         }
 
         public async Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, int noOfResultsPerPage)
@@ -569,20 +567,19 @@ namespace FirstStep.Services
             return adCardDtos;
         }
 
-        // map the advertisements to a list of JobOfferDtos and create advertisement list for the company
+        // map the advertisements to a list of JobOfferDtos and create advertisement list for the company (Company Admin and HR Manager)
         private async Task<IEnumerable<AdvertisementTableRowDto>> CreateCompanyAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
         {
-            // map to jobofferDtos
             var jobOfferDtos = new List<AdvertisementTableRowDto>();
 
             foreach (var ad in dbAds)
             {
-                var jobOfferDto = _mapper.Map<AdvertisementTableRowDto>(ad);
-
                 if (status != "all" && ad.current_status != status)
                 {
                     continue;
                 }
+
+                var jobOfferDto = _mapper.Map<AdvertisementTableRowDto>(ad);
 
                 jobOfferDto.field_name = ad.job_Field!.field_name;
 
@@ -590,6 +587,39 @@ namespace FirstStep.Services
                 jobOfferDto.no_of_evaluated_applications = await _applicationService.TotalNotEvaluatedApplications(ad.advertisement_id);
                 jobOfferDto.no_of_accepted_applications = await _applicationService.AcceptedApplications(ad.advertisement_id);
                 jobOfferDto.no_of_rejected_applications = await _applicationService.RejectedApplications(ad.advertisement_id);
+
+                jobOfferDtos.Add(jobOfferDto);
+            }
+
+            return jobOfferDtos;
+        }
+
+        // map advertisements to a list of AdvertisementHRATableRowDto and create advertisement list for the HR Assistant
+        private async Task<IEnumerable<AdvertisementHRATableRowDto>> CreateHRAAdvertisementList(IEnumerable<Advertisement> dbAds, HRAssistant hra)
+        {
+            var jobOfferDtos = new List<AdvertisementHRATableRowDto>();
+
+            foreach (var ad in dbAds)
+            {
+                // select only advertisements that are in hold status
+                // because only hold advertisements are suitable for evaluating
+                if (ad.current_status != AdvertisementValidation.Status.hold.ToString())
+                {
+                    continue;
+                }
+
+                var jobOfferDto = _mapper.Map<AdvertisementHRATableRowDto>(ad);
+
+                jobOfferDto.field_name = ad.job_Field!.field_name;
+
+                jobOfferDto.no_of_applications = await _applicationService.NumberOfApplicationsByAdvertisementId(ad.advertisement_id);
+                jobOfferDto.no_of_assigned_applications = hra.applications!.Where(a => a.advertisement_id == ad.advertisement_id).Count();
+                jobOfferDto.no_of_evaluated_applications = hra.applications!
+                    .Where(a => 
+                        a.advertisement_id == ad.advertisement_id && 
+                        a.status != ApplicationService.ApplicationStatus.NotEvaluated.ToString())
+                    .Count();
+                jobOfferDto.no_of_nonevaluated_applications = jobOfferDto.no_of_assigned_applications - jobOfferDto.no_of_evaluated_applications;
 
                 jobOfferDtos.Add(jobOfferDto);
             }

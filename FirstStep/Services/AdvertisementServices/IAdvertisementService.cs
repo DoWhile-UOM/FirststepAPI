@@ -23,7 +23,7 @@ namespace FirstStep.Services
 
         Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title);
 
-        Task<IEnumerable<AdvertisementTableRowDto>> GetAssignedAdvertisementsByHRA(int hra_userID);
+        Task<IEnumerable<AdvertisementHRATableRowDto>> GetAssignedAdvertisementsByHRA(int hra_userID);
 
         Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID);
 
