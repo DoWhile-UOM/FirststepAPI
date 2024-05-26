@@ -20,7 +20,7 @@ namespace FirstStep.Services
             DataContext context, 
             IMapper mapper, 
             IRevisionService revisionService,
-            IFileService fileService)
+            IFileService fileService,
             IEmployeeService employeeService)
         {
             _context = context;

@@ -30,15 +30,6 @@ namespace FirstStep.Services
             _emailService = emailService;
         }
 
-        //Authentication Result return types
-        /*
-        public class AuthenticationResult
-        {
-            public bool IsSuccessful { get; set; }
-            public TokenApiDto? Token { get; set; }
-            public string? ErrorMessage { get; set; }
-        }*/
-
         public enum UserType { seeker, ca, hrm, hra, sa }
 
         //User Authentication
