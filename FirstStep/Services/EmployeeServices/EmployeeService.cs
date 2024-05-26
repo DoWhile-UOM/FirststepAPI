@@ -104,7 +104,19 @@ namespace FirstStep.Services
             
             var hrManager = _mapper.Map<HRManager>(newHRManager);
 
-            hrManager.password_hash = newHRManager.password;
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == newHRManager.email))
+                throw new Exception("Email Already exist");
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newHRManager.password);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                throw new Exception(passCheck);
+
+            //Hash password before saving to database
+            hrManager.password_hash = PasswordHasher.Hasher(newHRManager.password);
+
             hrManager.user_type = User.UserType.hrm.ToString();
 
             _context.HRManagers.Add(hrManager);
@@ -117,7 +129,18 @@ namespace FirstStep.Services
 
             var hrAssistant = _mapper.Map<HRAssistant>(newHRAssistant);
 
-            hrAssistant.password_hash = newHRAssistant.password;
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == newHRAssistant.email))
+                throw new Exception("Email Already exist");
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newHRAssistant.password);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                throw new Exception(passCheck);
+
+            //Hash password before saving to database
+            hrAssistant.password_hash = PasswordHasher.Hasher(newHRAssistant.password);
             hrAssistant.user_type = User.UserType.hra.ToString();
 
             _context.HRAssistants.Add(hrAssistant);
