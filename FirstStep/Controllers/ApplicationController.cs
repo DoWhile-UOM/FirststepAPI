@@ -70,42 +70,28 @@ namespace FirstStep.Controllers
             await _service.Delete(id);
             return Ok();
         }
-        //task delegation
+
         [HttpPost]
-        [Route("DelegateTask/{company_id}/{advertisement_id}")]
-        public async Task<IActionResult> DelegateTaskToHRAssistants(int company_id, int advertisement_id)
+        [Route("DelegateTask/jobID={jobID}")]
+        public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID)
         {
-            if (company_id == 0|| advertisement_id==0)
-            {
-                Console.WriteLine("0");
-                return NoContent();
-            }
             try
-             {
-                // Check whether that advertisementID exists and initiate task delegation
-                Console.WriteLine("1");
-                await _service.InitiateTaskDelegation(company_id, advertisement_id);
-                 return Ok("Task delegation initiated successfully.");
-             }
-             catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
-             {
-                Console.WriteLine("2");
+            {
+                await _service.InitiateTaskDelegation(jobID);
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
+            {
                 return NoContent(); // HTTP 204 No Content
-             }
-             catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
-             {
-                Console.WriteLine("3");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
                 return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
-             }
-             catch (Exception ex)
-             {
-                Console.WriteLine("4");
+            }
+            catch (Exception ex)
+            {
                 return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
-             }
-           
-              
+            }  
         }
-
-
     }
 }

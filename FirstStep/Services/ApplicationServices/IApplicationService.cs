@@ -33,9 +33,6 @@ namespace FirstStep.Services
 
         public Task<int> RejectedApplications(int jobId);
 
-        //task delegation
-        public Task<IEnumerable<Application>> SelectApplicationsForEvaluation(int advertisement_id);
-        public Task InitiateTaskDelegation(int company_id, int advertisement_id);
-        public Task DelegateTask(List<Employee> hrAssistants, List<Application> applications);
+        public Task InitiateTaskDelegation(int advertisement_id);
     }
 }

@@ -204,7 +204,7 @@ namespace FirstStep.Services
         //Task delegation strats here
 
         //selecting applcations for evalution
-        public async Task<IEnumerable<Application>> SelectApplicationsForEvaluation(Advertisement advertisement)
+        private async Task<IEnumerable<Application>> SelectApplicationsForEvaluation(Advertisement advertisement)
         {
             // Initialize applicationsOfTheAdvertisement as an empty list
             IEnumerable<Application> applicationsOfTheAdvertisement = new List<Application>();
@@ -261,7 +261,7 @@ namespace FirstStep.Services
 
 
         // delagateTaks 
-        public async Task DelegateTask(List<Employee> hrAssistants, List<Application> applications)
+        private async Task DelegateTask(List<Employee> hrAssistants, List<Application> applications)
         {
             var remainingApplications = applications.Count % hrAssistants.Count;
             var noOfApplicationsPerAssistant = (applications.Count - remainingApplications) / hrAssistants.Count;
