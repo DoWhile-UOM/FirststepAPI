@@ -23,5 +23,10 @@
     {
         public SuccessfulTaskDelegationException(string message) : base(message) { }
     }
+
+    public class ApplicationNotFoundException : ApplicationException
+    {
+        public ApplicationNotFoundException(string message) : base(message) { }
+    }
 }
 

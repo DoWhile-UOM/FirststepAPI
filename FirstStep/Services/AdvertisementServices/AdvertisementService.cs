@@ -140,7 +140,7 @@ namespace FirstStep.Services
                 advertisements.Add(await FindById(adId));
             }
 
-            return await CreateAdvertisementList(advertisements, seekerID, false);
+            return await CreateSeekerAdvertisementList(advertisements, seekerID, false);
         }
 
         // fill the advertisement form when updating an advertisement
@@ -168,7 +168,7 @@ namespace FirstStep.Services
 
             var dbAdvertisements = await FindByCompanyID(companyID);
 
-            return await CreateAdvertisementList(dbAdvertisements, status);
+            return await CreateCompanyAdvertisementList(dbAdvertisements, status);
         }
 
         public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title)
@@ -195,12 +195,51 @@ namespace FirstStep.Services
                     }
                 }
 
-                return await CreateAdvertisementList(filteredAdvertisements, status);
+                return await CreateCompanyAdvertisementList(filteredAdvertisements, status);
             }
             else
             {
                 return await GetByCompanyID(companyID, status);
             }
+        }
+
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetAssignedAdvertisementsByHRA(int hra_userID)
+        {
+            // get hra by user id
+            HRAssistant? hra = await _context.HRAssistants
+                .Include("applications")
+                .Where(hra => hra.user_id == hra_userID)
+                .FirstOrDefaultAsync();
+
+            if (hra is null)
+            {
+                throw new NullReferenceException("HR Assistant not found.");
+            }
+
+            if (hra.applications is null)
+            {
+                return new List<AdvertisementTableRowDto>();
+            }
+
+            Dictionary<int, Advertisement> assignedAdvertisements = new Dictionary<int, Advertisement>();
+
+            foreach (var application in hra.applications)
+            {
+                if (!assignedAdvertisements.ContainsKey(application.advertisement_id))
+                {
+                    // find advertisement by id
+                    Advertisement? assignedAd = await FindById(application.advertisement_id);
+
+                    if (assignedAd is not null)
+                    {
+                        assignedAdvertisements.Add(application.advertisement_id, assignedAd);
+                    }
+                }
+            }
+
+            // create advertisement list by selecting only hold advertisements
+            // because only hold advertisements are suitable for evaluating
+            return await CreateCompanyAdvertisementList(assignedAdvertisements.Values, AdvertisementValidation.Status.hold.ToString());
         }
 
         public async Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, int noOfResultsPerPage)
@@ -376,7 +415,7 @@ namespace FirstStep.Services
             // get all advertisements (with closed advrtisements)
             var advertisements = await FindAll(false);
 
-            return await CreateAdvertisementList(advertisements, seekerID, true);
+            return await CreateSeekerAdvertisementList(advertisements, seekerID, true);
         }
         
         public async Task<IEnumerable<AppliedAdvertisementShortDto>> GetAppliedAdvertisements(int seekerID)
@@ -496,7 +535,7 @@ namespace FirstStep.Services
             AdvertisementFirstPageDto firstPageResults = new AdvertisementFirstPageDto();
 
             // select only number of advertisements per page
-            firstPageResults.FirstPageAdvertisements = await CreateAdvertisementList(dbAds.Take(noOfresultsPerPage), seekerID, false);
+            firstPageResults.FirstPageAdvertisements = await CreateSeekerAdvertisementList(dbAds.Take(noOfresultsPerPage), seekerID, false);
 
             // add all advertisement ids into a list
             firstPageResults.allAdvertisementIds = dbAds.Select(e => e.advertisement_id).ToList();
@@ -505,7 +544,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of AdvertisementCardDtos and create advertisement list for the seeker
-        private async Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID, bool isSaveOnly)
+        private async Task<IEnumerable<AdvertisementShortDto>> CreateSeekerAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID, bool isSaveOnly)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
 
@@ -531,7 +570,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of JobOfferDtos and create advertisement list for the company
-        private async Task<IEnumerable<AdvertisementTableRowDto>> CreateAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        private async Task<IEnumerable<AdvertisementTableRowDto>> CreateCompanyAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
         {
             // map to jobofferDtos
             var jobOfferDtos = new List<AdvertisementTableRowDto>();
@@ -954,11 +993,9 @@ namespace FirstStep.Services
 
             var nearestAds = tree.GetNearestNeighbours(userRequest, 10);
 
-            //var closestAd = nearestAds.FirstOrDefault()?.Value;
-
             var filteredAdvertisements = nearestAds.Select(e => e.Value).ToList();
 
-            return await CreateAdvertisementList(filteredAdvertisements, seekerID, false);
+            return await CreateSeekerAdvertisementList(filteredAdvertisements, seekerID, false);
         }
     }
 }

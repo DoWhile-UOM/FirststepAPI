@@ -129,6 +129,20 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
+        [Route("GetAssignedAdvertisementsByHRA/hra_id={hra_userID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAssignedAdvertisementsByHRA(int hra_userID)
+        {
+            try
+            {
+                return Ok(await _service.GetAssignedAdvertisementsByHRA(hra_userID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
         [Route("GetSavedAdvertisements/seekerID={seekerID:int}")]
         public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetSavedAdvertisements(int seekerID)
         {
