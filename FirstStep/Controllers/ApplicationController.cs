@@ -3,8 +3,6 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 
 namespace FirstStep.Controllers
 {
@@ -55,6 +53,52 @@ namespace FirstStep.Controllers
             return Ok();
         }
 
+        [HttpPost]
+        [Route("DelegateTask/jobID={jobID}")]
+        public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID)
+        {
+            try
+            {
+                await _service.InitiateTaskDelegation(jobID, null);
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
+            {
+                return NoContent(); // HTTP 204 No Content
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
+                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
+            }
+        }
+
+        [HttpPost]
+        [Route("DelegateTask/jobID={jobID}/hra_id_list={hra_id_list}")]
+        public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID, string hra_id_list)
+        {
+            try
+            {
+                await _service.InitiateTaskDelegation(jobID, hra_id_list.Split(',').Select(int.Parse));
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
+            {
+                return NoContent(); // HTTP 204 No Content
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
+                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
+            }
+        }
+
         [HttpPut]
         [Route("UpdateApplication")]
         public async Task<IActionResult> UpdateCApplication(Application reqApplication)
@@ -70,42 +114,5 @@ namespace FirstStep.Controllers
             await _service.Delete(id);
             return Ok();
         }
-        //task delegation
-        [HttpPost]
-        [Route("DelegateTask/{company_id}/{advertisement_id}")]
-        public async Task<IActionResult> DelegateTaskToHRAssistants(int company_id, int advertisement_id)
-        {
-            if (company_id == 0|| advertisement_id==0)
-            {
-                Console.WriteLine("0");
-                return NoContent();
-            }
-            try
-             {
-                // Check whether that advertisementID exists and initiate task delegation
-                Console.WriteLine("1");
-                await _service.InitiateTaskDelegation(company_id, advertisement_id);
-                 return Ok("Task delegation initiated successfully.");
-             }
-             catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
-             {
-                Console.WriteLine("2");
-                return NoContent(); // HTTP 204 No Content
-             }
-             catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
-             {
-                Console.WriteLine("3");
-                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
-             }
-             catch (Exception ex)
-             {
-                Console.WriteLine("4");
-                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
-             }
-           
-              
-        }
-
-
     }
 }
