@@ -103,39 +103,54 @@ namespace FirstStep.Services
         {
             ICollection<Application> applications = await _context.Applications
                 .Include("seeker")
+                .Include("assigned_hrAssistant")
+                .Include("revisions")
                 .Where(a => a.advertisement_id == id)
                 .ToListAsync();
-            
-            if (applications is null)
-            {
-                throw new Exception("There are no applications under the advertisement");
-            }
 
             return applications;
         }
 
-        public async Task<IEnumerable<HRManagerApplicationListDto>> GetHRManagerAdertisementListByJobID(int jobID)
+        public async Task<ApplicationListingPageDto> GetApplicationList(int jobID, string status)
         {
+            var advertisement = await _context.Advertisements.Include("job_Field").FirstOrDefaultAsync(x => x.advertisement_id == jobID);
+
+            if (advertisement is null)
+            {
+                throw new InvalidDataException("Advertisement not found.");
+            }
+
+            var applicationListPage = _mapper.Map<ApplicationListingPageDto>(advertisement);
+
             var applications = await FindByAdvertisementId(jobID);
 
-            IEnumerable<HRManagerApplicationListDto> applicationList = new List<HRManagerApplicationListDto>();
+            List<ApplicationListDto> applicationList = new List<ApplicationListDto>();
 
             for (int i = 0; i < applications.Count(); i++)
             {
-                HRManagerApplicationListDto application = _mapper.Map<HRManagerApplicationListDto>(applications.ElementAt(i));
+                Application dbApplication = applications.ElementAt(i);
+                string applicationStatus = _revisionService.GetCurrentStatus(dbApplication);;
 
-                // find application status
-                application.status = await _revisionService.GetCurrentStatus(application.application_Id);
+                if (applicationStatus != status && status != "all")
+                {
+                    continue;
+                }
+
+                var application = _mapper.Map<ApplicationListDto>(dbApplication);
+
+                application.status = applicationStatus;
 
                 if (application.status != ApplicationStatus.NotEvaluated.ToString())
                 {
                     application.is_evaluated = true;
                 }
 
-                applicationList.Append(application);
+                applicationList.Add(application);
             }
 
-            return applicationList;
+            applicationListPage.applicationList = applicationList;
+
+            return applicationListPage;
         }
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)

@@ -34,10 +34,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetHRManagerApplicationListByAdvertisementID/JobID={jobId:int}")]
-        public async Task<ActionResult<IEnumerable<Application>>> GetHRManagerApplicationList(int jobId)
+        [Route("GetApplicationList/JobID={jobId:int}/status={status}")]
+        public async Task<ActionResult<ApplicationListingPageDto>> GetApplicationList(int jobId, string status)
         {
-            return Ok(await _service.GetHRManagerAdertisementListByJobID(jobId));
+            return Ok(await _service.GetApplicationList(jobId, status));
         }
 
         [HttpGet]
