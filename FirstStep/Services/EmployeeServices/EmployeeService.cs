@@ -84,6 +84,12 @@ namespace FirstStep.Services
             return employees;
         }
 
+        public async Task<IEnumerable<Employee>> GetEmployees(IEnumerable<int> emp_ids)
+        {
+            IEnumerable<Employee> employees = await _context.Employees.Where(e => emp_ids.Contains(e.user_id)).ToListAsync();
+            return employees;
+        }
+
         public async Task CreateHRManager(AddEmployeeDto newHRManager)
         {
             await ValidateCompany(newHRManager.company_id);

@@ -204,16 +204,16 @@ namespace FirstStep.Services
         //Task delegation strats here
 
         //selecting applcations for evalution
-        private async Task<IEnumerable<Application>> SelectApplicationsForEvaluation(Advertisement advertisement)
+        private async Task<List<Application>> SelectApplicationsForEvaluation(Advertisement advertisement)
         {
             // Initialize applicationsOfTheAdvertisement as an empty list
-            IEnumerable<Application> applicationsOfTheAdvertisement = new List<Application>();
+            List<Application> applicationsOfTheAdvertisement = new List<Application>();
             
             var stauts = advertisement.current_status;
 
             if (stauts == AdvertisementValidation.Status.hold.ToString() && AdvertisementValidation.IsExpired(advertisement))
             {
-                applicationsOfTheAdvertisement = (await FindByAdvertisementId(advertisement.advertisement_id)).Where(a => a.assigned_hrAssistant_id == null);
+                applicationsOfTheAdvertisement = (await FindByAdvertisementId(advertisement.advertisement_id)).Where(a => a.assigned_hrAssistant_id == null).ToList();
                 
                 // return applications that need evaluate
                 return applicationsOfTheAdvertisement;
@@ -222,9 +222,8 @@ namespace FirstStep.Services
             throw new NullReferenceException("No applications for evaluation."); // HTTP 204 No Content
         }
 
-
         // initiating task delegation
-        public async Task InitiateTaskDelegation(int advertisement_id)
+        public async Task InitiateTaskDelegation(int advertisement_id, IEnumerable<int>? hrassistant_ids)
         {
             //get the advertisement
             var advertisement = await _context.Advertisements.Include("hrManager").Where(ad => ad.advertisement_id == advertisement_id).FirstOrDefaultAsync();
@@ -234,11 +233,21 @@ namespace FirstStep.Services
                 throw new NullReferenceException("Advertisement not found."); // HTTP 204 No Content
             }
 
-            // Get all HR assistants for the specified company
-            IEnumerable<Employee> hrAssistants = await _employeeService.GetAllHRAssistants(advertisement.hrManager!.company_id);
+            IEnumerable<Employee> hrAssistants;
+            
+            if (hrassistant_ids is not null)
+            {
+                // get requested hr assistants
+                hrAssistants = await _employeeService.GetEmployees(hrassistant_ids);
+            }
+            else
+            {
+                // get all HR assistants for the specified company
+                hrAssistants = await _employeeService.GetAllHRAssistants(advertisement.hrManager!.company_id);
+            }
 
             // Get applications that need evaluation for the specified company
-            List<Application> applicationsForEvaluation = (await SelectApplicationsForEvaluation(advertisement)).ToList();
+            List<Application> applicationsForEvaluation = await SelectApplicationsForEvaluation(advertisement);
 
             // Check if there are no applications for evaluation
             if (!applicationsForEvaluation.Any())
@@ -253,12 +262,11 @@ namespace FirstStep.Services
             }
 
             // Delegate tasks to HR assistants
-             await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
+            await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
 
             // Return a success response
-             // HTTP 200 OK
+            // HTTP 200 OK
         }
-
 
         // delagateTaks 
         private async Task DelegateTask(List<Employee> hrAssistants, List<Application> applications)

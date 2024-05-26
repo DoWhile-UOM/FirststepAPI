@@ -3,8 +3,6 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 
 namespace FirstStep.Controllers
 {
@@ -55,6 +53,52 @@ namespace FirstStep.Controllers
             return Ok();
         }
 
+        [HttpPost]
+        [Route("DelegateTask/jobID={jobID}")]
+        public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID)
+        {
+            try
+            {
+                await _service.InitiateTaskDelegation(jobID, null);
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
+            {
+                return NoContent(); // HTTP 204 No Content
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
+                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
+            }
+        }
+
+        [HttpPost]
+        [Route("DelegateTask/jobID={jobID}/hra_id_list={hra_id_list}")]
+        public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID, string hra_id_list)
+        {
+            try
+            {
+                await _service.InitiateTaskDelegation(jobID, hra_id_list.Split(',').Select(int.Parse));
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
+            {
+                return NoContent(); // HTTP 204 No Content
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
+                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
+            }
+        }
+
         [HttpPut]
         [Route("UpdateApplication")]
         public async Task<IActionResult> UpdateCApplication(Application reqApplication)
@@ -69,29 +113,6 @@ namespace FirstStep.Controllers
         {
             await _service.Delete(id);
             return Ok();
-        }
-
-        [HttpPost]
-        [Route("DelegateTask/jobID={jobID}")]
-        public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID)
-        {
-            try
-            {
-                await _service.InitiateTaskDelegation(jobID);
-                return Ok("Task delegation initiated successfully.");
-            }
-            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
-            {
-                return NoContent(); // HTTP 204 No Content
-            }
-            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
-            {
-                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
-            }  
         }
     }
 }
