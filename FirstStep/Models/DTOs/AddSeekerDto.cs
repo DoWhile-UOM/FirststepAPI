@@ -4,7 +4,7 @@
     {
         public required string email { get; set; }
 
-        public required string password_hash { get; set; }
+        public required string password { get; set; }
 
         public required string first_name { get; set; }
 
@@ -18,7 +18,7 @@
 
         public string? university { get; set; }
 
-        public required string CVurl { get; set; }
+        public required string cVurl { get; set; }
 
         public string? profile_picture { get; set; }
 
