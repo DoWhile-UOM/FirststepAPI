@@ -53,7 +53,7 @@ namespace FirstStep.Controllers
             return Ok();
         }
 
-        [HttpPost]
+        [HttpPatch]
         [Route("DelegateTask/jobID={jobID}")]
         public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID)
         {
@@ -76,7 +76,7 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPatch]
         [Route("DelegateTask/jobID={jobID}/hra_id_list={hra_id_list}")]
         public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID, string hra_id_list)
         {
