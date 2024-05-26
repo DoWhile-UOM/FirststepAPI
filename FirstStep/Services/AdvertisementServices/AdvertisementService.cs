@@ -584,7 +584,7 @@ namespace FirstStep.Services
                 jobOfferDto.field_name = ad.job_Field!.field_name;
 
                 jobOfferDto.no_of_applications = await _applicationService.NumberOfApplicationsByAdvertisementId(ad.advertisement_id);
-                jobOfferDto.no_of_evaluated_applications = await _applicationService.TotalNotEvaluatedApplications(ad.advertisement_id);
+                jobOfferDto.no_of_evaluated_applications = await _applicationService.TotalEvaluatedApplications(ad.advertisement_id);
                 jobOfferDto.no_of_accepted_applications = await _applicationService.AcceptedApplications(ad.advertisement_id);
                 jobOfferDto.no_of_rejected_applications = await _applicationService.RejectedApplications(ad.advertisement_id);
 
@@ -988,44 +988,6 @@ namespace FirstStep.Services
             var advertisement = await FindById(advertisementId);
 
             return AdvertisementValidation.IsExpired(advertisement);
-        }
-
-        public async Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID)
-        {
-            var advertisements = await FindAll(true);
-
-            // convert advertisements into kdtree
-            var tree = new KdTree<float, Advertisement>(5, new FloatMath());
-
-            foreach (var ad in advertisements)
-            {
-                // Add each advertisement to the k-d tree
-                var key = new[]
-                {
-                    (float)ad.title.GetHashCode(),
-                    (float)ad.country.GetHashCode(),
-                    (float)ad.city.GetHashCode(),
-                    (float)ad.employeement_type.GetHashCode(),
-                    (float)ad.arrangement.GetHashCode()
-                };
-
-                tree.Add(key, ad);
-            }
-            
-            var userRequest = new[]
-            {
-                (float)requestAdsDto.title!.GetHashCode(),
-                (float)requestAdsDto.country!.GetHashCode(),
-                (float)requestAdsDto.city!.GetHashCode(),
-                (float)requestAdsDto.employeement_type!.GetHashCode(),
-                (float)requestAdsDto.arrangement!.GetHashCode()
-            };
-
-            var nearestAds = tree.GetNearestNeighbours(userRequest, 10);
-
-            var filteredAdvertisements = nearestAds.Select(e => e.Value).ToList();
-
-            return await CreateSeekerAdvertisementList(filteredAdvertisements, seekerID, false);
         }
     }
 }
