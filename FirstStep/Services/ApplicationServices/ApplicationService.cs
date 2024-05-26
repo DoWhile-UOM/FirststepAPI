@@ -3,6 +3,7 @@ using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Validation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -12,15 +13,18 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IRevisionService _revisionService;
+        private readonly IEmployeeService _employeeService;
 
         public ApplicationService(
             DataContext context, 
             IMapper mapper, 
-            IRevisionService revisionService)
+            IRevisionService revisionService,
+            IEmployeeService employeeService)
         {
             _context = context;
             _mapper = mapper;
             _revisionService = revisionService;
+            _employeeService = employeeService;
         }
 
         public enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected, Done }
@@ -167,34 +171,108 @@ namespace FirstStep.Services
             return lastRevision.status;
         }
 
-        public async Task<int> NumberOfApplicationsByAdvertisementId(int id)
+        public async Task<int> NumberOfApplicationsByAdvertisementId(int jobId)
         {
-            int NumberOfApplications = await _context.Applications.Where(a => a.advertisement_id == id).CountAsync();
+            int NumberOfApplications = await _context.Applications.Where(a => a.advertisement_id == jobId).CountAsync();
             return NumberOfApplications;
         }
 
-        public async Task<int> TotalEvaluatedApplications(int id)
+        public async Task<int> TotalEvaluatedApplications(int jobId)
         {
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status != ApplicationStatus.NotEvaluated.ToString()).CountAsync();
+            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status != ApplicationStatus.NotEvaluated.ToString()).CountAsync();
             return TolaEvaluatedApplications;
         }
 
-        public async Task<int> TotalNotEvaluatedApplications(int id)
+        public async Task<int> TotalNotEvaluatedApplications(int jobId)
         {
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == ApplicationStatus.NotEvaluated.ToString()).CountAsync();
+            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status == ApplicationStatus.NotEvaluated.ToString()).CountAsync();
             return TolaEvaluatedApplications;
         }
 
-        public async Task<int> AcceptedApplications(int id)
+        public async Task<int> AcceptedApplications(int jobId)
         {
-            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == ApplicationStatus.Accepted.ToString()).CountAsync();
+            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status == ApplicationStatus.Accepted.ToString()).CountAsync();
             return AcceptedApplications;
         }
 
-        public async Task<int> RejectedApplications(int id)
+        public async Task<int> RejectedApplications(int jobId)
         {
-            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == id && a.status == ApplicationStatus.Rejected.ToString()).CountAsync();
+            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status == ApplicationStatus.Rejected.ToString()).CountAsync();
             return AcceptedApplications;
         }
+
+        //Task delegation strats here
+
+        //selecting applcations for evalution
+        public async Task<IEnumerable<Application>> SelectApplicationsForEvaluation(int advertisement_id)
+        {
+            //get the advertisement
+            var advertisement = await _context.Advertisements.FindAsync(advertisement_id);
+            // Initialize applicationsOfTheAdvertisement as an empty list
+            IEnumerable<Application> applicationsOfTheAdvertisement = new List<Application>();
+            if (advertisement != null) {
+                var stauts = advertisement.current_status;
+                if (stauts == AdvertisementValidation.Status.hold.ToString()&& AdvertisementValidation.IsExpired(advertisement)){
+                    applicationsOfTheAdvertisement = (await FindByAdvertisementId(advertisement.advertisement_id)).Where(a => a.assigned_hrAssistant_id == null);
+                    return applicationsOfTheAdvertisement;
+                }
+            }
+            throw new NullReferenceException("No applications for evaluation."); // HTTP 204 No Content
+        }
+
+
+        // initiating task delegation
+        public async Task InitiateTaskDelegation(int company_id,int advertisement_id)
+        {
+            // Get all HR assistants for the specified company
+            IEnumerable<Employee> hrAssistants = await _employeeService.GetAllHRAssistants(company_id);
+
+            // Get applications that need evaluation for the specified company
+            List<Application> applicationsForEvaluation = (await SelectApplicationsForEvaluation(advertisement_id)).ToList();
+
+            // Check if there are no applications for evaluation
+            if (!applicationsForEvaluation.Any())
+            {
+                throw new NullReferenceException("No applications for evaluation."); // HTTP 204 No Content
+            }
+
+            // Check if there are fewer than 2 HR assistants
+            if (hrAssistants.Count() < 2)
+            {
+                throw new NullReferenceException("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+
+            // Delegate tasks to HR assistants
+             await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
+
+            // Return a success response
+             // HTTP 200 OK
+        }
+
+
+        // delagateTaks 
+        public async Task DelegateTask(List<Employee> hrAssistants, List<Application> applications)
+        {
+            var remainingApplications = applications.Count % hrAssistants.Count;
+            var noOfApplicationsPerAssistant = (applications.Count - remainingApplications) / hrAssistants.Count;
+            var noOfHrAssistants = hrAssistants.Count;
+
+            for (int i = 0; i < noOfHrAssistants; i++)
+            {
+                for (int j = 0; j < noOfApplicationsPerAssistant; j++)
+                {
+                    applications[(i * noOfApplicationsPerAssistant + j)].assigned_hrAssistant_id = hrAssistants[i].user_id;
+                    await Update(applications[(i * noOfApplicationsPerAssistant + j)]);
+                }
+            }
+
+            for (int i = 0; i < remainingApplications; i++)
+            {
+                applications[(noOfHrAssistants * noOfApplicationsPerAssistant + i)].assigned_hrAssistant_id = hrAssistants[i].user_id;
+                await Update(applications[(noOfHrAssistants * noOfApplicationsPerAssistant + i)]);
+            }
+        }
+
+        //tasks delegation ends here
     }
 }
