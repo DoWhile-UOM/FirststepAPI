@@ -46,7 +46,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 // DataContext Configuration
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("FITiotServerConnection"));
 });
 
 // Services Configuration
@@ -98,14 +98,11 @@ app.UseCors(options =>
 
 // Configure the HTTP request pipeline.
 
-/*if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}*/
-
-app.UseSwagger();
-app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
 
