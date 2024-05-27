@@ -1,22 +1,13 @@
-using System.Text;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using FirstStep.Helper;
 using FirstStep.Data;
-using FirstStep.Models;
 using FirstStep.Models.DTOs;
-using FirstStep.Services.UserServices;
+using FirstStep.Services;
 
 namespace FirstStep.Controllers
 {
-
-    //Authentication Result return types
     public class UserRegRequest
     {
         public required string email { get; set; }
@@ -28,10 +19,8 @@ namespace FirstStep.Controllers
         public required string last_name { get; set; }
 
         public string? type { get; set; }
+
         public string? company_id { get; set; }
-
-
-
     }
 
     [Route("api/[controller]")]
@@ -40,13 +29,15 @@ namespace FirstStep.Controllers
     {
         private readonly DataContext _context;
         private readonly IUserService _userService;
-        public UserController(DataContext authContext,IUserService userservice)
+
+        public UserController(DataContext authContext, IUserService userservice)
         {
             _context = authContext;
             _userService = userservice;
         }
 
-        [HttpPost("authenticate")]
+        [HttpPost]
+        [Route("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] LoginRequestDto userObj)
         {
             try
@@ -67,7 +58,8 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPost("register")]
+        [HttpPost]
+        [Route("register")]
         public async Task<IActionResult> Register([FromBody] UserRegRequest userObjfull)
         {
 
@@ -98,17 +90,15 @@ namespace FirstStep.Controllers
 
         }
 
-        //Test comments
         [Authorize]
         [HttpGet]
+        [Route("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _context.Users.ToListAsync();
             return Ok(users);
         }
 
-        //Refresh Token
-        
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] TokenApiDto tokenApiDto)
         {
@@ -129,6 +119,5 @@ namespace FirstStep.Controllers
                 return BadRequest(e.Message);
             }
         }
-
     }
 }

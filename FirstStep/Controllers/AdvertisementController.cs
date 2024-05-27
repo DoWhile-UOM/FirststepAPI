@@ -45,12 +45,26 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementsBySeeker/seekerID={seekerID:int}/pageLength={pageLength:int}")]
-        public async Task<ActionResult<AdvertisementFirstPageDto>> GetAdvertisementsBySeeker(int seekerID, int pageLength)
+        [Route("GetRecommendedAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetRecommendedAdvertisements(int seekerID, int pageLength)
         {
             try
             {
-                return Ok(await _service.GetFirstPage(seekerID, pageLength));
+                return Ok(await _service.GetRecommendedAdvertisements(seekerID, pageLength));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetRecommendedAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}/city={city}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetRecommendedAdvertisements(int seekerID, string city, int pageLength)
+        {
+            try
+            {
+                return Ok(await _service.GetRecommendedAdvertisements(seekerID, city, pageLength));
             }
             catch (Exception e)
             {
@@ -115,6 +129,20 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
+        [Route("GetAssignedAdvertisementsByHRA/hra_id={hra_userID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementHRATableRowDto>>> GetAssignedAdvertisementsByHRA(int hra_userID)
+        {
+            try
+            {
+                return Ok(await _service.GetAssignedAdvertisementsByHRA(hra_userID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
         [Route("GetSavedAdvertisements/seekerID={seekerID:int}")]
         public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetSavedAdvertisements(int seekerID)
         {
@@ -171,21 +199,6 @@ namespace FirstStep.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("SendApplication")]
-        public async Task<IActionResult> SendApplication(AddApplicationDto addApplicationDto)
-        {
-            await _service.CreateApplication(addApplicationDto);
-            try
-            {  
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return ReturnStatusCode(e);
-            }
-        }
-
         [HttpPut]
         [Route("UpdateAdvertisement/{jobID:int}")]
         public async Task<IActionResult> UpdateAdvertisement(UpdateAdvertisementDto reqAdvertisement, int jobID)
@@ -222,6 +235,28 @@ namespace FirstStep.Controllers
         }
 
         [HttpPatch]
+        [Route("ChangeStatus/{jobID:int}/reactivate/newSubmissionDeadline={newDeadline}")]
+        public async Task<IActionResult> ReactivateAdvertisement(int jobID, string newDeadline)
+        {
+            try
+            {
+                if (newDeadline == "-1")
+                {
+                    await _service.ReactivateAdvertisement(jobID, null);
+                }
+                else
+                {
+                    await _service.ReactivateAdvertisement(jobID, DateTime.Parse(newDeadline));
+                }
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpPatch]
         [Route("SaveAdvertisement/{jobID:int}/save={isSave:bool}/seekerId={seekerId:int}")]
         public async Task<IActionResult> SaveAdvertisement(int jobID, int seekerId, bool isSave)
         {
@@ -247,7 +282,26 @@ namespace FirstStep.Controllers
         {
             try
             {
-                await _service.Delete(jobID);
+                await _service.Delete(jobID, false);
+                return Ok();
+            }
+            catch (InvalidOperationException e)
+            {
+                return StatusCode(StatusCodes.Status406NotAcceptable, e.Message);
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpDelete]
+        [Route("DeleteAdvertisement/confirm=true/{jobID:int}")]
+        public async Task<IActionResult> DeleteAdvertisementWithConfirmation(int jobID)
+        {
+            try
+            {
+                await _service.Delete(jobID, true);
                 return Ok();
             }
             catch (Exception e)

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FirstStep.Data;
+using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
@@ -22,17 +23,17 @@ namespace FirstStep.Services
         public async Task<IEnumerable<Seeker>> GetAll()
         {
             return await _context.Seekers
-                .Include(e => e.job_Field)
-                .Include(e => e.skills)
+                .Include("job_Field")
+                .Include("skills")
                 .ToListAsync();
         }
 
         public async Task<Seeker> GetById(int id)
         {
             Seeker? seeker = await _context.Seekers
+                .Include("job_Field")
+                .Include("skills")
                 .Where(e => e.user_id == id)
-                .Include(e => e.job_Field)
-                .Include(e => e.skills)
                 .FirstOrDefaultAsync();
 
             if (seeker is null)
@@ -67,13 +68,30 @@ namespace FirstStep.Services
             return seeker.job_Field;
         }
 
-        public async Task Create(AddSeekerDto newSeeker)
+        //public async Task Create(AddSeekerDto newSeeker)
+        public async Task<string> Create(AddSeekerDto newSeeker)
         {
             // map the AddSeekerDto to a Seeker object
             var seeker = _mapper.Map<Seeker>(newSeeker);
 
             // user type is seeker
             seeker.user_type = "seeker";
+
+            if (newSeeker == null)
+                return "Null User";
+
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == seeker.email))
+                return "Email Already exist";//email already exists
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newSeeker.password);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                return passCheck.ToString();
+
+            //Hash password before saving to database
+            seeker.password_hash = PasswordHasher.Hasher(newSeeker.password);
 
             // Add skills to seeker
             if (newSeeker.seekerSkills != null)
@@ -104,29 +122,15 @@ namespace FirstStep.Services
 
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
+
+            return "Seeker added successfully";
         }
+
+
+        
 
         public async Task Update(int seekerId, Seeker seeker)
         {
-            // For ruwandie, please follow these steps to update the Seeker object with relationships:
-
-            // first create a DTO called UpdateSeekerDto
-            // add all the properties that you want to update in the Seeker object
-            // in the Seeker object, add a property called seekerSkills of type List<string>
-            // in this function, need to map the Seeker object to the UpdateSeekerDto object
-            // then update the Seeker object with the new values wihout skills
-
-            // for to update skills, need to consider about relationship between Seeker and Skill (m to m)
-
-            // for update the seeker's skills
-            // first, find the already exists skill in the database
-            // if the skill exists, add it to the seeker's list of skills
-            // if the skill doesn't exist, create it and add it to the seeker's list of skills
-
-
-
-            // this is the update function without updating the skills
-
             // for get the seeker object from the database
             Seeker dbSeeker = await GetById(seekerId);
 
