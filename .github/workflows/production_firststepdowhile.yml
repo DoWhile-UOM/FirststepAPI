@@ -24,14 +24,14 @@ jobs:
       - name: Build with dotnet
         run: dotnet build FirstStep/Firststep.csproj --configuration Release
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}\firststep
+      - name: Publish with dotnet
+        run: dotnet publish FirstStep/Firststep.csproj --configuration Release --output ./published
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}\firststep
+          path: ./published
 
   deploy:
     runs-on: windows-latest
@@ -45,6 +45,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ./published
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -53,4 +54,4 @@ jobs:
           app-name: 'firststepdowhile'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D30400F869564A889270825B210BE0D7 }}
-          package: .
+          package: ./published
