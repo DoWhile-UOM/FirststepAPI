@@ -23,17 +23,17 @@ namespace FirstStep.Services
         public async Task<IEnumerable<Seeker>> GetAll()
         {
             return await _context.Seekers
-                .Include(e => e.job_Field)
-                .Include(e => e.skills)
+                .Include("job_Field")
+                .Include("skills")
                 .ToListAsync();
         }
 
         public async Task<Seeker> GetById(int id)
         {
             Seeker? seeker = await _context.Seekers
+                .Include("job_Field")
+                .Include("skills")
                 .Where(e => e.user_id == id)
-                .Include(e => e.job_Field)
-                .Include(e => e.skills)
                 .FirstOrDefaultAsync();
 
             if (seeker is null)
@@ -44,6 +44,31 @@ namespace FirstStep.Services
             return seeker;
         }
 
+        public async Task<SeekerApplicationDto> GetSeekerDetails(int id)
+        {
+            Seeker seeker = await GetById(id);
+            SeekerApplicationDto seekerdto = _mapper.Map<SeekerApplicationDto>(seeker);
+            return seekerdto;
+        }
+
+        public async Task<JobField> GetSeekerField(int seekerId)
+        {
+            Seeker seeker = await GetById(seekerId);
+
+            if (seeker == null)
+            {
+                throw new NullReferenceException("Seeker not found.");
+            }
+
+            if (seeker.job_Field == null)
+            {
+                throw new NullReferenceException("Seeker's job field not found.");
+            }
+
+            return seeker.job_Field;
+        }
+
+        //public async Task Create(AddSeekerDto newSeeker)
         public async Task<string> Create(AddSeekerDto newSeeker)
         {
             // map the AddSeekerDto to a Seeker object
@@ -86,10 +111,10 @@ namespace FirstStep.Services
                     else
                     {
                         // if it doesn't exist, create it and add it to the seeker's list of skills
-                        seeker.skills.Add(new Skill 
-                        { 
-                            skill_id = 0, 
-                            skill_name = skill 
+                        seeker.skills.Add(new Skill
+                        {
+                            skill_id = 0,
+                            skill_name = skill
                         });
                     }
                 }
@@ -115,7 +140,7 @@ namespace FirstStep.Services
             dbSeeker.email = seeker.email;
             dbSeeker.phone_number = seeker.phone_number;
             dbSeeker.bio = seeker.bio;
-            dbSeeker.description = seeker.description; 
+            dbSeeker.description = seeker.description;
             dbSeeker.university = seeker.university;
             dbSeeker.CVurl = seeker.CVurl;
             dbSeeker.profile_picture = seeker.profile_picture;
@@ -146,5 +171,18 @@ namespace FirstStep.Services
             _context.Seekers.Remove(seeker);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> IsValidSeeker(int seekerId)
+        {
+            var seeker = await _context.Seekers.Where(e => e.user_id == seekerId).FirstOrDefaultAsync();
+
+            if (seeker == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
     }
 }

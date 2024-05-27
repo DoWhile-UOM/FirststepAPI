@@ -3,6 +3,7 @@ using FirstStep.Data;
 using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -11,13 +12,11 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
-        private readonly ICompanyService _companyService;
 
-        public EmployeeService(DataContext context, IMapper mapper, ICompanyService companyService)
+        public EmployeeService(DataContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _companyService = companyService;
         }
 
         public async Task<IEnumerable<Employee>> GetAll()
@@ -117,7 +116,12 @@ namespace FirstStep.Services
             await ValidateCompany(newCompanyAdmin.company_id);
 
             // validate there is no any other company admin in within the company
-            var company = await _companyService.FindByID(newCompanyAdmin.company_id);
+            var company = await _context.Companies.FindAsync(newCompanyAdmin.company_id);
+
+            if (company is null)
+            {
+                throw new Exception("Company not found");
+            }
             
             if (company.company_admin_id != null)
             {
@@ -170,9 +174,16 @@ namespace FirstStep.Services
 
         private async Task ValidateCompany(int companyID)
         {
-            if (!await _companyService.IsRegistered(companyID))
+            var company = await _context.Companies.FindAsync(companyID);
+
+            if (company is null)
             {
-                throw new Exception("Invalid input, Company is not registered");
+                throw new Exception("Company not found");
+            }
+
+            if (!CompanyValidation.IsRegistered(company))
+            {
+                throw new Exception("Company is not verified");
             }
         }
     }

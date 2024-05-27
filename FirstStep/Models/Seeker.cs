@@ -5,7 +5,6 @@ namespace FirstStep.Models
 {
     public class Seeker : User
     {
-
         [DataType(DataType.PhoneNumber)]
         public int phone_number { get; set; }
 
@@ -22,6 +21,7 @@ namespace FirstStep.Models
         public string? linkedin { get; set; }
 
 
+        [JsonIgnore]
         public virtual JobField? job_Field { get; set; }
 
         public required int field_id { get; set; }
@@ -30,8 +30,10 @@ namespace FirstStep.Models
         [JsonIgnore]
         public virtual ICollection<Advertisement>? savedAdvertisemnts { get; set; }
 
+        [JsonIgnore]
         public virtual ICollection<Application>? applications { get; set; }
 
+        [JsonIgnore]
         public virtual ICollection<Skill>? skills { get; set; }
     }
 }

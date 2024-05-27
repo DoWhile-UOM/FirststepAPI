@@ -29,7 +29,22 @@ namespace FirstStep.Controllers
             return Ok(response);
         }
 
-        [HttpGet("{eTag}")]
+        [HttpGet("sas/{blobName}")]
+        public async Task<IActionResult> GetSasToken(string blobName)
+        {
+            var response = await _azureBlobService.GenerateSasTokenAsync(blobName);
+            return Ok(response);
+        }
+
+        [HttpGet("url/{blobName}")]
+
+        public async Task<IActionResult> GetBlobUrl(string blobName)
+        {
+            var response = await _azureBlobService.GetBlobImageUrl(blobName);
+            return Ok(response);
+        }
+
+     /*   [HttpGet("{eTag}")]
         public async Task<IActionResult> GetBlobByETag(string eTag)
         {
             var blob = await _azureBlobService.GetBlobByETag(eTag);
@@ -50,6 +65,6 @@ namespace FirstStep.Controllers
             }
             var file = await _azureBlobService.DownloadBlobByETag(eTag)!;
             return File(file, "application/octet-stream", blob.Name);
-        }   
+        }   */
     }
 }
