@@ -88,6 +88,7 @@ namespace FirstStep.Services
                 .Include("professionKeywords")
                 .Include("job_Field")
                 .Include("hrManager")
+                .Include("applications")
                 .Include("skills")
                 .Include("savedSeekers")
                 .Where(x => x.hrManager!.company_id == companyID)
@@ -168,7 +169,7 @@ namespace FirstStep.Services
 
             var dbAdvertisements = await FindByCompanyID(companyID);
 
-            return await CreateCompanyAdvertisementList(dbAdvertisements, status);
+            return CreateCompanyAdvertisementList(dbAdvertisements, status);
         }
 
         public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title)
@@ -195,7 +196,7 @@ namespace FirstStep.Services
                     }
                 }
 
-                return await CreateCompanyAdvertisementList(filteredAdvertisements, status);
+                return CreateCompanyAdvertisementList(filteredAdvertisements, status);
             }
             else
             {
@@ -237,7 +238,7 @@ namespace FirstStep.Services
                 }
             }
 
-            return await CreateHRAAdvertisementList(assignedAdvertisements.Values, hra);
+            return CreateHRAAdvertisementList(assignedAdvertisements.Values, hra);
         }
 
         public async Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, int noOfResultsPerPage)
@@ -449,7 +450,9 @@ namespace FirstStep.Services
             if (!isConfirmed)
             {
                 // check the advertisement had any applications
-                if (await _applicationService.TotalNotEvaluatedApplications(advertisement.advertisement_id) > 0)
+                if (advertisement.applications!
+                    .Where(a => a.status == ApplicationService.ApplicationStatus.NotEvaluated.ToString())
+                    .Count() > 0)
                 {
                     throw new InvalidOperationException("Cannot delete an advertisement that has non evaluated applications.");
                 }
@@ -568,7 +571,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of JobOfferDtos and create advertisement list for the company (Company Admin and HR Manager)
-        private async Task<IEnumerable<AdvertisementTableRowDto>> CreateCompanyAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        private IEnumerable<AdvertisementTableRowDto> CreateCompanyAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
         {
             var jobOfferDtos = new List<AdvertisementTableRowDto>();
 
@@ -583,10 +586,16 @@ namespace FirstStep.Services
 
                 jobOfferDto.field_name = ad.job_Field!.field_name;
 
-                jobOfferDto.no_of_applications = await _applicationService.NumberOfApplicationsByAdvertisementId(ad.advertisement_id);
-                jobOfferDto.no_of_evaluated_applications = await _applicationService.TotalEvaluatedApplications(ad.advertisement_id);
-                jobOfferDto.no_of_accepted_applications = await _applicationService.AcceptedApplications(ad.advertisement_id);
-                jobOfferDto.no_of_rejected_applications = await _applicationService.RejectedApplications(ad.advertisement_id);
+                jobOfferDto.no_of_applications = ad.applications!.Count();
+
+                jobOfferDto.no_of_evaluated_applications = ad.applications!
+                    .Where(a => a.status != ApplicationService.ApplicationStatus.NotEvaluated.ToString()).Count();
+
+                jobOfferDto.no_of_accepted_applications = ad.applications!
+                    .Where(a => a.status == ApplicationService.ApplicationStatus.Accepted.ToString()).Count();
+
+                jobOfferDto.no_of_rejected_applications = ad.applications!
+                    .Where(a => a.status == ApplicationService.ApplicationStatus.Rejected.ToString()).Count();
 
                 jobOfferDtos.Add(jobOfferDto);
             }
@@ -595,7 +604,7 @@ namespace FirstStep.Services
         }
 
         // map advertisements to a list of AdvertisementHRATableRowDto and create advertisement list for the HR Assistant
-        private async Task<IEnumerable<AdvertisementHRATableRowDto>> CreateHRAAdvertisementList(IEnumerable<Advertisement> dbAds, HRAssistant hra)
+        private IEnumerable<AdvertisementHRATableRowDto> CreateHRAAdvertisementList(IEnumerable<Advertisement> dbAds, HRAssistant hra)
         {
             var jobOfferDtos = new List<AdvertisementHRATableRowDto>();
 
@@ -612,7 +621,7 @@ namespace FirstStep.Services
 
                 jobOfferDto.field_name = ad.job_Field!.field_name;
 
-                jobOfferDto.no_of_applications = await _applicationService.NumberOfApplicationsByAdvertisementId(ad.advertisement_id);
+                jobOfferDto.no_of_applications = hra.applications!.Count();
                 jobOfferDto.no_of_assigned_applications = hra.applications!.Where(a => a.advertisement_id == ad.advertisement_id).Count();
                 jobOfferDto.no_of_evaluated_applications = hra.applications!
                     .Where(a => 

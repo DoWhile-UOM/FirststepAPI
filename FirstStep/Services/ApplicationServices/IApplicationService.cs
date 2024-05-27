@@ -23,16 +23,6 @@ namespace FirstStep.Services
 
         public string GetCurrentApplicationStatus(Application application);
 
-        public Task<int> NumberOfApplicationsByAdvertisementId(int jobId);
-
-        public Task<int> TotalEvaluatedApplications(int jobId);
-
-        public Task<int> TotalNotEvaluatedApplications(int jobId);
-
-        public Task<int> AcceptedApplications(int jobId);
-
-        public Task<int> RejectedApplications(int jobId);
-
         public Task InitiateTaskDelegation(int advertisement_id, IEnumerable<int>? hrassistant_ids);
     }
 }
