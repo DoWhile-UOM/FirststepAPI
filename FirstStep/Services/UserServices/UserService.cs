@@ -10,25 +10,25 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
-namespace FirstStep.Services.UserServices
+namespace FirstStep.Services
 {
     public class UserService: IUserService
     {
         private readonly DataContext _context;
-        public UserService(DataContext context)
+        private readonly ICompanyService _companyService;
+        private readonly IEmployeeService _employeeService;
+        private readonly IEmailService _emailService;
+
+        public UserService(DataContext context, 
+            ICompanyService companyService, 
+            IEmployeeService employeeService, 
+            IEmailService emailService)
         {
             _context = context;
+            _companyService = companyService;
+            _employeeService = employeeService;
+            _emailService = emailService;
         }
-
-        //Authentication Result return types
-        public class AuthenticationResult
-        {
-            public bool IsSuccessful { get; set; }
-            public TokenApiDto? Token { get; set; }
-            public string? ErrorMessage { get; set; }
-        }
-
-
 
         //User Authentication
         public async Task<AuthenticationResult> Authenticate(LoginRequestDto userObj)
@@ -51,7 +51,6 @@ namespace FirstStep.Services.UserServices
             return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken } };
         }
 
-
         //Refresh Token
         public async Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto)
         {
@@ -72,15 +71,14 @@ namespace FirstStep.Services.UserServices
             await _context.SaveChangesAsync();
 
             return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = await newAccessToken, RefreshToken = newRefreshToken } };
-
         }
 
-
-
-
         //Register User
-        public async Task<string> RegisterUser(UserRegRequestDto userObj,string? type,string? company_id) // UserRegRequestDto must modify
+        public async Task<string> RegisterUser(UserRegRequestDto userObj, string? type,string? company_id) // UserRegRequestDto must modify
         {
+            //var result = await _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
+            //Console.WriteLine(result);
+
             if (userObj == null)
                 return "Null User";
 
@@ -96,19 +94,42 @@ namespace FirstStep.Services.UserServices
                 return passCheck.ToString();
 
             userObj.password_hash = PasswordHasher.Hasher(userObj.password_hash);//Hash password before saving to database
-            //userObj.Role = "User";
-            //userObj.token = CreateVerifyToken();
 
             string user_type;
 
-            switch (type)
+            switch (type) //use enum instead of string
             {
                 case "CA":
                     user_type = "CA";
+                    if(company_id == null)
+                        return "Company ID is Null";
+
                     //Call Company service to find input id is valid by FindByRegCheckID(string id)
-                    //if input id valid then call Company service to add company admin
+                    var company = await _companyService.FindByRegCheckID(company_id);
+                    if (company == null)
+                        return "Company Not Found";
+
+                    if(company.verification_status==false)
+                        return "Company Not Verified";
+
+                    if(company.company_admin_id != null)
+                        return "Company Admin Already Exists";//should remove bcz service will handle this
+
+                    await _employeeService.CreateCompanyAdmin(new AddEmployeeDto
+                    {
+                        email = userObj.email,
+                        password = userObj.password_hash,
+                        first_name = userObj.first_name,
+                        last_name = userObj.last_name,
+                        company_id = company.company_id
+                    });//Register on employee service
+
                     //Call Email service to send success email
-                    break;
+                    var result=await _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
+                    Console.WriteLine(result);
+
+                    return "Company Admin Registered Successfully";
+
                 case "HRM":
                     user_type = "HRM";
                     //Check auth bearer token if bearer have access to add manager(company admin)
@@ -123,6 +144,7 @@ namespace FirstStep.Services.UserServices
                     break;
                 default:
                     user_type = "SEEKER";
+
                     //Call Email service to send email to user email
                     break;
             }
@@ -142,9 +164,13 @@ namespace FirstStep.Services.UserServices
             _context.SaveChanges();
 
             return "User Registered Successfully";
-
         }
 
+        //Check if email already exists
+        public async Task<bool> CheckEmailExist(string Email)
+        {
+            return await _context.Users.AnyAsync(x => x.email == Email);
+        }
 
         ///Password Strength Checker
         private static string PasswordStrengthCheck(string pass)
@@ -157,12 +183,6 @@ namespace FirstStep.Services.UserServices
             if (!Regex.IsMatch(pass, "[<,>,@,!,#,$,%,^,&,*,(,),_,+,\\[,\\],{,},?,:,;,|,',\\,.,/,~,`,-,=]"))
                 sb.Append("Password should contain special charcter" + Environment.NewLine);
             return sb.ToString();
-        }
-
-        //Check if email already exists
-        private async Task<bool> CheckEmailExist(string Email)
-        {
-            return await _context.Users.AnyAsync(x => x.email == Email);
         }
 
         //Create JWT Token
@@ -235,19 +255,6 @@ namespace FirstStep.Services.UserServices
             if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("This is Invalid Token");
             return principal;
-
         }
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

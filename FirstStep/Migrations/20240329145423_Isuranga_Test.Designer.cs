@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstStep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240329145423_Isuranga_Test")]
+    partial class Isuranga_Test
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,40 +80,23 @@ namespace FirstStep.Migrations
 
                     b.Property<string>("arrangement")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("city")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("country")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
-
-                    b.Property<string>("currency_unit")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("current_status")
                         .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("nvarchar(7)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("employeement_type")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
-
-                    b.Property<string>("experience")
-                        .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
-
-                    b.Property<DateTime?>("expired_date")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("field_id")
                         .HasColumnType("int");
@@ -118,9 +104,12 @@ namespace FirstStep.Migrations
                     b.Property<int>("hrManager_id")
                         .HasColumnType("int");
 
+                    b.Property<bool>("is_experience_required")
+                        .HasColumnType("bit");
+
                     b.Property<string>("job_description")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
+                        .HasMaxLength(2500)
+                        .HasColumnType("nvarchar(2500)");
 
                     b.Property<int?>("job_number")
                         .HasColumnType("int");
@@ -128,16 +117,15 @@ namespace FirstStep.Migrations
                     b.Property<DateTime>("posted_date")
                         .HasColumnType("datetime2");
 
-                    b.Property<float?>("salary")
+                    b.Property<float>("salary")
                         .HasColumnType("real");
 
-                    b.Property<DateTime?>("submission_deadline")
+                    b.Property<DateTime>("submission_deadline")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("title")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("advertisement_id");
 
@@ -156,23 +144,10 @@ namespace FirstStep.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("application_Id"));
 
-                    b.Property<string>("CVurl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("advertisement_id")
                         .HasColumnType("int");
 
-                    b.Property<int?>("assigned_hrAssistant_id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("doc1_url")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("doc2_url")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("seeker_id")
+                    b.Property<int?>("seekeruser_id")
                         .HasColumnType("int");
 
                     b.Property<string>("status")
@@ -182,13 +157,14 @@ namespace FirstStep.Migrations
                     b.Property<DateTime>("submitted_date")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("user_id")
+                        .HasColumnType("int");
+
                     b.HasKey("application_Id");
 
                     b.HasIndex("advertisement_id");
 
-                    b.HasIndex("assigned_hrAssistant_id");
-
-                    b.HasIndex("seeker_id");
+                    b.HasIndex("seekeruser_id");
 
                     b.ToTable("Applications");
                 });
@@ -251,9 +227,6 @@ namespace FirstStep.Migrations
                     b.Property<string>("company_website")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("registration_url")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("verification_status")
                         .HasColumnType("bit");
 
@@ -288,22 +261,6 @@ namespace FirstStep.Migrations
                     b.ToTable("JobFields");
                 });
 
-            modelBuilder.Entity("FirstStep.Models.OTPRequest", b =>
-                {
-                    b.Property<string>("email")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("expiry_date_time")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("otp")
-                        .HasColumnType("int");
-
-                    b.HasKey("email");
-
-                    b.ToTable("OTPRequests");
-                });
-
             modelBuilder.Entity("FirstStep.Models.ProfessionKeyword", b =>
                 {
                     b.Property<int>("profession_id")
@@ -334,27 +291,17 @@ namespace FirstStep.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("revision_id"));
 
-                    b.Property<int>("application_id")
-                        .HasColumnType("int");
-
                     b.Property<string>("comment")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("employee_id")
-                        .HasColumnType("int");
-
                     b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("revision_id");
-
-                    b.HasIndex("application_id");
-
-                    b.HasIndex("employee_id");
 
                     b.ToTable("Revisions");
                 });
@@ -576,20 +523,11 @@ namespace FirstStep.Migrations
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("FirstStep.Models.HRAssistant", "assigned_hrAssistant")
-                        .WithMany("applications")
-                        .HasForeignKey("assigned_hrAssistant_id")
-                        .OnDelete(DeleteBehavior.ClientCascade);
-
                     b.HasOne("FirstStep.Models.Seeker", "seeker")
                         .WithMany("applications")
-                        .HasForeignKey("seeker_id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
+                        .HasForeignKey("seekeruser_id");
 
                     b.Navigation("advertisement");
-
-                    b.Navigation("assigned_hrAssistant");
 
                     b.Navigation("seeker");
                 });
@@ -620,25 +558,6 @@ namespace FirstStep.Migrations
                         .IsRequired();
 
                     b.Navigation("job_Field");
-                });
-
-            modelBuilder.Entity("FirstStep.Models.Revision", b =>
-                {
-                    b.HasOne("FirstStep.Models.Application", "application")
-                        .WithMany("revisions")
-                        .HasForeignKey("application_id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.HasOne("FirstStep.Models.Employee", "employee")
-                        .WithMany("revisions")
-                        .HasForeignKey("employee_id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.Navigation("application");
-
-                    b.Navigation("employee");
                 });
 
             modelBuilder.Entity("SeekerSkill", b =>
@@ -722,11 +641,6 @@ namespace FirstStep.Migrations
                     b.Navigation("applications");
                 });
 
-            modelBuilder.Entity("FirstStep.Models.Application", b =>
-                {
-                    b.Navigation("revisions");
-                });
-
             modelBuilder.Entity("FirstStep.Models.Company", b =>
                 {
                     b.Navigation("employees");
@@ -741,11 +655,6 @@ namespace FirstStep.Migrations
                     b.Navigation("seekers");
                 });
 
-            modelBuilder.Entity("FirstStep.Models.Employee", b =>
-                {
-                    b.Navigation("revisions");
-                });
-
             modelBuilder.Entity("FirstStep.Models.Seeker", b =>
                 {
                     b.Navigation("applications");
@@ -754,11 +663,6 @@ namespace FirstStep.Migrations
             modelBuilder.Entity("FirstStep.Models.SystemAdmin", b =>
                 {
                     b.Navigation("verified_companies");
-                });
-
-            modelBuilder.Entity("FirstStep.Models.HRAssistant", b =>
-                {
-                    b.Navigation("applications");
                 });
 
             modelBuilder.Entity("FirstStep.Models.HRManager", b =>

@@ -42,6 +42,8 @@ namespace FirstStep.Models
 
         public DateTime company_registered_date { get; set; }
 
+        public string? registration_url { get; set; } ///Store string to check Company Registration Status
+
 
         [JsonIgnore]
         public virtual SystemAdmin? verified_system_admin { get; set; }

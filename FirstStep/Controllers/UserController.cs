@@ -1,17 +1,10 @@
-using System.Text;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using FirstStep.Helper;
 using FirstStep.Data;
-using FirstStep.Models;
 using FirstStep.Models.DTOs;
-using FirstStep.Services.UserServices;
+using FirstStep.Services;
 
 namespace FirstStep.Controllers
 {
@@ -28,10 +21,8 @@ namespace FirstStep.Controllers
         public required string last_name { get; set; }
 
         public string? type { get; set; }
+
         public string? company_id { get; set; }
-
-
-
     }
 
     [Route("api/[controller]")]
