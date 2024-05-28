@@ -14,9 +14,9 @@ namespace FirstStep.Models.DTOs
 
         public required bool UseDefaultCv { get; set; }
 
-      /*  public string? doc1_url { get; set; }
+         public string? doc1_url { get; set; }
 
-        public string? doc2_url { get; set; }*/
+        public string? doc2_url { get; set; }
         
     }
 }
