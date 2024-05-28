@@ -129,6 +129,20 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
+        [Route("GetAssignedAdvertisementsByHRA/hra_id={hra_userID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementHRATableRowDto>>> GetAssignedAdvertisementsByHRA(int hra_userID)
+        {
+            try
+            {
+                return Ok(await _service.GetAssignedAdvertisementsByHRA(hra_userID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
         [Route("GetSavedAdvertisements/seekerID={seekerID:int}")]
         public async Task<ActionResult<IEnumerable<AdvertisementShortDto>>> GetSavedAdvertisements(int seekerID)
         {
@@ -212,6 +226,28 @@ namespace FirstStep.Controllers
             try
             {
                 await _service.ChangeStatus(jobID, newStatus);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpPatch]
+        [Route("ChangeStatus/{jobID:int}/reactivate/newSubmissionDeadline={newDeadline}")]
+        public async Task<IActionResult> ReactivateAdvertisement(int jobID, string newDeadline)
+        {
+            try
+            {
+                if (newDeadline == "-1")
+                {
+                    await _service.ReactivateAdvertisement(jobID, null);
+                }
+                else
+                {
+                    await _service.ReactivateAdvertisement(jobID, DateTime.Parse(newDeadline));
+                }
                 return Ok();
             }
             catch (Exception e)

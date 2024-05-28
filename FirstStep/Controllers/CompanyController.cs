@@ -66,6 +66,13 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetCompanyProfile(companyID, seekerID, pageLength));
         }
 
+        [HttpGet]
+        [Route("GetRegCheckByID/{companyId}")]
+        public async Task<ActionResult<CompanyProfileDetailsDto>> GetRegCheckByID(string companyId)
+        {
+            return Ok(await _service.FindByRegCheckID(companyId));
+        }
+
         [HttpPost]
         [Route("AddCompany")] // Company Admin
         public async Task<IActionResult> AddCompany(AddCompanyDto newCompany)
@@ -83,14 +90,6 @@ namespace FirstStep.Controllers
             }
 
         }
-
-        [HttpGet]
-        [Route("GetRegCheckByID/{companyId}")]
-        public async Task<ActionResult<CompanyProfileDetailsDto>> GetRegCheckByID(string companyId)
-        {
-            return Ok(await _service.FindByRegCheckID(companyId));
-        }
-
 
         [HttpPut]
         [Route("UpdateCompanyVerification/{companyId:int}")] // System Admin

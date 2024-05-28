@@ -32,10 +32,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetHRManagerApplicationListByAdvertisementID/JobID={jobId:int}")]
-        public async Task<ActionResult<IEnumerable<Application>>> GetHRManagerApplicationList(int jobId)
+        [Route("GetApplicationList/JobID={jobId:int}/status={status}")]
+        public async Task<ActionResult<ApplicationListingPageDto>> GetApplicationList(int jobId, string status)
         {
-            return Ok(await _service.GetHRManagerAdertisementListByJobID(jobId));
+            return Ok(await _service.GetApplicationList(jobId, status));
         }
 
         [HttpGet]
@@ -51,6 +51,52 @@ namespace FirstStep.Controllers
         {
             await _service.Create(newApplication);
             return Ok();
+        }
+
+        [HttpPatch]
+        [Route("DelegateTask/jobID={jobID}")]
+        public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID)
+        {
+            try
+            {
+                await _service.InitiateTaskDelegation(jobID, null);
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
+            {
+                return NoContent(); // HTTP 204 No Content
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
+                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
+            }
+        }
+
+        [HttpPatch]
+        [Route("DelegateTask/jobID={jobID}/hra_id_list={hra_id_list}")]
+        public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID, string hra_id_list)
+        {
+            try
+            {
+                await _service.InitiateTaskDelegation(jobID, hra_id_list.Split(',').Select(int.Parse));
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
+            {
+                return NoContent(); // HTTP 204 No Content
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
+                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
+            }
         }
 
         [HttpPut]

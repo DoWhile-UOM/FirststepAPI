@@ -3,6 +3,7 @@ using FirstStep.Data;
 using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -11,13 +12,11 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
-        private readonly ICompanyService _companyService;
 
-        public EmployeeService(DataContext context, IMapper mapper, ICompanyService companyService)
+        public EmployeeService(DataContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _companyService = companyService;
         }
 
         public async Task<IEnumerable<Employee>> GetAll()
@@ -55,7 +54,10 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id)
         {
-            ICollection<Employee> hrManagers = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type == "HRM").ToListAsync();
+            ICollection<Employee> hrManagers = await _context.Employees
+                .Where(e => e.company_id == company_Id && e.user_type == User.UserType.hrm.ToString())
+                .ToListAsync();
+
             if (hrManagers is null)
             {
                 throw new Exception("There are no HR Managers under the company");
@@ -66,7 +68,9 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllHRAssistants(int company_Id)
         {
-            ICollection<HRAssistant> hrAssistants = await _context.HRAssistants.Where(e => e.company_id == company_Id && e.user_type == "HRA").ToListAsync();
+            ICollection<HRAssistant> hrAssistants = await _context.HRAssistants
+                .Where(e => e.company_id == company_Id && e.user_type == User.UserType.hra.ToString())
+                .ToListAsync();
             if (hrAssistants is null)
             {
                 throw new Exception("There are no HR Assistants under the company");
@@ -77,12 +81,20 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllEmployees(int company_Id)
         {
-            ICollection<Employee> employees = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type != "CA").ToListAsync();
+            ICollection<Employee> employees = await _context.Employees
+                .Where(e => e.company_id == company_Id && e.user_type != User.UserType.ca.ToString())
+                .ToListAsync();
             if (employees is null)
             {
                 throw new Exception("There are no employees under the company");
             }
 
+            return employees;
+        }
+
+        public async Task<IEnumerable<Employee>> GetEmployees(IEnumerable<int> emp_ids)
+        {
+            IEnumerable<Employee> employees = await _context.Employees.Where(e => emp_ids.Contains(e.user_id)).ToListAsync();
             return employees;
         }
 
@@ -92,8 +104,20 @@ namespace FirstStep.Services
             
             var hrManager = _mapper.Map<HRManager>(newHRManager);
 
-            hrManager.password_hash = newHRManager.password;
-            hrManager.user_type = "HRM";
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == newHRManager.email))
+                throw new Exception("Email Already exist");
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newHRManager.password);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                throw new Exception(passCheck);
+
+            //Hash password before saving to database
+            hrManager.password_hash = PasswordHasher.Hasher(newHRManager.password);
+
+            hrManager.user_type = User.UserType.hrm.ToString();
 
             _context.HRManagers.Add(hrManager);
             await _context.SaveChangesAsync();
@@ -105,8 +129,19 @@ namespace FirstStep.Services
 
             var hrAssistant = _mapper.Map<HRAssistant>(newHRAssistant);
 
-            hrAssistant.password_hash = newHRAssistant.password;
-            hrAssistant.user_type = "HRA";
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == newHRAssistant.email))
+                throw new Exception("Email Already exist");
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newHRAssistant.password);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                throw new Exception(passCheck);
+
+            //Hash password before saving to database
+            hrAssistant.password_hash = PasswordHasher.Hasher(newHRAssistant.password);
+            hrAssistant.user_type = User.UserType.hra.ToString();
 
             _context.HRAssistants.Add(hrAssistant);
             await _context.SaveChangesAsync();
@@ -117,7 +152,12 @@ namespace FirstStep.Services
             await ValidateCompany(newCompanyAdmin.company_id);
 
             // validate there is no any other company admin in within the company
-            var company = await _companyService.FindByID(newCompanyAdmin.company_id);
+            var company = await _context.Companies.FindAsync(newCompanyAdmin.company_id);
+
+            if (company is null)
+            {
+                throw new Exception("Company not found");
+            }
             
             if (company.company_admin_id != null)
             {
@@ -139,7 +179,7 @@ namespace FirstStep.Services
             //Hash password before saving to database
             companyAdmin.password_hash = PasswordHasher.Hasher(newCompanyAdmin.password);
 
-            companyAdmin.user_type = "ca";
+            companyAdmin.user_type = User.UserType.ca.ToString();
             companyAdmin.admin_company = company;
 
             _context.HRManagers.Add(companyAdmin);
@@ -170,9 +210,16 @@ namespace FirstStep.Services
 
         private async Task ValidateCompany(int companyID)
         {
-            if (!await _companyService.IsRegistered(companyID))
+            var company = await _context.Companies.FindAsync(companyID);
+
+            if (company is null)
             {
-                throw new Exception("Invalid input, Company is not registered");
+                throw new Exception("Company not found");
+            }
+
+            if (!CompanyValidation.IsRegistered(company))
+            {
+                throw new Exception("Company is not verified");
             }
         }
     }

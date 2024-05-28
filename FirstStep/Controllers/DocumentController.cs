@@ -15,36 +15,32 @@ namespace FirstStep.Controllers
             _azureBlobService = service;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> UploadBlobs(List<IFormFile> files)
-        {
-            var response = await _azureBlobService.UploadFiles(files);
-            return Ok(response);
-        }
-
         [HttpGet]
+        [Route("GetAllBlobs")]
         public async Task<IActionResult> GetAllBlobs()
         {
             var response = await _azureBlobService.GetUploadedBlobs();
             return Ok(response);
         }
 
-        [HttpGet("sas/{blobName}")]
+        [HttpGet]
+        [Route("GetSasToken")]
         public async Task<IActionResult> GetSasToken(string blobName)
         {
             var response = await _azureBlobService.GenerateSasTokenAsync(blobName);
             return Ok(response);
         }
 
-        [HttpGet("url/{blobName}")]
-
+        [HttpGet]
+        [Route("GetBlobUrl")]
         public async Task<IActionResult> GetBlobUrl(string blobName)
         {
             var response = await _azureBlobService.GetBlobImageUrl(blobName);
             return Ok(response);
         }
 
-        [HttpDelete("{blobName}")]
+        [HttpDelete]
+        [Route("DeleteBlob/{blobName}")]
         public async Task<IActionResult> DeleteBlob(string blobName)
         {
             await _azureBlobService.DeleteBlobAsync(blobName);
