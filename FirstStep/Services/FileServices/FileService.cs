@@ -16,7 +16,7 @@ namespace FirstStep.Services
             _blobServiceClient = new BlobServiceClient(azureconnectionstring);
             _blobcontainerClient = _blobServiceClient.GetBlobContainerClient("firststep");
         }
-       
+
         public async Task<List<string>> UploadFiles(List<IFormFile> files)
         {
 
@@ -35,14 +35,14 @@ namespace FirstStep.Services
 
             return fileNames;
         }
-       
+
         public async Task<string> UploadFileWithApplication(IFormFile file)
-        { 
-            string fileName= $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        {
+            string fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             var blobClient = _blobcontainerClient.GetBlobClient(fileName);
             using (var stream = file.OpenReadStream())
             {
-               await  blobClient.UploadAsync(stream, true);
+                await blobClient.UploadAsync(stream, true);
             }
 
             return fileName;
@@ -60,7 +60,7 @@ namespace FirstStep.Services
             return items;
         }
 
-        public async  Task<string> GenerateSasTokenAsync( string blobName)
+        public async Task<string> GenerateSasTokenAsync(string blobName)
         {
             var blobClient = _blobcontainerClient.GetBlobClient(blobName);
             var sasBuilder = new BlobSasBuilder
@@ -74,10 +74,10 @@ namespace FirstStep.Services
 
             sasBuilder.SetPermissions(BlobSasPermissions.Read);
 
-           // Generate the SAS token
+            // Generate the SAS token
             var sasQueryParamas = sasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential("firststep", "uufTzzJ+uB7BRnKG9cN2RUi0mw92n5lTl2EMvnOTw6xv7sfPQSWBqJxHll+Zn2FNc06cGf8Qgrkb+ASteH1KEQ==")).ToString();
 
-            var sasToken= sasQueryParamas.ToString();
+            var sasToken = sasQueryParamas.ToString();
 
             return await Task.FromResult(sasToken);
 
@@ -93,6 +93,15 @@ namespace FirstStep.Services
             return blobUrlWithSas;
         }
 
-       
-    }
-}
+        //delete blob
+        public async Task DeleteBlobAsync(string blobName)
+        {
+            var blobClient = _blobcontainerClient.GetBlobClient(blobName);
+            await blobClient.DeleteIfExistsAsync();
+        }
+
+
+
+    }        
+          
+ }

@@ -44,27 +44,11 @@ namespace FirstStep.Controllers
             return Ok(response);
         }
 
-     /*   [HttpGet("{eTag}")]
-        public async Task<IActionResult> GetBlobByETag(string eTag)
+        [HttpDelete("{blobName}")]
+        public async Task<IActionResult> DeleteBlob(string blobName)
         {
-            var blob = await _azureBlobService.GetBlobByETag(eTag);
-            if (blob == null)
-            {
-                return NotFound();
-            }
-            return Ok(blob);
+            await _azureBlobService.DeleteBlobAsync(blobName);
+            return Ok();
         }
-
-        [HttpGet("download/{eTag}")]
-        public async Task<IActionResult> DownloadBlobByETag(string eTag)
-        {
-            var blob = await _azureBlobService.GetBlobByETag(eTag);
-            if (blob == null)
-            {
-                return NotFound();
-            }
-            var file = await _azureBlobService.DownloadBlobByETag(eTag)!;
-            return File(file, "application/octet-stream", blob.Name);
-        }   */
     }
 }
