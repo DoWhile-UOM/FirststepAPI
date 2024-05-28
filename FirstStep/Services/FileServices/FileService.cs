@@ -17,10 +17,10 @@ namespace FirstStep.Services
             _blobcontainerClient = _blobServiceClient.GetBlobContainerClient("firststep");
         }
        
-        public async Task<List<Azure.Response<BlobContentInfo>>> UploadFiles(List<IFormFile> files)
+        public async Task<List<string>> UploadFiles(List<IFormFile> files)
         {
 
-            var azureResponse = new List<Azure.Response<BlobContentInfo>>();
+            var fileNames = new List<string>();
             foreach (var file in files)
             {
                 string fileName = file.FileName;
@@ -28,19 +28,16 @@ namespace FirstStep.Services
                 {
                     file.CopyTo(memoryStream);
                     memoryStream.Position = 0;
-                    var client = await _blobcontainerClient.UploadBlobAsync(fileName, memoryStream, default);
-                    azureResponse.Add(client);
+                    await _blobcontainerClient.UploadBlobAsync(fileName, memoryStream, default);
+                    fileNames.Add(fileName);
                 }
             };
 
-            return azureResponse;
+            return fileNames;
         }
        
-
         public async Task<string> UploadFileWithApplication(IFormFile file)
-        {
-         
-            
+        { 
             string fileName= $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             var blobClient = _blobcontainerClient.GetBlobClient(fileName);
             using (var stream = file.OpenReadStream())
@@ -86,6 +83,7 @@ namespace FirstStep.Services
 
         }
 
+        //need to delete if not needed
         public async Task<string> GetBlobImageUrl(string blobName)
         {
             var sasToken = await GenerateSasTokenAsync(blobName);
