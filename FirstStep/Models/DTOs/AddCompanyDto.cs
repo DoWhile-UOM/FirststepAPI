@@ -21,5 +21,15 @@ namespace FirstStep.Models.DTOs
         public string? certificate_of_incorporation { get; set; }
 
         public DateTime company_applied_date { get; set; } = DateTime.Now;
+
+        public string? company_logo { get; set; }
+
+        public string? company_description { get; set; }
+
+        public string? company_business_scale { get; set; }
+
+        public required DateTime company_registered_date { get; set; }
+
+
     }
 }
