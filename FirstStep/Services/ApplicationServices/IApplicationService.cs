@@ -17,6 +17,8 @@ namespace FirstStep.Services
 
         public Task Update(Application application);
 
+        public Task ChangeAssignedHRA(int applicationId, int hrAssistantId);
+
         public Task Delete(int id);
 
         public Task Delete(Application application);

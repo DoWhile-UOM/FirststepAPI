@@ -110,6 +110,7 @@ namespace FirstStep.Services
         public async Task<Application> GetById(int id)
         {
             Application? application = await _context.Applications.FindAsync(id);
+
             if (application is null)
             {
                 throw new Exception("Application not found.");
@@ -190,6 +191,20 @@ namespace FirstStep.Services
             dbApplication.submitted_date = application.submitted_date;
 
             await _context.SaveChangesAsync();           
+        }
+
+        public async Task ChangeAssignedHRA(int applicationId, int hrAssistantId)
+        {
+            // find the application
+            Application application = await GetById(applicationId);
+
+            // find the hr assistant
+            if (await _employeeService.GetById(hrAssistantId) != null)
+            {
+                application.assigned_hrAssistant_id = hrAssistantId;
+                
+                await Update(application);
+            }
         }
 
         public string GetCurrentApplicationStatus(Application application)

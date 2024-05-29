@@ -99,6 +99,14 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpPatch]
+        [Route("ChangeAssignedHRA/applicationId={applicationId}/hraId={hraId}")]
+        public async Task<IActionResult> ChangeAssignedHRA(int applicationId, int hraId)
+        {
+            await _service.ChangeAssignedHRA(applicationId, hraId);
+            return Ok("Successfully changed assigned HRA.");
+        }
+
         [HttpPut]
         [Route("UpdateApplication")]
         public async Task<IActionResult> UpdateCApplication(Application reqApplication)
