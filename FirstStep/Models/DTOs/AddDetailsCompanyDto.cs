@@ -10,10 +10,6 @@ namespace FirstStep.Models.DTOs
 
         public required string company_description { get; set; }
 
-        public required string company_city { get; set; }
-
-        public required string company_province { get; set; }
-
         public required string company_business_scale { get; set; }
     }
 }

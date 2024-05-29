@@ -13,10 +13,5 @@ namespace FirstStep.Models.DTOs
         public  IFormFile? cv { get; set; }
 
         public required bool UseDefaultCv { get; set; }
-
-      /*  public string? doc1_url { get; set; }
-
-        public string? doc2_url { get; set; }*/
-        
     }
 }
