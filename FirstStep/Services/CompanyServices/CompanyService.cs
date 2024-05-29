@@ -13,17 +13,19 @@ namespace FirstStep.Services
         private readonly IMapper _mapper;
         private readonly IAdvertisementService _advertisementService;
         private readonly IEmailService _emailService;//Email Service dependency injection
+        private readonly IFileService _fileService;
 
         // Random ID generation
         private static readonly Random random = new Random();
         private static readonly HashSet<string> seenIds = new HashSet<string>();
 
-        public CompanyService(IEmailService emailService, DataContext context, IMapper mapper, IAdvertisementService advertisementService)
+        public CompanyService(IEmailService emailService, DataContext context, IMapper mapper, IAdvertisementService advertisementService,IFileService fileService)
         {
             _context = context;
             _mapper = mapper;
             _advertisementService = advertisementService;
             _emailService=emailService;
+            _fileService = fileService;
         }
 
         public async Task<IEnumerable<Company>> GetAll()
@@ -280,6 +282,30 @@ namespace FirstStep.Services
             Company company = await FindByID(companyID);
 
             return company.verification_status;
+        }
+        public async Task<bool> SaveCompanyLogo(IFormFile file, int companyId)
+        {
+            var response = await _fileService.UploadFiles(new List<IFormFile> { file });
+            if(response == null || response.Count == 0)
+            {
+                return false;
+            }
+            // Get the URL of the uploaded file
+            var blobName = file.FileName;
+            var fileUrl = await _fileService.GetBlobImageUrl(blobName);
+
+            // Save the file information in the database
+            var company = await FindByID(companyId);
+            if(company == null)
+            {
+                return false;
+            }
+            company.company_logo= fileUrl;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+
         }
     }
 }

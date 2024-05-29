@@ -150,5 +150,21 @@ namespace FirstStep.Controllers
             await _service.Delete(companyId);
             return Ok($"Successfully removed unregistered company: {companyId}.");
         }
+
+        [HttpPatch]
+        [Route("UpdateCompanyLogo/{companyId:int}/{file: file}")]
+        public async Task<IActionResult> UpdateCompanyLogo([FromForm] IFormFile file, int companyId)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file uploaded.");
+            }
+            var result = await _service.SaveCompanyLogoAsync(file, companyId);
+            if (!result)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error uploading the file.");
+            }
+            return Ok("File uploaded successfully.");
+        }
     }
 }
