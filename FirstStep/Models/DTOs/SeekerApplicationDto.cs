@@ -10,9 +10,13 @@
 
         public int phone_number { get; set; }
 
-        public string? linkedin { get; set; }
+        public required string bio { get; set; }
 
-        public string? Cv { get; set; }
+        public required string cVurl { get; set; }
+
+        public string? profile_picture { get; set; }
+
+        public string? linkedin { get; set; }
 
     }
 }
