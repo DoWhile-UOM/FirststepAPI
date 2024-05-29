@@ -86,7 +86,7 @@ namespace FirstStep.Controllers
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, "Internal Server Error");
+                return BadRequest(ex.Message);
             }
 
         }
