@@ -9,7 +9,7 @@ namespace FirstStep.Services
 
         Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, int pageLength);
 
-        Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, string city, int noOfResultsPerPage);
+        Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, float longitude, float latitude, int noOfResultsPerPage);
 
         Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID);
 
