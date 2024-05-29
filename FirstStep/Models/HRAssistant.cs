@@ -6,8 +6,6 @@ namespace FirstStep.Models
     {
         public virtual ICollection<Application>? applications { get; set; }
 
-        public string comment { get; set; }
-
     }
 
 }
