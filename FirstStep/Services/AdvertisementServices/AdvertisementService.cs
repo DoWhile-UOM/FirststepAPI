@@ -786,7 +786,7 @@ namespace FirstStep.Services
 
             Console.WriteLine(seeker.skills);
 
-            if (seeker.skills == null)
+            if (seeker.skills!.Count() <= 1)
             {
                 // when seeker has no skills, return all advertisements in the seeker's field by lowest distance to highest
                 // find distance between advertisement location to seeker's location
@@ -876,7 +876,7 @@ namespace FirstStep.Services
             // calculate the distance between the seeker's city and the advertisement's city
             foreach (var ad in advertisements)
             {
-                if (recentCalculatedDistances.ContainsKey(ad.city.ToLower()))
+                if (!recentCalculatedDistances.ContainsKey(ad.city.ToLower()))
                 {
                     adCityCoordinate = await Map.GetCoordinates(ad.city.ToLower());
                     adDistance = Map.GetDistance(seekerCityCoordinate, adCityCoordinate);
@@ -928,7 +928,7 @@ namespace FirstStep.Services
             }
 
             // sort by a number of matching skills in acending order
-            matchingAdvertisements = matchingAdvertisements.OrderBy(e => e.Value).ToDictionary(e => e.Key, e => e.Value);
+            matchingAdvertisements = matchingAdvertisements.OrderByDescending(e => e.Value).ToDictionary(e => e.Key, e => e.Value);
 
             return matchingAdvertisements;
         }
