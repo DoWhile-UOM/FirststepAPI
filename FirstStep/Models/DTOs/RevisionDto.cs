@@ -12,8 +12,6 @@
 
         public DateTime? last_modified_date { get; set; }
 
-        public int? application_id { get; set; }
-
         public required int employee_id { get; set; }
 
     }
