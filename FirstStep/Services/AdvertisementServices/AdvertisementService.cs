@@ -952,6 +952,13 @@ namespace FirstStep.Services
                 {
                     ad.current_status = AdvertisementValidation.Status.hold.ToString();
                     ad.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
+
+                    try
+                    {
+                        // execute task delegation on expired advertisements
+                        await _applicationService.InitiateTaskDelegation(ad);
+                    }
+                    catch { continue; }
                 }
             }
 
