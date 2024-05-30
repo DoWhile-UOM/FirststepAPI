@@ -219,6 +219,8 @@ namespace FirstStep.Services
             // Get the latest revision
             var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
 
+            bool isEvaluated = lastRevision != null && lastRevision.status != ApplicationStatus.NotEvaluated.ToString();
+
             return new ApplicationViewDto
             {
                 application_Id = application.application_Id,
@@ -231,6 +233,7 @@ namespace FirstStep.Services
                 cVurl = application.seeker.CVurl,
                 profile_picture = application.seeker.profile_picture,
                 current_status = currentStatus,  // Add the current status to the DTO
+                is_evaluated = isEvaluated,
                 last_revision = lastRevision == null ? null : new RevisionDto
                 {
                     revision_id = lastRevision.revision_id,
