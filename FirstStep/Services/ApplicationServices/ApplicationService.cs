@@ -168,6 +168,14 @@ namespace FirstStep.Services
             else
             {
                 var applications = advertisement.applications!.Where(a => a.assigned_hrAssistant_id == hraID);
+
+                // add seeker info to the application list
+                applications = applications.Select(a =>
+                {
+                    a.seeker = _context.Seekers.Find(a.seeker_id);
+                    return a;
+                });
+
                 applicationListPage.applicationList = CreateApplicationList(applications, status);
             }
 
