@@ -183,7 +183,13 @@ namespace FirstStep.Services
 
             if (application is null) { throw new NullReferenceException("Application not found."); }
 
-                return new ApplicationViewDto
+            // Get the current application status
+            string currentStatus = GetCurrentApplicationStatus(application);
+
+            // Get the latest revision
+            var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
+
+            return new ApplicationViewDto
             {
                 application_Id = application.application_Id,
                 submitted_date = application.submitted_date,
@@ -194,15 +200,15 @@ namespace FirstStep.Services
                 bio = application.seeker.bio,
                 cVurl = application.seeker.CVurl,
                 profile_picture = application.seeker.profile_picture,
-                linkedin = application.seeker.linkedin,
-                revisionList = application.revisions?.Select(r => new RevisionDto
+                current_status = currentStatus,  // Add the current status to the DTO
+                last_revision = lastRevision == null ? null : new RevisionDto
                 {
-                    revision_id = r.revision_id,
-                    comment = r.comment,
-                    status = r.status,
-                    created_date = r.date,
-                    employee_id = r.employee_id
-                }).ToList()
+                    revision_id = lastRevision.revision_id,
+                    comment = lastRevision.comment,
+                    status = lastRevision.status,
+                    created_date = lastRevision.date,
+                    employee_id = lastRevision.employee_id
+                }
             };
 
             //Application application = await GetById(id);
