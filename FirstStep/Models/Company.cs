@@ -32,17 +32,13 @@ namespace FirstStep.Models
 
         public string? company_description { get; set; }
 
-        public string? company_city { get; set; }
-
-        public string? company_province { get; set; }
-
         public string? company_business_scale { get; set; }
 
         public string? comment { get; set;}
 
         public DateTime company_registered_date { get; set; }
 
-        public string? registration_url { get; set; } ///Store string to check Company Registration Status
+        public string? registration_url { get; set; }
 
 
         [JsonIgnore]
