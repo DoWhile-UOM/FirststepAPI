@@ -143,14 +143,46 @@ namespace FirstStep.Services
 
             var applicationListPage = _mapper.Map<ApplicationListingPageDto>(advertisement);
 
-            var applications = await FindByAdvertisementId(jobID);
+            applicationListPage.applicationList = CreateApplicationList(await FindByAdvertisementId(jobID), status);
 
+            return applicationListPage;
+        }
+
+        public async Task<ApplicationListingPageDto> GetAssignedApplicationList(int hraID, int jobID, string status)
+        {
+            var advertisement = await _context.Advertisements
+                .Include("job_Field")
+                .Include("applications")
+                .FirstOrDefaultAsync(x => x.advertisement_id == jobID);
+
+            if (advertisement is null)
+            {
+                throw new InvalidDataException("Advertisement not found.");
+            }
+
+            var applicationListPage = _mapper.Map<ApplicationListingPageDto>(advertisement);
+
+            if (advertisement.applications!.Count <= 0)
+            {
+                applicationListPage.applicationList = new List<ApplicationListDto>();
+            }
+            else
+            {
+                var applications = advertisement.applications!.Where(a => a.assigned_hrAssistant_id == hraID);
+                applicationListPage.applicationList = CreateApplicationList(applications, status);
+            }
+
+            return applicationListPage;
+        }
+
+        private List<ApplicationListDto> CreateApplicationList(IEnumerable<Application> applications, string status)
+        {
             List<ApplicationListDto> applicationList = new List<ApplicationListDto>();
 
             for (int i = 0; i < applications.Count(); i++)
             {
                 Application dbApplication = applications.ElementAt(i);
-                string applicationStatus = _revisionService.GetCurrentStatus(dbApplication);;
+                string applicationStatus = _revisionService.GetCurrentStatus(dbApplication); ;
 
                 if (applicationStatus != status && status != "all")
                 {
@@ -169,9 +201,7 @@ namespace FirstStep.Services
                 applicationList.Add(application);
             }
 
-            applicationListPage.applicationList = applicationList;
-
-            return applicationListPage;
+            return applicationList;
         }
 
         public async Task<ApplicationViewDto> GetSeekerApplicationViewByApplicationId(int id)
