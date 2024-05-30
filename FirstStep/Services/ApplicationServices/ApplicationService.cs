@@ -201,7 +201,6 @@ namespace FirstStep.Services
                     comment = r.comment,
                     status = r.status,
                     created_date = r.date,
-                    //last_modified_date = r.last_modified_date,
                     employee_id = r.employee_id
                 }).ToList()
             };
