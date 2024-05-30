@@ -5,6 +5,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace FirstStep.Services
 {
@@ -210,6 +211,53 @@ namespace FirstStep.Services
 
             return applicationList;
         }
+
+        public async Task<ApplicationViewDto> GetSeekerApplicationViewByApplicationId(int id)
+        {
+            var application = await _context.Applications
+                .Include("seeker")
+                .Include("revisions")
+                .SingleOrDefaultAsync(a => a.application_Id == id);
+
+            if (application is null) { throw new NullReferenceException("Application not found."); }
+
+            // Get the current application status
+            string currentStatus = GetCurrentApplicationStatus(application);
+
+            // Get the latest revision
+            var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
+
+            return new ApplicationViewDto
+            {
+                application_Id = application.application_Id,
+                submitted_date = application.submitted_date,
+                email = application.seeker.email,
+                first_name = application.seeker.first_name,
+                last_name = application.seeker.last_name,
+                phone_number = application.seeker.phone_number,
+                bio = application.seeker.bio,
+                cVurl = application.seeker.CVurl,
+                profile_picture = application.seeker.profile_picture,
+                current_status = currentStatus,  // Add the current status to the DTO
+                last_revision = lastRevision == null ? null : new RevisionDto
+                {
+                    revision_id = lastRevision.revision_id,
+                    comment = lastRevision.comment,
+                    status = lastRevision.status,
+                    created_date = lastRevision.date,
+                    employee_id = lastRevision.employee_id
+                }
+            };
+
+            //Application application = await GetById(id);
+
+            //ApplicationViewDto applicationView = _mapper.Map<ApplicationViewDto>(application);
+
+            //applicationView.revisionList = _revisionService.GetRevisionsByApplicationId(id);
+
+            //return applicationView;
+        }
+
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)
         {

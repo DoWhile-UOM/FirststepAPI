@@ -25,7 +25,8 @@ namespace FirstStep.Models.DTOs
 
         public string? linkedin { get; set; }
 
-        public IEnumerable<RevisionDto>? revisionList { get; set; }
+        public string current_status { get; set; }  
+        public RevisionDto? last_revision { get; set; }  // Added property for the latest revision
 
 
 
