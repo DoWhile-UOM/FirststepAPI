@@ -5,6 +5,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace FirstStep.Services
 {
@@ -172,6 +173,48 @@ namespace FirstStep.Services
 
             return applicationListPage;
         }
+
+        public async Task<ApplicationViewDto> GetSeekerApplicationViewByApplicationId(int id)
+        {
+            var application = await _context.Applications
+                .Include("seeker")
+                .Include("revisions")
+                .SingleOrDefaultAsync(a => a.application_Id == id);
+
+            if (application is null) { throw new NullReferenceException("Application not found."); }
+
+                return new ApplicationViewDto
+            {
+                application_Id = application.application_Id,
+                submitted_date = application.submitted_date,
+                email = application.seeker.email,
+                first_name = application.seeker.first_name,
+                last_name = application.seeker.last_name,
+                phone_number = application.seeker.phone_number,
+                bio = application.seeker.bio,
+                cVurl = application.seeker.CVurl,
+                profile_picture = application.seeker.profile_picture,
+                linkedin = application.seeker.linkedin,
+                revisionList = application.revisions?.Select(r => new RevisionDto
+                {
+                    revision_id = r.revision_id,
+                    comment = r.comment,
+                    status = r.status,
+                    created_date = r.date,
+                    //last_modified_date = r.last_modified_date,
+                    employee_id = r.employee_id
+                }).ToList()
+            };
+
+            //Application application = await GetById(id);
+
+            //ApplicationViewDto applicationView = _mapper.Map<ApplicationViewDto>(application);
+
+            //applicationView.revisionList = _revisionService.GetRevisionsByApplicationId(id);
+
+            //return applicationView;
+        }
+
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)
         {
