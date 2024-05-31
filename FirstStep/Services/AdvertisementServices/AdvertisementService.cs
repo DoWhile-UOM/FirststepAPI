@@ -328,7 +328,7 @@ namespace FirstStep.Services
             else if (newStatus == AdvertisementValidation.Status.closed.ToString() && AdvertisementValidation.IsActive(advertisement))
             {
                 // can't close an active advertisement, therefore first need to update the submission deadline
-                throw new InvalidDataException("Cannot close an active advertisement.");
+                throw new BadHttpRequestException("Cannot close an active advertisement.");
             }
 
             // update the advertisement status
@@ -345,6 +345,9 @@ namespace FirstStep.Services
 
                 // set the expired date to 10 days after the current date, because need to hold saved advertisements for 10 days
                 advertisement.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
+
+                // execute task delegation on expired advertisements
+                await _applicationService.InitiateTaskDelegation(advertisement);
             }
 
             await _context.SaveChangesAsync();
