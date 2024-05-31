@@ -36,7 +36,7 @@ namespace FirstStep.Services
             return fileNames;
         }
 
-        public async Task<string> UploadFileWithApplication(IFormFile file)
+        public async Task<string> UploadFile(IFormFile file)
         {
             string fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             var blobClient = _blobcontainerClient.GetBlobClient(fileName);

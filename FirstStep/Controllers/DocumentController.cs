@@ -46,5 +46,13 @@ namespace FirstStep.Controllers
             await _azureBlobService.DeleteBlobAsync(blobName);
             return Ok();
         }
+
+        [HttpPost]
+        [Route("UploadBlobs")]
+        public async Task<IActionResult> UploadBlobs(List<IFormFile> files)
+        {
+            var response = await _azureBlobService.UploadFiles(files);
+            return Ok(response);
+        }
     }
 }
