@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FirstStep.Data;
+using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Validation;
@@ -25,7 +26,11 @@ namespace FirstStep.Services
 
         public async Task<Employee> GetById(int id)
         {
-            Employee? employee = await _context.Employees.FindAsync(id);
+            Employee? employee = await _context.Employees
+                .Include("company")
+                .Where(e => e.user_id == id)
+                .FirstOrDefaultAsync();
+
             if (employee is null)
             {
                 throw new Exception("Employee not found.");
@@ -53,7 +58,10 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllHRManagers(int company_Id)
         {
-            ICollection<Employee> hrManagers = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type == "HRM").ToListAsync();
+            ICollection<Employee> hrManagers = await _context.Employees
+                .Where(e => e.company_id == company_Id && e.user_type == User.UserType.hrm.ToString())
+                .ToListAsync();
+
             if (hrManagers is null)
             {
                 throw new Exception("There are no HR Managers under the company");
@@ -64,7 +72,9 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllHRAssistants(int company_Id)
         {
-            ICollection<HRAssistant> hrAssistants = await _context.HRAssistants.Where(e => e.company_id == company_Id && e.user_type == "HRA").ToListAsync();
+            ICollection<HRAssistant> hrAssistants = await _context.HRAssistants
+                .Where(e => e.company_id == company_Id && e.user_type == User.UserType.hra.ToString())
+                .ToListAsync();
             if (hrAssistants is null)
             {
                 throw new Exception("There are no HR Assistants under the company");
@@ -75,12 +85,20 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<Employee>> GetAllEmployees(int company_Id)
         {
-            ICollection<Employee> employees = await _context.Employees.Where(e => e.company_id == company_Id && e.user_type != "CA").ToListAsync();
+            ICollection<Employee> employees = await _context.Employees
+                .Where(e => e.company_id == company_Id && e.user_type != User.UserType.ca.ToString())
+                .ToListAsync();
             if (employees is null)
             {
                 throw new Exception("There are no employees under the company");
             }
 
+            return employees;
+        }
+
+        public async Task<IEnumerable<Employee>> GetEmployees(IEnumerable<int> emp_ids)
+        {
+            IEnumerable<Employee> employees = await _context.Employees.Where(e => emp_ids.Contains(e.user_id)).ToListAsync();
             return employees;
         }
 
@@ -90,8 +108,20 @@ namespace FirstStep.Services
             
             var hrManager = _mapper.Map<HRManager>(newHRManager);
 
-            hrManager.password_hash = newHRManager.password;
-            hrManager.user_type = "HRM";
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == newHRManager.email))
+                throw new Exception("Email Already exist");
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newHRManager.password);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                throw new Exception(passCheck);
+
+            //Hash password before saving to database
+            hrManager.password_hash = PasswordHasher.Hasher(newHRManager.password);
+
+            hrManager.user_type = User.UserType.hrm.ToString();
 
             _context.HRManagers.Add(hrManager);
             await _context.SaveChangesAsync();
@@ -103,8 +133,19 @@ namespace FirstStep.Services
 
             var hrAssistant = _mapper.Map<HRAssistant>(newHRAssistant);
 
-            hrAssistant.password_hash = newHRAssistant.password;
-            hrAssistant.user_type = "HRA";
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == newHRAssistant.email))
+                throw new Exception("Email Already exist");
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newHRAssistant.password);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                throw new Exception(passCheck);
+
+            //Hash password before saving to database
+            hrAssistant.password_hash = PasswordHasher.Hasher(newHRAssistant.password);
+            hrAssistant.user_type = User.UserType.hra.ToString();
 
             _context.HRAssistants.Add(hrAssistant);
             await _context.SaveChangesAsync();
@@ -129,8 +170,20 @@ namespace FirstStep.Services
 
             var companyAdmin = _mapper.Map<HRManager>(newCompanyAdmin);
 
-            companyAdmin.password_hash = newCompanyAdmin.password;
-            companyAdmin.user_type = "CA";
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == newCompanyAdmin.email))
+                throw new Exception("Email Already exist");
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newCompanyAdmin.password);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                throw new Exception(passCheck);
+
+            //Hash password before saving to database
+            companyAdmin.password_hash = PasswordHasher.Hasher(newCompanyAdmin.password);
+
+            companyAdmin.user_type = User.UserType.ca.ToString();
             companyAdmin.admin_company = company;
 
             _context.HRManagers.Add(companyAdmin);
@@ -154,6 +207,28 @@ namespace FirstStep.Services
         public async Task Delete(int id)
         {
             Employee employee = await GetById(id);
+
+            if (employee.user_type == User.UserType.ca.ToString())
+            {
+                throw new FieldAccessException("Company Admin cannot be deleted");
+            }
+            else if (employee.user_type == User.UserType.hrm.ToString())
+            {
+                // check whether the HR Manager has created any advertisement
+                var advertisements = await _context.Advertisements.Where(a => a.hrManager_id == id).ToListAsync();
+
+                if (advertisements.Count > 0)
+                {
+                    // find the company admin of hrm's company
+                    int ca = (int)employee.company!.company_admin_id!;
+
+                    // set the advertisements' created hr manager as the company admin of the deleting HR Manager's company
+                    foreach (var ad in advertisements)
+                    {
+                        ad.hrManager_id = ca;
+                    }
+                }
+            }
 
             _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();

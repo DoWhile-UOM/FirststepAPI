@@ -1,4 +1,5 @@
 ﻿using FirstStep.Data;
+using FirstStep.Helper;
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
@@ -32,6 +33,20 @@ namespace FirstStep.Services
         public async Task Create(SystemAdmin systemAdmin)
         {
             systemAdmin.user_id = 0;
+            systemAdmin.user_type = "sa";
+
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == systemAdmin.email))
+                throw new Exception("Email Already exist");
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(systemAdmin.password_hash);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                throw new Exception(passCheck);
+
+            //Hash password before saving to database
+            systemAdmin.password_hash = PasswordHasher.Hasher(systemAdmin.password_hash);
 
             _context.SystemAdmins.Add(systemAdmin);
             await _context.SaveChangesAsync();

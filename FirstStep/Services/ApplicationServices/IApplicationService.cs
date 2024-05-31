@@ -9,7 +9,9 @@ namespace FirstStep.Services
 
         public Task<Application> GetById(int id);
 
-        public Task<IEnumerable<HRManagerApplicationListDto>> GetHRManagerAdertisementListByJobID(int jobID);
+        public Task<ApplicationListingPageDto> GetApplicationList(int jobID, string status);
+
+        public Task<ApplicationListingPageDto> GetAssignedApplicationList(int hraID, int jobID, string status);
 
         public Task<IEnumerable<Application>> GetBySeekerId(int id);
 
@@ -17,22 +19,16 @@ namespace FirstStep.Services
 
         public Task Update(Application application);
 
+        public Task ChangeAssignedHRA(int applicationId, int hrAssistantId);
+
         public Task Delete(int id);
 
         public Task Delete(Application application);
 
         public string GetCurrentApplicationStatus(Application application);
 
-        public Task<int> NumberOfApplicationsByAdvertisementId(int jobId);
+        public Task InitiateTaskDelegation(int advertisement_id, IEnumerable<int>? hrassistant_ids);
 
-        public Task<int> TotalEvaluatedApplications(int jobId);
-
-        public Task<int> TotalNotEvaluatedApplications(int jobId);
-
-        public Task<int> AcceptedApplications(int jobId);
-
-        public Task<int> RejectedApplications(int jobId);
-
-        public Task InitiateTaskDelegation(int advertisement_id);
+        public Task InitiateTaskDelegation(Advertisement advertisement);
     }
 }

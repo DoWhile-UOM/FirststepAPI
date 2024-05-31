@@ -38,6 +38,10 @@ namespace FirstStep.Validation
 
         public static void CheckStatus(string status)
         {
+            if (status == "all")
+            {
+                return;
+            }
             if (!Enum.TryParse<Status>(status, out _))
             {
                 throw new InvalidDataException("Invalid status.");

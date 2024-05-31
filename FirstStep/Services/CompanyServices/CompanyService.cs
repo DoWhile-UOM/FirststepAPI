@@ -3,6 +3,7 @@ using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace FirstStep.Services
 {
@@ -11,12 +12,18 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IAdvertisementService _advertisementService;
+        private readonly IEmailService _emailService;//Email Service dependency injection
 
-        public CompanyService(DataContext context, IMapper mapper, IAdvertisementService advertisementService)
+        // Random ID generation
+        private static readonly Random random = new Random();
+        private static readonly HashSet<string> seenIds = new HashSet<string>();
+
+        public CompanyService(IEmailService emailService, DataContext context, IMapper mapper, IAdvertisementService advertisementService)
         {
             _context = context;
             _mapper = mapper;
             _advertisementService = advertisementService;
+            _emailService=emailService;
         }
 
         public async Task<IEnumerable<Company>> GetAll()
@@ -51,6 +58,15 @@ namespace FirstStep.Services
         {
             return await _context.Companies.Where(c => c.verification_status).ToListAsync();
         }
+
+        //get company list for system admin
+        public async Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList()
+        {
+            IEnumerable<Company> companies = await GetAll();
+            IEnumerable<ViewCompanyListDto> companyDtos = _mapper.Map<IEnumerable<ViewCompanyListDto>>(companies);
+            return companyDtos;
+        }
+
         
         public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID, int pageLength)
         {
@@ -69,6 +85,15 @@ namespace FirstStep.Services
             return advertisementCompanyDto;
         }
 
+
+        //get company application by id
+        public async Task<CompanyApplicationDto> GetCompanyApplicationById(int companyID)
+        {
+            Company company = await FindByID(companyID);
+            CompanyApplicationDto companydto = _mapper.Map<CompanyApplicationDto>(company);
+            return companydto;
+        }
+        
         //Company Registration Starts here
         public async Task Create(AddCompanyDto newCompanyDto)
         {
@@ -85,11 +110,54 @@ namespace FirstStep.Services
             }
 
             company.verification_status = false;
+            company.registration_url= GenerateUniqueStringId(company.business_reg_no);
 
             //Call Company Registration Email Verfication service
 
+
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
+
+            _emailService.SendEmailCompanyRegistration(company.company_email, company.company_name,company.registration_url); //Send Company Registration Email
+            //return(company.registration_url); //Return Company Registration URL (Unique ID 
+        }
+
+        //Company Resgistration State Check ID Generation Starts here
+        public static string GenerateUniqueStringId(int inputInteger)
+        {
+            while (true)
+            {
+                // Generate a random string of 10 characters (customize length as needed)
+                string idString = GenerateRandomString(10);
+
+                // Check if the string with the integer appended is unique
+                string idWithInteger = idString + inputInteger.ToString();
+                if (!seenIds.Contains(idWithInteger))
+                {
+                    seenIds.Add(idWithInteger); // Store generated ID for uniqueness check
+                    return idString;
+                }
+            }
+        }
+
+        private static string GenerateRandomString(int length)
+        {
+            const string charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            return new string(Enumerable.Repeat(charset, length)
+                          .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        //Company Resgistration State Check ID Generation Ends here
+
+
+        public class EmailAlreadyExistsException : Exception
+        {
+            public EmailAlreadyExistsException(string message) : base(message) { }
+        }
+
+        public class RegistrationNumberAlreadyExistsException : Exception
+        {
+            public RegistrationNumberAlreadyExistsException(string message) : base(message) { }
         }
 
         private async Task<bool> CheckCompnayEmailExist(string Email) //Function to check company email exist
@@ -101,7 +169,19 @@ namespace FirstStep.Services
         {
             return await _context.Companies.AnyAsync(x => x.business_reg_no == int.Parse(RegNo));
         }
-        //Company Registration Ends here
+
+        public async Task<Company> FindByRegCheckID(string id) //Function to check company registration status
+        {
+            Company? company = await _context.Companies.Where(c => c.registration_url == id).FirstOrDefaultAsync();
+            if (company is null)
+            {
+                throw new Exception("Company not found.");
+            }
+
+            return company;
+        }
+
+        //-----------------Company Registration Ends here---------------------------------------------------------
 
 
         public async Task Delete(int id)
@@ -115,6 +195,9 @@ namespace FirstStep.Services
         public async Task UpdateCompanyVerification(int companyID, CompanyRegInfoDto companyRegInfo)
         {
             var unRegCompany = await FindByID(companyID);
+            var link = "";
+
+            var rejectedLink = unRegCompany.registration_url;
 
             unRegCompany.verification_status = companyRegInfo.verification_status;
             unRegCompany.company_registered_date = companyRegInfo.company_registered_date;
@@ -122,6 +205,17 @@ namespace FirstStep.Services
             unRegCompany.comment = companyRegInfo.comment;
 
             await _context.SaveChangesAsync();
+
+            if (companyRegInfo.verification_status == true)
+            {
+                link = "http://localhost:4200/RegCompanyAdmin?id=" + rejectedLink;
+            }
+            else
+            {
+                link = "http://localhost:4200/RegCheck?id=" + rejectedLink;
+            }
+            _emailService.EvaluatedCompanyRegistraionApplicationEmail(unRegCompany.company_email, companyRegInfo.verification_status, companyRegInfo.comment, link, unRegCompany.company_name);
+
         }
 
         public async Task RegisterCompany(int companyID, AddDetailsCompanyDto company)
@@ -130,8 +224,6 @@ namespace FirstStep.Services
 
             unRegCompany.company_logo = company.company_logo;
             unRegCompany.company_description = company.company_description;
-            unRegCompany.company_city = company.company_city;
-            unRegCompany.company_province = company.company_province;
             unRegCompany.company_business_scale = company.company_business_scale;
 
             await _context.SaveChangesAsync();
@@ -174,8 +266,6 @@ namespace FirstStep.Services
             dbCompany.company_phone_number = company.company_phone_number;
             dbCompany.company_logo = company.company_logo;
             dbCompany.company_description = company.company_description;
-            dbCompany.company_city = company.company_city;
-            dbCompany.company_province = company.company_province;
             dbCompany.company_business_scale = company.company_business_scale;
 
             await _context.SaveChangesAsync();

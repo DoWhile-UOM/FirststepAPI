@@ -157,7 +157,6 @@ namespace Firststep.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("application_Id"));
 
                     b.Property<string>("CVurl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("advertisement_id")
@@ -165,12 +164,6 @@ namespace Firststep.Migrations
 
                     b.Property<int?>("assigned_hrAssistant_id")
                         .HasColumnType("int");
-
-                    b.Property<string>("doc1_url")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("doc2_url")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("seeker_id")
                         .HasColumnType("int");
@@ -222,9 +215,6 @@ namespace Firststep.Migrations
                     b.Property<string>("company_business_scale")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("company_city")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("company_description")
                         .HasColumnType("nvarchar(max)");
 
@@ -242,13 +232,13 @@ namespace Firststep.Migrations
                     b.Property<int>("company_phone_number")
                         .HasColumnType("int");
 
-                    b.Property<string>("company_province")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("company_registered_date")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("company_website")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("registration_url")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("verification_status")
