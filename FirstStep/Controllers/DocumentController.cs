@@ -15,6 +15,14 @@ namespace FirstStep.Controllers
             _azureBlobService = service;
         }
 
+        [HttpPost]
+        [Route("UploadFiles")]
+        public async Task<IActionResult> UploadFiles(List<IFormFile> files)
+        {
+            var response = await _azureBlobService.UploadFiles(files);
+            return Ok(response);
+        }
+
         [HttpGet]
         [Route("GetAllBlobs")]
         public async Task<IActionResult> GetAllBlobs()
