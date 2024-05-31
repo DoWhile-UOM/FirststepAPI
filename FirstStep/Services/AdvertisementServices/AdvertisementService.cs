@@ -620,7 +620,7 @@ namespace FirstStep.Services
 
                 jobOfferDto.field_name = ad.job_Field!.field_name;
 
-                jobOfferDto.no_of_applications = hra.applications!.Count();
+                jobOfferDto.no_of_applications = ad.applications!.Count();
                 jobOfferDto.no_of_assigned_applications = hra.applications!.Where(a => a.advertisement_id == ad.advertisement_id).Count();
                 jobOfferDto.no_of_evaluated_applications = hra.applications!
                     .Where(a => 
@@ -802,7 +802,7 @@ namespace FirstStep.Services
             if (seeker.skills!.Count() <= 1)
             {
                 // when seeker has no skills, return all advertisements in the seeker's field by lowest distance to highest
-                await FindNearestAdvertisements(advertisements, longitude, latitude);
+                return await FindNearestAdvertisements(advertisements, longitude, latitude);
             }
 
             // find advertisements matching with the seeker's skills
@@ -811,7 +811,7 @@ namespace FirstStep.Services
             if (filteredAds.Count() <= 0)
             {
                 // when there are no matching advertisements, return all advertisements in the seeker's field by lowest distance to highest
-               await FindNearestAdvertisements(advertisements, longitude, latitude);
+               return await FindNearestAdvertisements(advertisements, longitude, latitude);
             }
 
             // find the distance between the seeker's city and the advertisement's city
@@ -837,7 +837,7 @@ namespace FirstStep.Services
 
             foreach (var ad in filteredAds)
             {
-                if (advertisementDistances.ContainsKey(ad.Key))
+                if (!advertisementDistances.ContainsKey(ad.Key))
                 {
                     matchingAdvertisements.Add(ad.Key, (ad.Value, advertisementDistances[ad.Key]));
                 }
