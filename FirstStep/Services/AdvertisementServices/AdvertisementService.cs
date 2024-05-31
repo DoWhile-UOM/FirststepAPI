@@ -7,6 +7,7 @@ using FirstStep.Validation;
 using Microsoft.EntityFrameworkCore;
 using KdTree;
 using KdTree.Math;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FirstStep.Services
 {
@@ -789,28 +790,35 @@ namespace FirstStep.Services
             if (seeker.skills!.Count() <= 1)
             {
                 // when seeker has no skills, return all advertisements in the seeker's field by lowest distance to highest
-                // find distance between advertisement location to seeker's location
-                Dictionary<Advertisement, float> distances = await FindDistanceForAdvertisements(longitude, latitude, advertisements);
-
-                // sort by acoording to distance in acending order
-                return SortByDistance(distances);
+                await FindNearestAdvertisements(advertisements, longitude, latitude);
             }
 
             // find advertisements matching with the seeker's skills
             Dictionary<Advertisement, float> filteredAds = FindAdvertisementsMatchingWithSkills(seeker, advertisements);
 
+            if (filteredAds.Count() <= 0)
+            {
+                // when there are no matching advertisements, return all advertisements in the seeker's field by lowest distance to highest
+               await FindNearestAdvertisements(advertisements, longitude, latitude);
+            }
+
             // find the distance between the seeker's city and the advertisement's city
             Dictionary<Advertisement, float> advertisementDistances = await FindDistanceForAdvertisements(longitude, latitude, filteredAds.Keys);
 
-            // calculate the mean of the matching skills and distances
-            float meanSkills = filteredAds.Values.Sum() / filteredAds.Count;
-            float meanDistance = advertisementDistances.Values.Sum() / advertisementDistances.Count;
+            // round the number of advertisements to the nearest hundred
+            if ((int)Math.Round(filteredAds.Count() / 100.0) * 100 > 1000)
+            {
+                // when are more than 1000 advertisements, filter the advertisements by the mean of the matching skills and distances
+                // calculate the mean of the matching skills and distances
+                float meanSkills = filteredAds.Values.Sum() / filteredAds.Count;
+                float meanDistance = advertisementDistances.Values.Sum() / advertisementDistances.Count;
 
-            // select only advertisements that have greater than the mean of the matching skills
-            filteredAds = filteredAds.Where(e => e.Value >= meanSkills).ToDictionary(e => e.Key, e => e.Value);
+                // select only advertisements that have greater than the mean of the matching skills
+                filteredAds = filteredAds.Where(e => e.Value >= meanSkills).ToDictionary(e => e.Key, e => e.Value);
 
-            // select only advertisements that have less than the mean of the distance
-            advertisementDistances = advertisementDistances.Where(e => e.Value <= meanDistance).ToDictionary(e => e.Key, e => e.Value);
+                // select only advertisements that have less than the mean of the distance
+                advertisementDistances = advertisementDistances.Where(e => e.Value <= meanDistance).ToDictionary(e => e.Key, e => e.Value);
+            }
 
             // find the common advertisements between the two dictionaries
             var matchingAdvertisements = new Dictionary<Advertisement, (float skillsMatchingPercentage, float distance)> { };
@@ -825,6 +833,15 @@ namespace FirstStep.Services
 
             // sort by lowest distance with highest matching skills ratio to highest distance with lowest matching skills ratio
             return SortByNearestNeighbor(matchingAdvertisements);
+        }
+
+        private async Task<List<Advertisement>> FindNearestAdvertisements(IEnumerable<Advertisement> advertisements, float longitude, float latitude)
+        {
+            // find distance between advertisement location to seeker's location
+            Dictionary<Advertisement, float> distances = await FindDistanceForAdvertisements(longitude, latitude, advertisements);
+
+            // sort by acoording to distance in acending order
+            return SortByDistance(distances);
         }
 
         private List<Advertisement> SortByNearestNeighbor(Dictionary<Advertisement, (float skillsMatchingPercentage, float distance)> matchingAdvertisements)
