@@ -11,11 +11,15 @@ namespace FirstStep.Services
 
         public Task<ApplicationListingPageDto> GetApplicationList(int jobID, string status);
 
+        public Task<ApplicationListingPageDto> GetAssignedApplicationList(int hraID, int jobID, string status);
+
         public Task<IEnumerable<Application>> GetBySeekerId(int id);
 
         public Task Create(AddApplicationDto newApplicationDto);
 
         public Task Update(Application application);
+
+        public Task ChangeAssignedHRA(int applicationId, int hrAssistantId);
 
         public Task Delete(int id);
 
@@ -24,5 +28,7 @@ namespace FirstStep.Services
         public string GetCurrentApplicationStatus(Application application);
 
         public Task InitiateTaskDelegation(int advertisement_id, IEnumerable<int>? hrassistant_ids);
+
+        public Task InitiateTaskDelegation(Advertisement advertisement);
     }
 }

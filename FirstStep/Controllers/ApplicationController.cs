@@ -39,6 +39,13 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
+        [Route("GetAssignedApplicationList/hraId={hraId:int}/JobID={jobId:int}/status={status}")]
+        public async Task<ActionResult<ApplicationListingPageDto>> GetAssignedApplicationList(int hraId, int jobId, string status)
+        {
+            return Ok(await _service.GetAssignedApplicationList(hraId, jobId, status));
+        }
+
+        [HttpGet]
         [Route("GetApplicationsBySeekerId/{id}")]
         public async Task<ActionResult<IEnumerable<Application>>> GetApplicationsBySeekerId(int id)
         {
@@ -97,6 +104,14 @@ namespace FirstStep.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
             }
+        }
+
+        [HttpPatch]
+        [Route("ChangeAssignedHRA/applicationId={applicationId}/hraId={hraId}")]
+        public async Task<IActionResult> ChangeAssignedHRA(int applicationId, int hraId)
+        {
+            await _service.ChangeAssignedHRA(applicationId, hraId);
+            return Ok("Successfully changed assigned HRA.");
         }
 
         [HttpPut]
