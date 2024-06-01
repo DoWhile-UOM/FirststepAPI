@@ -39,6 +39,13 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
+        [Route("GetSeekerApplicationViewByApplicationId/{id}")]
+        public async Task<ActionResult<ApplicationViewDto>> GetSeekerApplicationViewByApplicationId(int id)
+        {
+            return Ok(await _service.GetSeekerApplicationViewByApplicationId(id));
+        }
+
+        [HttpGet]
         [Route("GetAssignedApplicationList/hraId={hraId:int}/JobID={jobId:int}/status={status}")]
         public async Task<ActionResult<ApplicationListingPageDto>> GetAssignedApplicationList(int hraId, int jobId, string status)
         {
