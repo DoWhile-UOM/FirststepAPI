@@ -222,7 +222,17 @@ namespace FirstStep.Services
             if (application is null) { throw new NullReferenceException("Application not found."); }
 
             // Get the current application status
-            string currentStatus = GetCurrentApplicationStatus(application);
+            string currentStatus;
+            try
+            {
+                // Get the current application status
+                currentStatus = GetCurrentApplicationStatus(application);
+            }
+            catch (InvalidOperationException)
+            {
+                // Handle the case where there are no revisions
+                currentStatus = ApplicationStatus.NotEvaluated.ToString();
+            }
 
             // Get the latest revision
             var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
@@ -240,7 +250,8 @@ namespace FirstStep.Services
                 bio = application.seeker.bio,
                 cVurl = application.seeker.CVurl,
                 profile_picture = application.seeker.profile_picture,
-                current_status = currentStatus,  // Add the current status to the DTO
+                linkedin = application.seeker.linkedin,
+                current_status = currentStatus,
                 is_evaluated = isEvaluated,
                 last_revision = lastRevision == null ? null : new RevisionDto
                 {
