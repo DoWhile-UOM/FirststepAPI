@@ -31,5 +31,6 @@ namespace FirstStep.Models.DTOs
 
         public RevisionDto? last_revision { get; set; }  // Added property for the latest revision
 
+        public int seeker_id { get; set; }
     }
 }

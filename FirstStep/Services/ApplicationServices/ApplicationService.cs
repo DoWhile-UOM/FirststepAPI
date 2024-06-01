@@ -260,7 +260,8 @@ namespace FirstStep.Services
                     status = lastRevision.status,
                     created_date = lastRevision.date,
                     employee_id = lastRevision.employee_id
-                }
+                },
+                seeker_id = application.seeker_id
             };
 
             //Application application = await GetById(id);
