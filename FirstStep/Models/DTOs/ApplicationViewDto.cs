@@ -25,7 +25,7 @@ namespace FirstStep.Models.DTOs
 
         public string? linkedin { get; set; }
 
-        public string current_status { get; set; }
+        public string? current_status { get; set; }
 
         public bool is_evaluated { get; set; }  
 

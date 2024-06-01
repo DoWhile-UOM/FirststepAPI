@@ -16,8 +16,6 @@
 
         public string? university { get; set; }
 
-        public string? cVurl { get; set; } //nullable dla thibe
-
         public string? profile_picture { get; set; }
 
         public string? linkedin { get; set; }

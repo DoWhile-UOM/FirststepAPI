@@ -181,7 +181,6 @@ namespace FirstStep.Services
                 bio = seeker.bio,
                 description = seeker.description,
                 university = seeker.university,
-                cVurl = seeker.CVurl,
                 profile_picture = seeker.profile_picture,
                 linkedin = seeker.linkedin,
                 field_id = seeker.field_id,
