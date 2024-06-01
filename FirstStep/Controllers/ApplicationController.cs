@@ -74,6 +74,20 @@ namespace FirstStep.Controllers
             }
         }
 
+         [HttpGet]
+        [Route("GetRevisionHistory/{applicationId:int}")]
+        public async Task<ActionResult<IEnumerable<RevisionHistoryDto>>> GetRevisionHistory(int applicationId)
+        {
+            var revisionHistory = await _service.GetRevisionHistory(applicationId);
+
+            if (!revisionHistory.Any())
+            {
+                return NotFound("No revisions found for this application.");
+            }
+
+            return Ok(revisionHistory);
+        }
+
         [HttpGet]
         [Route("GetAssignedApplicationList/hraId={hraId:int}/JobID={jobId:int}/status={status}")]
         public async Task<ActionResult<ApplicationListingPageDto>> GetAssignedApplicationList(int hraId, int jobId, string status)

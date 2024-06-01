@@ -454,7 +454,7 @@ namespace FirstStep.Services
 
             // Validate if the last revision was made by an HR Manager
             var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
-            if (lastRevision != null && lastRevision.employee.user_type == "HRM") // Assuming "HRM" is the user type for HR Manager
+            if (lastRevision != null && lastRevision.employee.user_type == "HRM") 
             {
                 throw new InvalidOperationException("Revisions cannot be added after an HR Manager's revision.");
             }
@@ -471,6 +471,27 @@ namespace FirstStep.Services
             _context.Revisions.Add(newRevision);
             await _context.SaveChangesAsync();
         }
+
+
+        public async Task<IEnumerable<RevisionHistoryDto>> GetRevisionHistory(int applicationId)
+        {
+            var revisions = await _context.Revisions
+                .Include(r => r.employee)
+                .Where(r => r.application_id == applicationId)
+                .OrderBy(r => r.date)  // Order revisions by date
+                .ToListAsync();
+
+            return revisions.Select(r => new RevisionHistoryDto
+            {
+                revision_id = r.revision_id,
+                comment = r.comment,
+                status = r.status,
+                created_date = r.date,
+                employee_name = r.employee.first_name + " " + r.employee.last_name,
+                employee_role = r.employee.user_type
+            });
+        }
+
 
     }
 }
