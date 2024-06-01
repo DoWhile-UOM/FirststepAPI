@@ -11,7 +11,7 @@ namespace FirstStep.Services
 
         public Task<ApplicationListingPageDto> GetApplicationList(int jobID, string status);
 
-        public Task<SeekerApplicationViewDto> GetSeekerApplicationViewByApplicationId(int id);
+        public Task<ApplicationViewDto> GetSeekerApplicationViewByApplicationId(int id);
 
         public Task<ApplicationListingPageDto> GetAssignedApplicationList(int hraID, int jobID, string status);
 
