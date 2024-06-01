@@ -215,8 +215,9 @@ namespace FirstStep.Services
         public async Task<ApplicationViewDto> GetSeekerApplicationViewByApplicationId(int id)
         {
             var application = await _context.Applications
-                .Include("seeker")
-                .Include("revisions")
+                .Include(a => a.seeker)
+                .Include(a => a.revisions)
+                .ThenInclude(r => r.employee) 
                 .SingleOrDefaultAsync(a => a.application_Id == id);
 
             if (application is null) { throw new NullReferenceException("Application not found."); }
@@ -225,7 +226,6 @@ namespace FirstStep.Services
             string currentStatus;
             try
             {
-                // Get the current application status
                 currentStatus = GetCurrentApplicationStatus(application);
             }
             catch (InvalidOperationException)
@@ -239,6 +239,7 @@ namespace FirstStep.Services
 
             bool isEvaluated = lastRevision != null && lastRevision.status != ApplicationStatus.NotEvaluated.ToString();
 
+            // Return the Application View DTO including the last revision details
             return new ApplicationViewDto
             {
                 application_Id = application.application_Id,
@@ -259,19 +260,14 @@ namespace FirstStep.Services
                     comment = lastRevision.comment,
                     status = lastRevision.status,
                     created_date = lastRevision.date,
-                    employee_id = lastRevision.employee_id
+                    employee_id = lastRevision.employee_id,
+                    name = lastRevision.employee.first_name + " " + lastRevision.employee.last_name, // Populate name
+                    role = lastRevision.employee.user_type // Populate role
                 },
                 seeker_id = application.seeker_id
             };
-
-            //Application application = await GetById(id);
-
-            //ApplicationViewDto applicationView = _mapper.Map<ApplicationViewDto>(application);
-
-            //applicationView.revisionList = _revisionService.GetRevisionsByApplicationId(id);
-
-            //return applicationView;
         }
+
 
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)
@@ -442,5 +438,39 @@ namespace FirstStep.Services
         }
 
         //tasks delegation ends here
+
+        // Adding the AddRevision method
+        public async Task AddRevision(AddRevisionDto newRevisionDto)
+        {
+            var application = await _context.Applications
+                .Include(a => a.revisions)
+                .ThenInclude(r => r.employee)
+                .SingleOrDefaultAsync(a => a.application_Id == newRevisionDto.application_id);
+
+            if (application == null)
+            {
+                throw new NullReferenceException("Application not found.");
+            }
+
+            // Validate if the last revision was made by an HR Manager
+            var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
+            if (lastRevision != null && lastRevision.employee.user_type == "HRM") // Assuming "HRM" is the user type for HR Manager
+            {
+                throw new InvalidOperationException("Revisions cannot be added after an HR Manager's revision.");
+            }
+
+            var newRevision = new Revision
+            {
+                application_id = newRevisionDto.application_id,
+                comment = newRevisionDto.comment,
+                status = newRevisionDto.status,
+                date = DateTime.Now,
+                employee_id = newRevisionDto.employee_id
+            };
+
+            _context.Revisions.Add(newRevision);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
