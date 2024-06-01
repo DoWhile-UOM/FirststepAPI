@@ -19,6 +19,7 @@ namespace FirstStep.Services
         private readonly ISkillService _skillService;
         private readonly ISeekerService _seekerService;
         private readonly IApplicationService _applicationService;
+        private readonly IFileService _fileService;
 
         private readonly int AdvertisementExpiredDays = 10;
 
@@ -28,7 +29,8 @@ namespace FirstStep.Services
             IProfessionKeywordService keywordService,
             ISkillService skillService,
             ISeekerService seekerService,
-            IApplicationService applicationService)
+            IApplicationService applicationService,
+            IFileService fileService)
         {
             _context = context;
             _mapper = mapper;
@@ -36,6 +38,7 @@ namespace FirstStep.Services
             _skillService = skillService;
             _seekerService = seekerService;
             _applicationService = applicationService;
+            _fileService = fileService;
         }
 
         private async Task<IEnumerable<Advertisement>> FindAll(bool isActivatedOnly)
@@ -550,6 +553,11 @@ namespace FirstStep.Services
 
             Seeker seeker = await _seekerService.GetById(seekerID);
 
+            // hold the company and and the company logo to increase the performance of searching blob url
+            Dictionary<int, (string company_name, string company_logo)> recentAccessedCompanies = new Dictionary<int, (string, string)>();
+
+            int company_id;
+
             foreach (var ad in dbAds)
             {
                 var adDto = _mapper.Map<AdvertisementShortDto>(ad);
@@ -561,7 +569,23 @@ namespace FirstStep.Services
                 // check whether the advertisement is expired or not
                 adDto.is_expired = AdvertisementValidation.IsExpired(ad);
 
-                adDto.company_name = _context.Companies.Find(ad.hrManager!.company_id)!.company_name;
+                company_id = ad.hrManager!.company_id;
+
+                if (!recentAccessedCompanies.ContainsKey(company_id))
+                {
+                    Company? company = await _context.Companies.FindAsync(company_id);
+                    if (company == null) continue;
+
+                    adDto.company_logo_url = await _fileService.GetBlobImageUrl(company.company_logo!);
+                    adDto.company_name = company.company_name;
+
+                    recentAccessedCompanies.Add(company_id, (adDto.company_name, adDto.company_logo_url));
+                }
+                else
+                {
+                    adDto.company_name = recentAccessedCompanies[company_id].company_name;
+                    adDto.company_logo_url = recentAccessedCompanies[company_id].company_logo;
+                }
 
                 adCardDtos.Add(adDto);
             }

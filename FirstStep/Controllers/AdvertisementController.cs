@@ -62,10 +62,9 @@ namespace FirstStep.Controllers
         [Route("GetRecommendedAdvertisements/seekerID={seekerID:int}/len={pageLength:int}/long={lon}/lat={lat}")]
         public async Task<ActionResult<AdvertisementFirstPageDto>> GetRecommendedAdvertisements(int seekerID, string lon, string lat, int pageLength)
         {
-            return Ok(await _service.GetRecommendedAdvertisements(seekerID, float.Parse(lon), float.Parse(lat), pageLength));
             try
             {
-                //return Ok(await _service.GetRecommendedAdvertisements(seekerID, float.Parse(lon), float.Parse(lat), pageLength));
+                return Ok(await _service.GetRecommendedAdvertisements(seekerID, float.Parse(lon), float.Parse(lat), pageLength));
             }
             catch (Exception e)
             {
