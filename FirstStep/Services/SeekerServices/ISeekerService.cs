@@ -11,6 +11,8 @@ namespace FirstStep.Services
 
         public Task<SeekerApplicationDto> GetSeekerDetails(int id);
 
+        Task<SeekerProfileViewDto> GetSeekerDetailsForSeekerProfileView(int id); 
+
         public Task<JobField> GetSeekerField(int seekerId);
 
         //public Task Create(AddSeekerDto newSeeker);
