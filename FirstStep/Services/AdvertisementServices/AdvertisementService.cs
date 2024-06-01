@@ -24,7 +24,7 @@ namespace FirstStep.Services
         private readonly int AdvertisementExpiredDays = 10;
 
         public AdvertisementService(
-            DataContext context, 
+            DataContext context,
             IMapper mapper,
             IProfessionKeywordService keywordService,
             ISkillService skillService,
@@ -85,7 +85,7 @@ namespace FirstStep.Services
 
             return advertisement;
         }
-        
+
         private async Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID)
         {
             var advertisementList = await _context.Advertisements
@@ -131,6 +131,7 @@ namespace FirstStep.Services
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
             advertisementDto.company_name = _context.Companies.Find(dbAdvertismeent.hrManager!.company_id)!.company_name;
+            advertisementDto.company_logo_url = await _fileService.GetBlobImageUrl(dbAdvertismeent.hrManager!.company!.company_logo!);
             advertisementDto.is_expired = AdvertisementValidation.IsExpired(dbAdvertismeent);
 
             return advertisementDto;
@@ -153,7 +154,7 @@ namespace FirstStep.Services
         {
             var dbAdvertismeent = await FindById(id);
             var currentAdData = _mapper.Map<UpdateAdvertisementDto>(dbAdvertismeent);
-               
+
             currentAdData.reqSkills = dbAdvertismeent.skills!.Select(e => e.skill_name).ToList();
             currentAdData.reqKeywords = dbAdvertismeent.professionKeywords!.Select(e => e.profession_name).ToList();
 
@@ -272,13 +273,13 @@ namespace FirstStep.Services
             {
                 throw new InvalidDataException("Invalid job field ID.");
             }
-            
+
             // map the AddAdvertisementDto to a Advertisement object
             Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisementDto);
 
             // add keywords to the advertisement
             newAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
-            
+
             // add skills to the advertisement
             newAdvertisement.skills = await IncludeSkillsToAdvertisement(advertisementDto.reqSkills);
 
@@ -376,7 +377,7 @@ namespace FirstStep.Services
 
             // update keywords in the advertisement
             dbAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(reqAdvertisement.reqKeywords, dbAdvertisement.field_id);
-            
+
             // update skills in the advertisement
             dbAdvertisement.skills = await IncludeSkillsToAdvertisement(reqAdvertisement.reqSkills);
 
@@ -396,7 +397,7 @@ namespace FirstStep.Services
             {
                 advertisement.savedSeekers = new List<Seeker>();
             }
-            
+
             if (!advertisement.savedSeekers.Contains(seeker) && isSave)
             {
                 // add the seeker to the list of saved seekers
@@ -418,7 +419,7 @@ namespace FirstStep.Services
 
             return await CreateSeekerAdvertisementList(advertisements, seekerID, true);
         }
-        
+
         public async Task<IEnumerable<AppliedAdvertisementShortDto>> GetAppliedAdvertisements(int seekerID)
         {
             Seeker seeker = await _seekerService.GetById(seekerID);
@@ -427,6 +428,11 @@ namespace FirstStep.Services
 
             // find all the applications that send by the seeker
             var submittedApplications = await _applicationService.GetBySeekerId(seeker.user_id);
+
+            // hold the company and and the company logo to increase the performance of searching blob url
+            Dictionary<int, (string company_name, string company_logo)> recentAccessedCompanies = new Dictionary<int, (string, string)>();
+
+            int company_id;
 
             foreach (var submitApplication in submittedApplications)
             {
@@ -437,7 +443,24 @@ namespace FirstStep.Services
                 appliedAdvertisement.application_status = _applicationService.GetCurrentApplicationStatus(submitApplication);
 
                 appliedAdvertisement.application_id = submitApplication.application_Id;
-                appliedAdvertisement.company_name = _context.Companies.Find(dbAdvertisement.hrManager!.company_id)!.company_name;
+
+                company_id = dbAdvertisement.hrManager!.company_id;
+
+                if (!recentAccessedCompanies.ContainsKey(company_id))
+                {
+                    Company? company = await _context.Companies.FindAsync(company_id);
+                    if (company == null) continue;
+
+                    appliedAdvertisement.company_logo_url = await _fileService.GetBlobImageUrl(company.company_logo!);
+                    appliedAdvertisement.company_name = company.company_name;
+
+                    recentAccessedCompanies.Add(company_id, (appliedAdvertisement.company_name, appliedAdvertisement.company_logo_url));
+                }
+                else
+                {
+                    appliedAdvertisement.company_name = recentAccessedCompanies[company_id].company_name;
+                    appliedAdvertisement.company_logo_url = recentAccessedCompanies[company_id].company_logo;
+                }
 
                 appliedAdvertismentList.Add(appliedAdvertisement);
             }
@@ -459,7 +482,7 @@ namespace FirstStep.Services
                     throw new InvalidOperationException("Cannot delete an advertisement that has non evaluated applications.");
                 }
             }
-            
+
             _context.Advertisements.Remove(advertisement);
             _context.SaveChanges();
         }
@@ -524,7 +547,7 @@ namespace FirstStep.Services
                             skill_id = 0,
                             skill_name = skill.ToLower()
                         });
-                    }                    
+                    }
                 }
 
                 return skills;

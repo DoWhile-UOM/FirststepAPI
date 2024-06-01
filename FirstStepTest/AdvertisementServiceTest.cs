@@ -56,7 +56,7 @@ namespace FirstStepTest
             _fileService = new FileService();
             _employeeService = new EmployeeService(_context, _mapper);
             _applicationService = new ApplicationService(_context, _mapper, _revisionService, _fileService, _employeeService);
-            _advertisementService = new AdvertisementService(_context, _mapper, _keywordService, _skillService, _seekerService, _applicationService);
+            _advertisementService = new AdvertisementService(_context, _mapper, _keywordService, _skillService, _seekerService, _applicationService, _fileService);
         }
 
         private void SeedDatabaseFromOriginal()
