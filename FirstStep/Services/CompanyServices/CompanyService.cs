@@ -12,18 +12,20 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IAdvertisementService _advertisementService;
-        private readonly IEmailService _emailService;//Email Service dependency injection
+        private readonly IEmailService _emailService;
+        private readonly IFileService _fileService;
 
         // Random ID generation
         private static readonly Random random = new Random();
         private static readonly HashSet<string> seenIds = new HashSet<string>();
 
-        public CompanyService(IEmailService emailService, DataContext context, IMapper mapper, IAdvertisementService advertisementService)
+        public CompanyService(IEmailService emailService, DataContext context, IMapper mapper, IAdvertisementService advertisementService, IFileService fileService)
         {
             _context = context;
             _mapper = mapper;
             _advertisementService = advertisementService;
-            _emailService=emailService;
+            _emailService = emailService;
+            _fileService = fileService;
         }
 
         public async Task<IEnumerable<Company>> GetAll()
@@ -82,6 +84,15 @@ namespace FirstStep.Services
             // feed all advertisments under the company to DTO as an array of advertisementCardDtos
             advertisementCompanyDto.companyAdvertisements = await _advertisementService.CreateFirstPageResults(dbAdvertisements, seekerID, pageLength);
             
+            if (dbCompany.company_logo == null)
+            {
+                advertisementCompanyDto.company_logo = "";
+            }
+            else
+            {
+                advertisementCompanyDto.company_logo = await _fileService.GetBlobImageUrl(dbCompany.company_logo);
+            }
+
             return advertisementCompanyDto;
         }
 
