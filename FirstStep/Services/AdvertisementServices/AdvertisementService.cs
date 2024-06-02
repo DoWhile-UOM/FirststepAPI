@@ -346,8 +346,12 @@ namespace FirstStep.Services
                 // set the expired date to 10 days after the current date, because need to hold saved advertisements for 10 days
                 advertisement.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
 
-                // execute task delegation on expired advertisements
-                await _applicationService.InitiateTaskDelegation(advertisement);
+                try
+                {
+                    // execute task delegation on expired advertisements
+                    await _applicationService.InitiateTaskDelegation(advertisement);
+                }
+                catch { }
             }
 
             await _context.SaveChangesAsync();
