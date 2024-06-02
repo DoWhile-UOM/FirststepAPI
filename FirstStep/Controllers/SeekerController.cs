@@ -46,13 +46,9 @@ namespace FirstStep.Controllers
 
         public async Task<IActionResult> AddSeeker(AddSeekerDto newSeeker)
         {
-            //var result=await _service.Create(newSeeker);
-
-            //return Ok($"Suessfully added new seeker: {newSeeker.first_name} {newSeeker.last_name}"+ result);
-
             try
             {
-                var response = await _service.Create(newSeeker);// UserRegRequestDto must modify 
+                var response = await _service.Create(newSeeker);
 
                 return response switch
                 {
