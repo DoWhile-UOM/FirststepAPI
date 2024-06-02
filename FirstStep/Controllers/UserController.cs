@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using FirstStep.Data;
 using FirstStep.Models.DTOs;
+using FirstStep.Models;
 using FirstStep.Services;
+using Org.BouncyCastle.Security;
+using AutoMapper;
 
 namespace FirstStep.Controllers
 {
@@ -29,11 +32,13 @@ namespace FirstStep.Controllers
     {
         private readonly DataContext _context;
         private readonly IUserService _userService;
+        private readonly IMapper _mapper;
 
-        public UserController(DataContext authContext, IUserService userservice)
+        public UserController(DataContext authContext, IUserService userservice, IMapper mapper)
         {
             _context = authContext;
             _userService = userservice;
+            _mapper = mapper;
         }
 
         [HttpPost]
@@ -118,6 +123,15 @@ namespace FirstStep.Controllers
             {
                 return BadRequest(e.Message);
             }
+        }
+
+        [HttpGet]
+        [Route("GetUser/userId:int")]
+        public async Task<UpdateEmployeeDto> GetUserById(int user_id)
+        {
+            User? user = await _context.Users.FindAsync(user_id);
+            UpdateEmployeeDto employeeDto = _mapper.Map<UpdateEmployeeDto>(user);
+            return employeeDto;
         }
     }
 }
