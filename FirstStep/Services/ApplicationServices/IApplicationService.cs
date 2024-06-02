@@ -30,5 +30,8 @@ namespace FirstStep.Services
         public Task InitiateTaskDelegation(int advertisement_id, IEnumerable<int>? hrassistant_ids);
 
         public Task InitiateTaskDelegation(Advertisement advertisement);
+
+        public  Task<ApplicationStatusDto> GetApplicationStatus(int applicationId);
+
     }
 }

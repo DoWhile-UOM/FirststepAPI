@@ -52,6 +52,16 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetBySeekerId(id));
         }
 
+        //get application status by application id 
+        [HttpGet]
+        [Route("GetApplicationStatus/{applicationId}")]
+        public async Task<ActionResult<ApplicationStatusDto>> GetApplicationStatus(int applicationId)
+        {
+            return Ok(await _service.GetApplicationStatus(applicationId));
+        }
+
+
+
         [HttpPost]
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)

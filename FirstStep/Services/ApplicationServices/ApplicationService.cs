@@ -432,6 +432,32 @@ namespace FirstStep.Services
             }
         }
 
-        //tasks delegation ends here
+        //get application status by application id in seeker dashboard to look application status in stepper which shows submission,screening and finalize with dates
+        public async Task<ApplicationStatusDto> GetApplicationStatus(int applicationId)
+        {
+            var application = await GetById(applicationId);
+            if (application == null)
+            {
+                return null;
+            }
+            string currentStatus = GetCurrentApplicationStatus(application);
+            var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
+            var applicationStatus = new ApplicationStatusDto
+            {
+                application_Id = application.application_Id,
+                status = currentStatus,
+                submitted_date = application.submitted_date,
+                screening_date = lastRevision?.date ?? DateTime.Now,
+                finalize_date = lastRevision?.date ?? DateTime.Now,
+                last_revision = _mapper.Map<RevisionDto>(lastRevision)
+            };
+
+            return applicationStatus;
+        }
+
+
     }
-}
+
+        //tasks delegation ends here
+  }
+
