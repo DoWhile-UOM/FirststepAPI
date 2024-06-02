@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Swashbuckle.AspNetCore.Annotations;
-
-namespace FirstStep.Models.DTOs
+﻿namespace FirstStep.Models.DTOs
 {
     public class AddApplicationDto
     {
