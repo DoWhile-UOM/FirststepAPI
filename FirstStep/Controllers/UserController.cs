@@ -126,12 +126,13 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetUser/userId:int")]
+        [Route("GetUser/{userId:int}")]
         public async Task<UpdateEmployeeDto> GetUserById(int user_id)
         {
             User? user = await _context.Users.FindAsync(user_id);
             UpdateEmployeeDto employeeDto = _mapper.Map<UpdateEmployeeDto>(user);
             return employeeDto;
         }
+
     }
 }

@@ -270,5 +270,11 @@ namespace FirstStep.Services
                 throw new SecurityTokenException("This is Invalid Token");
             return principal;
         }
+
+        //update user by id
+        public async Task UpdateUserById(UpdateUserDto user)
+        {
+           
+        }
     }
 }
