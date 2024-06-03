@@ -32,13 +32,11 @@ namespace FirstStep.Controllers
     {
         private readonly DataContext _context;
         private readonly IUserService _userService;
-        private readonly IMapper _mapper;
-
-        public UserController(DataContext authContext, IUserService userservice, IMapper mapper)
+        
+        public UserController(DataContext authContext, IUserService userservice)
         {
             _context = authContext;
-            _userService = userservice;
-            _mapper = mapper;
+            _userService = userservice; 
         }
 
         [HttpPost]
@@ -61,38 +59,6 @@ namespace FirstStep.Controllers
             {
                 return BadRequest(e.Message);
             }
-        }
-
-        [HttpPost]
-        [Route("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegRequest userObjfull)
-        {
-
-            UserRegRequestDto userObj = new()
-            {
-                email = userObjfull.email,
-                password_hash = userObjfull.password_hash,
-                first_name = userObjfull.first_name,
-                last_name = userObjfull.last_name
-            };
-
-            try
-            {
-                var response = await _userService.RegisterUser(userObj, userObjfull.type, userObjfull.company_id);// UserRegRequestDto must modify 
-
-                return response switch
-                {
-                    "User Registered Successfully" => Ok(response),
-                    "Null User" => BadRequest(response),
-                    "Email Already exist" => BadRequest(response),
-                    _ => BadRequest(response),
-                };
-            }
-            catch(Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-
         }
 
         [Authorize]
@@ -126,12 +92,15 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetUser/{userId:int}")]
-        public async Task<UpdateEmployeeDto> GetUserById(int user_id)
+        [Route("GetUser/userId:int")]
+        public async Task<IActionResult> GetUserById(int user_id)
         {
-            User? user = await _context.Users.FindAsync(user_id);
-            UpdateEmployeeDto employeeDto = _mapper.Map<UpdateEmployeeDto>(user);
-            return employeeDto;
+            UpdateEmployeeDto? employee = await _userService.GetUserById(user_id);
+            if(employee is null)
+            {
+                return NoContent();
+            }
+            return Ok(employee);
         }
 
     }

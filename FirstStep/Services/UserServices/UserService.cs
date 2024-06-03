@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using AutoMapper;
 
 namespace FirstStep.Services
 {
@@ -18,16 +19,18 @@ namespace FirstStep.Services
         private readonly ICompanyService _companyService;
         private readonly IEmployeeService _employeeService;
         private readonly IEmailService _emailService;
+        private readonly IMapper _mapper;
 
         public UserService(DataContext context, 
             ICompanyService companyService, 
             IEmployeeService employeeService, 
-            IEmailService emailService)
+            IEmailService emailService, IMapper mapper)
         {
             _context = context;
             _companyService = companyService;
             _employeeService = employeeService;
             _emailService = emailService;
+            _mapper = mapper;
         }
 
         //User Authentication
@@ -73,99 +76,7 @@ namespace FirstStep.Services
             return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = await newAccessToken, RefreshToken = newRefreshToken } };
         }
 
-        //Register User
-        public async Task<string> RegisterUser(UserRegRequestDto userObj, string? type,string? company_id) // UserRegRequestDto must modify
-        {
-            //var result = await _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
-            //Console.WriteLine(result);
-
-            if (userObj == null)
-                return "Null User";
-
-            //check if email already exists
-            if (await CheckEmailExist(userObj.email))
-                return "Email Already exist";//email already exists
-
-
-            //password strength check
-            var passCheck = PasswordStrengthCheck(userObj.password_hash);
-
-            if (!string.IsNullOrEmpty(passCheck))
-                return passCheck.ToString();
-
-            userObj.password_hash = PasswordHasher.Hasher(userObj.password_hash);//Hash password before saving to database
-
-            string user_type;
-
-            switch (type) //use enum instead of string
-            {
-                case "CA":
-                    user_type = "CA";
-                    if(company_id == null)
-                        return "Company ID is Null";
-
-                    //Call Company service to find input id is valid by FindByRegCheckID(string id)
-                    var company = await _companyService.FindByRegCheckID(company_id);
-                    if (company == null)
-                        return "Company Not Found";
-
-                    if(company.verification_status==false)
-                        return "Company Not Verified";
-
-                    if(company.company_admin_id != null)
-                        return "Company Admin Already Exists";//should remove bcz service will handle this
-
-                    await _employeeService.CreateCompanyAdmin(new AddEmployeeDto
-                    {
-                        email = userObj.email,
-                        password = userObj.password_hash,
-                        first_name = userObj.first_name,
-                        last_name = userObj.last_name,
-                        company_id = company.company_id
-                    });//Register on employee service
-
-                    //Call Email service to send success email
-                    var result=await _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
-                    Console.WriteLine(result);
-
-                    return "Company Admin Registered Successfully";
-
-                case "HRM":
-                    user_type = "HRM";
-                    //Check auth bearer token if bearer have access to add manager(company admin)
-                    //Call Company service to add company manager 
-                    //call emailservice to send email to manager email
-                    break;
-                case "HRA":
-                    user_type = "HRA";
-                    //Check auth bearer token if bearer have access to add manager(company admin)
-                    //Call Company service to add company manager 
-                    //call emailservice to send email to manager email
-                    break;
-                default:
-                    user_type = "SEEKER";
-
-                    //Call Email service to send email to user email
-                    break;
-            }
-
-            User userNewObj = new User
-            {
-                email = userObj.email,
-                password_hash = userObj.password_hash,
-                first_name = userObj.first_name,
-                last_name = userObj.last_name,
-                user_type = user_type,
-                token = null,
-                refresh_token = null
-            };
-
-            _context.Users.Add(userNewObj);
-            _context.SaveChanges();
-
-            return "User Registered Successfully";
-        }
-
+        
         //Check if email already exists
         public async Task<bool> CheckEmailExist(string Email)
         {
@@ -269,6 +180,13 @@ namespace FirstStep.Services
             if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("This is Invalid Token");
             return principal;
+        }
+        //get user by id
+        public async Task<UpdateEmployeeDto> GetUserById(int user_id)
+        {
+            User? user = await _context.Users.FindAsync(user_id);
+            UpdateEmployeeDto employeeDto = _mapper.Map<UpdateEmployeeDto>(user);
+            return employeeDto;
         }
 
         //update user by id
