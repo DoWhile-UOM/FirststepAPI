@@ -444,7 +444,7 @@ namespace FirstStep.Services
             var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
             var applicationStatus = new ApplicationStatusDto
             {
-                application_Id = application.application_Id,
+                
                 status = currentStatus,
                 submitted_date = application.submitted_date,
                 screening_date = lastRevision?.date ?? DateTime.Now,

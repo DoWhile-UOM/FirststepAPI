@@ -2,8 +2,8 @@
 {
     public class ApplicationStatusDto
     {
-        public int application_Id { get; set; }
-        public string status { get; set; }
+        
+        public required string status { get; set; }
         public DateTime submitted_date { get; set; }
         public DateTime screening_date { get; set; }
         public DateTime finalize_date { get; set; }
