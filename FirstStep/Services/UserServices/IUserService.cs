@@ -12,6 +12,6 @@ namespace FirstStep.Services
 
         Task<UpdateEmployeeDto> GetUserById(int user_id);
 
-        Task UpdateUserById(UpdateUserDto user);
+        Task UpdateUser(UpdateUserDto user);
     }
 }

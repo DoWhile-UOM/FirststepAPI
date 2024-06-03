@@ -190,9 +190,35 @@ namespace FirstStep.Services
         }
 
         //update user by id
-        public async Task UpdateUserById(UpdateUserDto user)
+        public async Task UpdateUser(UpdateUserDto user)
         {
-           
+            var toBeUpdatedUser = await _context.Users.FindAsync(user.user_id);
+            //validation
+           if (toBeUpdatedUser is null)
+            {
+                throw new Exception("User doesn't exist");
+            }
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(user.password_hash);
+            Console.WriteLine(passCheck);
+
+            if(!string.IsNullOrEmpty(passCheck))
+            {
+                throw new Exception(passCheck);
+            }
+
+            //Hash password before saving
+            user.password_hash = PasswordHasher.Hasher(user.password_hash);
+
+            //saving to database
+            ;
+
+            toBeUpdatedUser.password_hash=user.password_hash;
+            toBeUpdatedUser.first_name = user.first_name;
+            toBeUpdatedUser.last_name = user.last_name;
+            toBeUpdatedUser.email = user.email;
+
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -103,5 +103,17 @@ namespace FirstStep.Controllers
             return Ok(employee);
         }
 
+        [HttpPut]
+        [Route("UpdateUser")]
+        public async Task<IActionResult> UpdateUser(UpdateUserDto user)
+        {
+            if(user == null)
+            {
+                return NoContent();
+            }
+            await _userService.UpdateUser(user);
+            return Ok();
+        }
+
     }
 }
