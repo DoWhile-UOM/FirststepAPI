@@ -31,10 +31,7 @@ namespace FirstStep.Models
         
         public required int employee_id { get; set; }
 
-        public required string employee_role { get; set; }
-
-        public required string employee_name { get; set; }
-
+        public required string employee_role { get; set; } // New property 
 
     }
 }
