@@ -39,8 +39,8 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetSeekerApplicationViewByApplicationId/{id}")]
-        public async Task<ActionResult<ApplicationViewDto>> GetSeekerApplicationViewByApplicationId(int id)
+        [Route("GetSeekerApplications/{id}")]
+        public async Task<ActionResult<ApplicationViewDto>> GetSeekerApplications(int id)
         {
             var applicationViewDto = await _service.GetSeekerApplicationViewByApplicationId(id);
             if (applicationViewDto == null)
@@ -48,11 +48,11 @@ namespace FirstStep.Controllers
                 return NotFound("Application not found.");
             }
             return Ok(applicationViewDto);
-            //return Ok(await _service.GetSeekerApplicationViewByApplicationId(id));
         }
 
-       
-         [HttpGet]
+
+
+        [HttpGet]
         [Route("GetRevisionHistory/{applicationId:int}")]
         public async Task<ActionResult<IEnumerable<RevisionHistoryDto>>> GetRevisionHistory(int applicationId)
         {

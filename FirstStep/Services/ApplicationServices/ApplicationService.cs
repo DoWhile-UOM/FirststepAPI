@@ -212,7 +212,8 @@ namespace FirstStep.Services
             return applicationList;
         }
 
-        public async Task<ApplicationViewDto> GetSeekerApplicationViewByApplicationId(int id)
+        public async Task<ApplicationViewDto> GetSeekerApplications(int id)
+
         {
             var application = await _context.Applications
                 .Include(a => a.seeker)
