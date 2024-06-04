@@ -3,6 +3,7 @@ using FirstStep.Data;
 using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -44,6 +45,13 @@ namespace FirstStep.Services
             return seeker;
         }
 
+        public async Task<UpdateSeekerDto> GetSeekerProfile(int id)
+        {
+            Seeker seeker = await GetById(id);
+
+            return _mapper.Map<UpdateSeekerDto>(seeker);
+        }
+
         public async Task<SeekerApplicationDto> GetSeekerDetails(int id)
         {
             Seeker seeker = await GetById(id);
@@ -68,7 +76,6 @@ namespace FirstStep.Services
             return seeker.job_Field;
         }
 
-        //public async Task Create(AddSeekerDto newSeeker)
         public async Task<string> Create(AddSeekerDto newSeeker)
         {
             // map the AddSeekerDto to a Seeker object
@@ -125,43 +132,54 @@ namespace FirstStep.Services
 
             return "Seeker added successfully";
         }
-
-
         
-
-        public async Task Update(int seekerId, Seeker seeker)
-        {
-            // for get the seeker object from the database
+        public async Task Update(int seekerId, UpdateSeekerDto updateDto)
+        {   
             Seeker dbSeeker = await GetById(seekerId);
 
-            // update the Seeker object with the new values
-            dbSeeker.first_name = seeker.first_name;
-            dbSeeker.last_name = seeker.last_name;
-            dbSeeker.email = seeker.email;
-            dbSeeker.phone_number = seeker.phone_number;
-            dbSeeker.bio = seeker.bio;
-            dbSeeker.description = seeker.description;
-            dbSeeker.university = seeker.university;
-            dbSeeker.CVurl = seeker.CVurl;
-            dbSeeker.profile_picture = seeker.profile_picture;
-            dbSeeker.linkedin = seeker.linkedin;
+            dbSeeker.first_name = updateDto.first_name;
+            dbSeeker.last_name = updateDto.last_name;
+            dbSeeker.email = updateDto.email;
+            dbSeeker.phone_number = updateDto.phone_number;
+            dbSeeker.bio = updateDto.bio;
+            dbSeeker.description = updateDto.description;
+            dbSeeker.university = updateDto.university;
+            dbSeeker.CVurl = updateDto.CVurl;
+            dbSeeker.profile_picture = updateDto.profile_picture;
+            dbSeeker.linkedin = updateDto.linkedin;
 
-            // update the Seeker's skills
-            // Ruwanide you need to implement this part
+            dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
 
-            // save the changes
             await _context.SaveChangesAsync();
+        }
 
+        private async Task<ICollection<Skill>?> IncludeSkillsToSeeker(ICollection<string>? newSkills)
+        {
+            var skills = new List<Skill>();
 
-            // after implementing the above steps,
-            // you should be change the function parameter type to UpdateSeekerDto
-            // as well as the function return type to Task<UpdateSeekerDto>
-            // also need to update the controller and the interface
+            if (newSkills != null)
+            {
+                foreach (var skillName in newSkills)
+                {
+                    var dbSkill = await _seekerSkillService.GetByName(skillName.ToLower());
 
-
-            // you can refer the code segment in advertisement service for updating the relationships
-            // line 180 to 212 - function name: IncludeProfessionKeywordsToAdvertisement()
-            // advertisement and the keyword relationship is similar to the seeker and the skill relationship
+                    if (dbSkill != null)
+                    {
+                        skills.Add(dbSkill);
+                    }
+                    else
+                    {
+                        skills.Add(new Skill
+                        {
+                            skill_id = 0,
+                            skill_name = skillName.ToLower()  
+                        });
+                   
+                    }
+                }
+                return skills;
+            }
+            return null;
         }
 
         public async Task Delete(int id)

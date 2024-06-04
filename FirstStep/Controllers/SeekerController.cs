@@ -19,7 +19,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllSeekers")]
-
         public async Task<ActionResult<IEnumerable<Seeker>>> GetAllSeekers()
         {
             return Ok(await _service.GetAll());
@@ -27,10 +26,16 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetSeeker/{seekerId:int}")]
-
         public async Task<ActionResult<Seeker>> GetSeekerById(int seekerId)
         {
             return Ok(await _service.GetById(seekerId));
+        }
+
+        [HttpGet]
+        [Route("GetSeekerProfile/{seekerId:int}")]
+        public async Task<ActionResult<UpdateSeekerDto>> GetSeekerProfile(int seekerId)
+        {
+            return Ok(await _service.GetSeekerProfile(seekerId));
         }
 
         [HttpGet]
@@ -40,10 +45,8 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetSeekerDetails(seekerId));
         }
 
-
         [HttpPost]
         [Route("AddSeeker")]
-
         public async Task<IActionResult> AddSeeker(AddSeekerDto newSeeker)
         {
             //var result=await _service.Create(newSeeker);
@@ -68,23 +71,18 @@ namespace FirstStep.Controllers
             }
         }
 
+      
         [HttpPut]
         [Route("UpdateSeeker/{seekerId:int}")]
-
-        public async Task<IActionResult> UpdateSeeker(Seeker reqseeker, int seekerId)
+        public async Task<IActionResult> UpdateSeeker(int seekerId, UpdateSeekerDto updateDto)
         {
-            if (seekerId != reqseeker.user_id)
-            {
-                return BadRequest("Context is not matching");
-            }
-
-            await _service.Update(seekerId, reqseeker);
-            return Ok($"Successfully Updated SeekerID: {reqseeker.first_name} {reqseeker.last_name}");
+            await _service.Update(seekerId, updateDto);
+            return Ok();
         }
+
 
         [HttpDelete]
         [Route("DeleteSeeker/{seekerId:int}")]
-
         public async Task<IActionResult> DeleteSeeker(int seekerId)
         {
             await _service.Delete(seekerId);
