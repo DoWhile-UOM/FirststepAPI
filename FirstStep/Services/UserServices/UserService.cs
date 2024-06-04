@@ -198,22 +198,25 @@ namespace FirstStep.Services
             {
                 throw new Exception("User doesn't exist");
             }
-            //password strength check
-            var passCheck = UserCreateHelper.PasswordStrengthCheck(user.password_hash);
-            Console.WriteLine(passCheck);
-
-            if(!string.IsNullOrEmpty(passCheck))
+           //handling changing password
+            if(user.password_hash != null)
             {
-                throw new Exception(passCheck);
+                //password strength check
+                var passCheck = UserCreateHelper.PasswordStrengthCheck(user.password_hash);
+                Console.WriteLine(passCheck);
+
+                if (!string.IsNullOrEmpty(passCheck))
+                {
+                    throw new Exception(passCheck);
+                }
+
+                //Hash password before saving
+                user.password_hash = PasswordHasher.Hasher(user.password_hash);
+
+                //saving
+                toBeUpdatedUser.password_hash = user.password_hash;
             }
-
-            //Hash password before saving
-            user.password_hash = PasswordHasher.Hasher(user.password_hash);
-
-            //saving to database
-            ;
-
-            toBeUpdatedUser.password_hash=user.password_hash;
+            //saving data in the database
             toBeUpdatedUser.first_name = user.first_name;
             toBeUpdatedUser.last_name = user.last_name;
             toBeUpdatedUser.email = user.email;
