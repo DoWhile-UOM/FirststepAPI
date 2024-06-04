@@ -36,11 +36,11 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("AddRevision")]
-        public async Task<IActionResult> AddRevision([FromBody] AddRevisionDto newRevisionDto)
+        public async Task<IActionResult> AddRevision([FromBody] Revision newRevision)
         {
             try
             {
-                await _service.AddRevision(newRevisionDto);
+                await _service.AddRevision(newRevision);
                 return Ok("Revision added successfully.");
             }
             catch (InvalidOperationException ex)

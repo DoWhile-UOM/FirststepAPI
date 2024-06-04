@@ -20,6 +20,6 @@ namespace FirstStep.Services
         public Task Update(Revision revision);
 
         public Task Delete(int id);
-        public Task AddRevision(AddRevisionDto newRevisionDto);
+        public Task AddRevision(Revision newRevision);
     }
 }
