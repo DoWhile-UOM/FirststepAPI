@@ -76,7 +76,7 @@ namespace FirstStep.Services
             return seeker.job_Field;
         }
 
-        public async Task<string> Create(AddSeekerDto newSeeker)
+        public async Task Create(AddSeekerDto newSeeker)
         {
             // map the AddSeekerDto to a Seeker object
             var seeker = _mapper.Map<Seeker>(newSeeker);
@@ -85,17 +85,17 @@ namespace FirstStep.Services
             seeker.user_type = "seeker";
 
             if (newSeeker == null)
-                return "Null User";
+                throw new NullReferenceException("Null User");
 
             //check if email already exists
             if (await _context.Users.AnyAsync(x => x.email == seeker.email))
-                return "Email Already exist";//email already exists
+                throw new InvalidDataException("Email Already exist");
 
             //password strength check
             var passCheck = UserCreateHelper.PasswordStrengthCheck(newSeeker.password);
 
             if (!string.IsNullOrEmpty(passCheck))
-                return passCheck.ToString();
+                throw new InvalidDataException(passCheck.ToString());
 
             //Hash password before saving to database
             seeker.password_hash = PasswordHasher.Hasher(newSeeker.password);
@@ -129,8 +129,6 @@ namespace FirstStep.Services
 
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
-
-            return "Seeker added successfully";
         }
         
         public async Task Update(int seekerId, UpdateSeekerDto updateDto)

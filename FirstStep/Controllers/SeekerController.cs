@@ -49,28 +49,24 @@ namespace FirstStep.Controllers
         [Route("AddSeeker")]
         public async Task<IActionResult> AddSeeker(AddSeekerDto newSeeker)
         {
-            //var result=await _service.Create(newSeeker);
-
-            //return Ok($"Suessfully added new seeker: {newSeeker.first_name} {newSeeker.last_name}"+ result);
-
             try
             {
-                var response = await _service.Create(newSeeker);// UserRegRequestDto must modify 
-
-                return response switch
-                {
-                    "Seeker added successfully" => Ok(response),
-                    "Null User" => BadRequest(response),
-                    "Email Already exist" => BadRequest(response),
-                    _ => BadRequest(response),
-                };
+                await _service.Create(newSeeker);
+                return Ok(newSeeker);
+            }
+            catch (NullReferenceException e)
+            {
+                return StatusCode(StatusCodes.Status204NoContent, e.Message);
+            }
+            catch (InvalidDataException e)
+            {
+                return StatusCode(StatusCodes.Status406NotAcceptable, e.Message);
             }
             catch (Exception e)
             {
-                return BadRequest(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
-
       
         [HttpPut]
         [Route("UpdateSeeker/{seekerId:int}")]
