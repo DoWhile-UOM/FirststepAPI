@@ -217,10 +217,12 @@ namespace FirstStep.Services
             var application = await _context.Applications
                 .Include(a => a.seeker)
                 .Include(a => a.revisions)
-                .ThenInclude(r => r.employee) 
                 .SingleOrDefaultAsync(a => a.application_Id == id);
 
-            if (application is null) { throw new NullReferenceException("Application not found."); }
+            if (application == null)
+            {
+                throw new NullReferenceException("Application not found.");
+            }
 
             // Get the current application status
             string currentStatus;
@@ -254,16 +256,7 @@ namespace FirstStep.Services
                 linkedin = application.seeker.linkedin,
                 current_status = currentStatus,
                 is_evaluated = isEvaluated,
-                last_revision = lastRevision == null ? null : new RevisionDto
-                {
-                    revision_id = lastRevision.revision_id,
-                    comment = lastRevision.comment,
-                    status = lastRevision.status,
-                    created_date = lastRevision.date,
-                    employee_id = lastRevision.employee_id,
-                    name = lastRevision.employee.first_name + " " + lastRevision.employee.last_name, // Populate name
-                    role = lastRevision.employee.user_type // Populate role
-                },
+                last_revision = lastRevision, // Use Revision model directly
                 seeker_id = application.seeker_id
             };
         }
