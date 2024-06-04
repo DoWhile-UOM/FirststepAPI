@@ -7,9 +7,8 @@
         public DateTime submitted_date { get; set; }
         public DateTime screening_date { get; set; }
         public DateTime finalize_date { get; set; }
+        public required string cVurl { get; set; }
 
-        //connect with revision to get the status
-        public RevisionDto? last_revision { get; set; }
 
     }
 }

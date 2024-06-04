@@ -449,7 +449,7 @@ namespace FirstStep.Services
                 submitted_date = application.submitted_date,
                 screening_date = lastRevision?.date ?? DateTime.Now,
                 finalize_date = lastRevision?.date ?? DateTime.Now,
-                last_revision = _mapper.Map<RevisionDto>(lastRevision)
+                cVurl = application.CVurl
             };
 
             return applicationStatus;
