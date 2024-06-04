@@ -42,7 +42,7 @@ namespace FirstStep.Controllers
         [Route("GetSeekerApplications/{id}")]
         public async Task<ActionResult<ApplicationViewDto>> GetSeekerApplications(int id)
         {
-            var applicationViewDto = await _service.GetSeekerApplicationViewByApplicationId(id);
+            var applicationViewDto = await _service.GetSeekerApplications(id);
             if (applicationViewDto == null)
             {
                 return NotFound("Application not found.");
