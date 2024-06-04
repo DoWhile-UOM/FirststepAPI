@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FirstStep.Data;
+using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Grpc.Core;
@@ -23,17 +24,17 @@ namespace FirstStep.Services
         public async Task<IEnumerable<Seeker>> GetAll()
         {
             return await _context.Seekers
-                .Include(e => e.job_Field)
-                .Include(e => e.skills)
+                .Include("job_Field")
+                .Include("skills")
                 .ToListAsync();
         }
 
         public async Task<Seeker> GetById(int id)
         {
             Seeker? seeker = await _context.Seekers
+                .Include("job_Field")
+                .Include("skills")
                 .Where(e => e.user_id == id)
-                .Include(e => e.job_Field)
-                .Include(e => e.skills)
                 .FirstOrDefaultAsync();
 
             if (seeker is null)
@@ -51,18 +52,87 @@ namespace FirstStep.Services
             return _mapper.Map<UpdateSeekerDto>(seeker);
         }
 
-        public async Task Create(AddSeekerDto newSeeker)
+        public async Task<SeekerApplicationDto> GetSeekerDetails(int id)
         {
+            Seeker seeker = await GetById(id);
+            SeekerApplicationDto seekerdto = _mapper.Map<SeekerApplicationDto>(seeker);
+            return seekerdto;
+        }
+
+        public async Task<JobField> GetSeekerField(int seekerId)
+        {
+            Seeker seeker = await GetById(seekerId);
+
+            if (seeker == null)
+            {
+                throw new NullReferenceException("Seeker not found.");
+            }
+
+            if (seeker.job_Field == null)
+            {
+                throw new NullReferenceException("Seeker's job field not found.");
+            }
+
+            return seeker.job_Field;
+        }
+
+        public async Task<string> Create(AddSeekerDto newSeeker)
+        {
+            // map the AddSeekerDto to a Seeker object
             var seeker = _mapper.Map<Seeker>(newSeeker);
 
+            // user type is seeker
             seeker.user_type = "seeker";
 
-            seeker.skills = await IncludeSkillsToSeeker(newSeeker.seekerSkills);
+            if (newSeeker == null)
+                return "Null User";
+
+            //check if email already exists
+            if (await _context.Users.AnyAsync(x => x.email == seeker.email))
+                return "Email Already exist";//email already exists
+
+            //password strength check
+            var passCheck = UserCreateHelper.PasswordStrengthCheck(newSeeker.password);
+
+            if (!string.IsNullOrEmpty(passCheck))
+                return passCheck.ToString();
+
+            //Hash password before saving to database
+            seeker.password_hash = PasswordHasher.Hasher(newSeeker.password);
+
+            // Add skills to seeker
+            if (newSeeker.seekerSkills != null)
+            {
+                seeker.skills = new List<Skill>();
+
+                foreach (var skill in newSeeker.seekerSkills)
+                {
+                    // check whether the skill exists in the database
+                    var dbSkill = await _seekerSkillService.GetByName(skill);
+
+                    if (dbSkill != null)
+                    {
+                        // if it exists, add it to the seeker's list of skills
+                        seeker.skills.Add(dbSkill);
+                    }
+                    else
+                    {
+                        // if it doesn't exist, create it and add it to the seeker's list of skills
+                        seeker.skills.Add(new Skill
+                        {
+                            skill_id = 0,
+                            skill_name = skill
+                        });
+                    }
+                }
+            }
 
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
-        }
 
+            return "Seeker added successfully";
+        }
+        
         public async Task Update(int seekerId, UpdateSeekerDto updateDto)
         {   
             Seeker dbSeeker = await GetById(seekerId);
@@ -119,5 +189,18 @@ namespace FirstStep.Services
             _context.Seekers.Remove(seeker);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> IsValidSeeker(int seekerId)
+        {
+            var seeker = await _context.Seekers.Where(e => e.user_id == seekerId).FirstOrDefaultAsync();
+
+            if (seeker == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
     }
 }

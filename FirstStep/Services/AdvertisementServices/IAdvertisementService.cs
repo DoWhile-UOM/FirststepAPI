@@ -5,11 +5,11 @@ namespace FirstStep.Services
 {
     public interface IAdvertisementService
     {
-        Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID);
+        Task<AdvertisementFirstPageDto> GetAllWithPages(int seekerID, int pageLength);
 
-        Task<IEnumerable<AdvertisementShortDto>> GetAll(int seekerID);
+        Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, int pageLength);
 
-        Task<AdvertisementFirstPageDto> GetFirstPage(int seekerID, int pageLength);
+        Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, float longitude, float latitude, int noOfResultsPerPage);
 
         Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID);
 
@@ -17,28 +17,38 @@ namespace FirstStep.Services
 
         Task<UpdateAdvertisementDto> GetByIdWithKeywords(int id);
 
-        Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status);
+        Task<IEnumerable<Advertisement>> GetByCompanyID(int companyID);
 
-        Task<IEnumerable<AdvertisementTableRowDto>> GetAdvertisementsByCompany(int companyID, string status, string title);
+        Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status);
+
+        Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title);
+
+        Task<IEnumerable<AdvertisementHRATableRowDto>> GetAssignedAdvertisementsByHRA(int hra_userID);
 
         Task<IEnumerable<AdvertisementShortDto>> GetSavedAdvertisements(int seekerID);
+
+        Task<IEnumerable<AppliedAdvertisementShortDto>> GetAppliedAdvertisements(int seekerID);
 
         Task Create(AddAdvertisementDto advertisement);
 
         Task ChangeStatus(int id, string newStatus);
 
+        Task ReactivateAdvertisement(int id, DateTime? submissionDeadline);
+
         Task Update(int jobID, UpdateAdvertisementDto advertisement);
 
         Task SaveAdvertisement(int advertisementId, int seekerId, bool isSave);
 
-        Task Delete(int id);
+        Task Delete(int id, bool isConfirmed);
 
-        Task<IEnumerable<AdvertisementShortDto>> CreateAdvertisementList(IEnumerable<Advertisement> advertisements, int seekerID);
+        Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage);
 
         Task<AdvertisementFirstPageDto> BasicSearch(SearchJobRequestDto searchRequest, int seekerID, int pageLength);
 
-        Task<IEnumerable<AdvertisementShortDto>> AdvanceSearch(SearchJobRequestDto requestAdsDto, int seekerID);
+        Task CloseExpiredAdvertisements();
 
-        // IEnumerable<Advertisement> GetAdvertisementsByHRManagerId(int id);
+        Task RemoveSavedExpiredAdvertisements();
+
+        Task<bool> IsExpired(int jobID);
     }
 }

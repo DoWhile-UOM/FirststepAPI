@@ -1,7 +1,6 @@
 ﻿using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Azure.Storage.Blobs;
 
 namespace FirstStep.Controllers
 {
@@ -9,24 +8,42 @@ namespace FirstStep.Controllers
     [ApiController]
     public class DocumentController : ControllerBase
     {
-        public IAzureBlobService _azureBlobService;
+        public IFileService _azureBlobService;
 
-        public DocumentController(IAzureBlobService service)
+        public DocumentController(IFileService service)
         {
             _azureBlobService = service;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> UploadBlobs(List<IFormFile> files)
+        [HttpGet]
+        [Route("GetAllBlobs")]
+        public async Task<IActionResult> GetAllBlobs()
         {
-            var response = await _azureBlobService.UploadFiles(files);
+            var response = await _azureBlobService.GetUploadedBlobs();
             return Ok(response);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllBlobs()
+        [Route("GetSasToken")]
+        public async Task<IActionResult> GetSasToken(string blobName)
         {
-            var response = await _azureBlobService.GetUploadedBlobs();
+            var response = await _azureBlobService.GenerateSasTokenAsync(blobName);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("GetBlobUrl")]
+        public async Task<IActionResult> GetBlobUrl(string blobName)
+        {
+            var response = await _azureBlobService.GetBlobImageUrl(blobName);
+            return Ok(response);
+        }
+
+        [HttpPost]
+        [Route("UploadBlobs")]
+        public async Task<IActionResult> UploadBlobs(List<IFormFile> files)
+        {
+            var response = await _azureBlobService.UploadFiles(files);
             return Ok(response);
         }
     }

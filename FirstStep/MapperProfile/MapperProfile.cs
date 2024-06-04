@@ -13,7 +13,8 @@ namespace FirstStep.MapperProfile
             CreateMap<AddAdvertisementDto, Advertisement>();
 
             CreateMap<Advertisement, UpdateAdvertisementDto>();
-            CreateMap<UpdateAdvertisementDto, Advertisement>();
+            CreateMap<UpdateAdvertisementDto, Advertisement>()
+                .ForMember(ad => ad.advertisement_id, act => act.Ignore());
 
             CreateMap<Advertisement, AdvertisementDto>()
                 .ForMember(
@@ -28,9 +29,20 @@ namespace FirstStep.MapperProfile
                     des => des.field_name,
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
 
+            CreateMap<Advertisement, AppliedAdvertisementShortDto>()
+                .ForMember(
+                    des => des.company_id,
+                    opt => opt.MapFrom(src => src.hrManager!.company_id))
+                .ForMember(
+                    des => des.field_name,
+                    opt => opt.MapFrom(src => src.job_Field!.field_name));
+
             CreateMap<Advertisement, AdvertisementTableRowDto>();
+            CreateMap<Advertisement, AdvertisementHRATableRowDto>();
             
             CreateMap<SeekerApplicationDto, Seeker>();
+            CreateMap<Company, CompanyProfileDto>();
+            CreateMap<Seeker, SeekerApplicationDto>();
             CreateMap<AddSeekerDto, Seeker>();
             CreateMap<UpdateSeekerDto, Seeker>();
 
@@ -39,6 +51,22 @@ namespace FirstStep.MapperProfile
             CreateMap<AddEmployeeDto, HRManager>();
             CreateMap<AddEmployeeDto, HRAssistant>();
             CreateMap<Company, CompanyProfileDetailsDto>();
+
+            CreateMap<Application, ApplicationListDto>()
+                .ForMember(
+                    des => des.seekerName,
+                    opt => opt.MapFrom(src => src.seeker!.first_name + " " + src.seeker!.last_name));
+
+            CreateMap<AddApplicationDto, Application>();
+            
+            CreateMap<Company, ViewCompanyListDto>();
+            CreateMap<Company, CompanyApplicationDto>();
+            CreateMap<Company, CompanyApplicationDto>();
+
+            CreateMap<Advertisement, ApplicationListingPageDto>()
+                .ForMember(
+                    des => des.field_name,
+                    opt => opt.MapFrom(src => src.job_Field!.field_name));
         }
     }
 }

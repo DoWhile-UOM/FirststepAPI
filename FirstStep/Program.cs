@@ -9,24 +9,12 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-//CORS
-/*
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("MyPolicy", builder => builder.WithOrigins("http://localhost:4200", "https://localhost:4200")
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials());
-});*/
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(opt =>
 {
-    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "First Step", Version = "v1" });
+    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "FirstStep Job Matching Platform", Version = "v1" });
     opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -72,8 +60,13 @@ builder.Services.AddScoped<ISystemAdminService, SystemAdminService>();
 builder.Services.AddScoped<ISeekerService, SeekerService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IRevisionService, RevisionService>();
-builder.Services.AddScoped<IEmailService, EmailService>();;
-builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+// Background Services Configuration
+builder.Services.AddHostedService<TimedHostedService>();
 
 //JWT Authentication
 builder.Services.AddAuthentication(x =>
@@ -110,10 +103,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
 app.UseHttpsRedirection();
-
-app.UseCors("MyPolicy");
 
 app.UseAuthentication();
 
@@ -122,4 +112,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-

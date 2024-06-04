@@ -8,5 +8,9 @@ namespace FirstStep.Models
         public Company? company { get; set; }
         
         public required int company_id { get; set; }
+
+
+        [JsonIgnore]
+        public virtual ICollection<Revision>? revisions { get; set; }
     }
 }

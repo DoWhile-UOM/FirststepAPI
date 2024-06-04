@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllApplications")]
-
         public async Task<ActionResult<IEnumerable<Application>>>GetAllApplications()
         {
             return Ok(await _service.GetAll());
@@ -26,18 +26,23 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetApplicationById/{id}")]
-
         public async Task<ActionResult<Application>> GetApplicationById(int id)
         {
             return Ok(await _service.GetById(id));
         }
 
+        [HttpGet]
+        [Route("GetApplicationList/JobID={jobId:int}/status={status}")]
+        public async Task<ActionResult<ApplicationListingPageDto>> GetApplicationList(int jobId, string status)
+        {
+            return Ok(await _service.GetApplicationList(jobId, status));
+        }
 
         [HttpGet]
-        [Route("GetApplicationsByAdvertisementId/{id}")]
-        public async Task<ActionResult<IEnumerable<Application>>> GetApplicationsByAdvertisementId(int id)
+        [Route("GetAssignedApplicationList/hraId={hraId:int}/JobID={jobId:int}/status={status}")]
+        public async Task<ActionResult<ApplicationListingPageDto>> GetAssignedApplicationList(int hraId, int jobId, string status)
         {
-            return Ok(await _service.GetByAdvertisementId(id));
+            return Ok(await _service.GetAssignedApplicationList(hraId, jobId, status));
         }
 
         [HttpGet]
@@ -47,50 +52,70 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetBySeekerId(id));
         }
 
-
-
-        [HttpGet]
-        [Route("TotalEvaluatedApplications/{advertisment_id}")]
-
-        public async Task<ActionResult<int>> TotalEvaluatedApplications(int advertisment_id)
-        {
-            return Ok(await _service.TotalEvaluatedApplications(advertisment_id));
-        }
-
-        [HttpGet]
-        [Route("TotalNotEvaluatedApplications/{advertisment_id}")]
-        public async Task<ActionResult<int>> TotalNotEvaluatedApplications(int advertisment_id)
-        {
-            return Ok(await _service.TotalNotEvaluatedApplications(advertisment_id));
-        }
-
-        [HttpGet]
-        [Route("AcceptedApplications/{advertisment_id}")]
-        public async Task<ActionResult<int>> AcceptedApplications(int advertisment_id)
-        {
-            return Ok(await _service.AcceptedApplications(advertisment_id));
-        }
-
-        [HttpGet]
-        [Route("RejectedApplications/{advertisment_id}")]
-        public async Task<ActionResult<int>> RejectedApplications(int advertisment_id)
-        {
-            return Ok(await _service.RejectedApplications(advertisment_id));
-        }
-
-
         [HttpPost]
         [Route("AddApplication")]
-
-        public async Task<IActionResult> AddApplication(Application application)
+        public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
         {
-            await _service.Create(application);
+            await _service.Create(newApplication);
             return Ok();
+        }
+
+        [HttpPatch]
+        [Route("DelegateTask/jobID={jobID}")]
+        public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID)
+        {
+            try
+            {
+                await _service.InitiateTaskDelegation(jobID, null);
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
+            {
+                return NoContent(); // HTTP 204 No Content
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
+                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
+            }
+        }
+
+        [HttpPatch]
+        [Route("DelegateTask/jobID={jobID}/hra_id_list={hra_id_list}")]
+        public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID, string hra_id_list)
+        {
+            try
+            {
+                await _service.InitiateTaskDelegation(jobID, hra_id_list.Split(',').Select(int.Parse));
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
+            {
+                return NoContent(); // HTTP 204 No Content
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
+                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
+            }
+        }
+
+        [HttpPatch]
+        [Route("ChangeAssignedHRA/applicationId={applicationId}/hraId={hraId}")]
+        public async Task<IActionResult> ChangeAssignedHRA(int applicationId, int hraId)
+        {
+            await _service.ChangeAssignedHRA(applicationId, hraId);
+            return Ok("Successfully changed assigned HRA.");
         }
 
         [HttpPut]
         [Route("UpdateApplication")]
-
         public async Task<IActionResult> UpdateCApplication(Application reqApplication)
         {
             await _service.Update(reqApplication);            
@@ -99,12 +124,10 @@ namespace FirstStep.Controllers
 
         [HttpDelete]
         [Route("DeleteApplication/{id}")]
-
         public async Task<IActionResult> DeleteApplication(int id)
         {
             await _service.Delete(id);
             return Ok();
         }
-
     }
 }

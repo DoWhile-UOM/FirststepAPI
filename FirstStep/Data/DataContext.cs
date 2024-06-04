@@ -33,7 +33,7 @@ namespace FirstStep.Data
         public DbSet<ProfessionKeyword> ProfessionKeywords { get; set; } = null!;
 
         public DbSet<Revision> Revisions { get; set; } = null!;
-      
+
         public DbSet<OTPRequest> OTPRequests { get; set; } = null!;
 
 
@@ -117,6 +117,29 @@ namespace FirstStep.Data
                 entity.HasOne(e => e.advertisement)
                     .WithMany(e => e.applications)
                     .HasForeignKey(e => e.advertisement_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.seeker)
+                    .WithMany(e => e.applications)
+                    .HasForeignKey(e => e.seeker_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.assigned_hrAssistant)
+                    .WithMany(e => e.applications)
+                    .HasForeignKey(e => e.assigned_hrAssistant_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+            });
+
+            modelBuilder.Entity<Revision>(entity =>
+            {
+                entity.HasOne(e => e.application)
+                    .WithMany(e => e.revisions)
+                    .HasForeignKey(e => e.application_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.employee)
+                    .WithMany(e => e.revisions)
+                    .HasForeignKey(e => e.employee_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
         }

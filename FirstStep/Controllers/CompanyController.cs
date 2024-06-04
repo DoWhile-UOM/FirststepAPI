@@ -3,7 +3,6 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static FirstStep.Services.CompanyService;
 
 namespace FirstStep.Controllers
 {
@@ -26,10 +25,24 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetCompanyById/{companyId:int}")]
+        [Route("GetCompanyProfile/update=true/{companyId:int}")]
         public async Task<ActionResult<CompanyProfileDetailsDto>> GetCompanyById(int companyId)
         {
             return Ok(await _service.GetById(companyId));
+        }
+
+        [HttpGet]
+        [Route("GetAllComapanyList")]
+        public async Task<ActionResult<IEnumerable<ViewCompanyListDto>>> GetAllCompanyList()
+        {
+            return Ok(await _service.GetAllCompanyList());
+        }
+        
+        [HttpGet]
+        [Route("GetCompanyApplicationById/{companyId:int}")]
+        public async Task<ActionResult<CompanyApplicationDto>> GetCompanyApplicationById(int companyID)
+        {
+            return Ok(await _service.GetCompanyApplicationById(companyID));
         }
 
         [HttpGet]
@@ -47,10 +60,17 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetCompanyProfile/{companyID:int}/seekerID={seekerID:int}")]
-        public async Task<ActionResult<CompanyProfileDto>> GetCompanyProfile(int companyID, int seekerID)
+        [Route("GetCompanyProfile/{companyID:int}/seekerID={seekerID:int}/pageLength={pageLength:int}")]
+        public async Task<ActionResult<CompanyProfileDto>> GetCompanyProfile(int companyID, int seekerID, int pageLength)
         {
-            return Ok(await _service.GetCompanyProfile(companyID, seekerID));
+            return Ok(await _service.GetCompanyProfile(companyID, seekerID, pageLength));
+        }
+
+        [HttpGet]
+        [Route("GetRegCheckByID/{companyId}")]
+        public async Task<ActionResult<CompanyProfileDetailsDto>> GetRegCheckByID(string companyId)
+        {
+            return Ok(await _service.FindByRegCheckID(companyId));
         }
 
         [HttpPost]
@@ -60,21 +80,13 @@ namespace FirstStep.Controllers
             try
             {
                 await _service.Create(newCompany);
-                return Ok("Company Application successfully filled!");
-            }
-            catch (EmailAlreadyExistsException ex)//Handle Email Already Exists Exception
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (RegistrationNumberAlreadyExistsException ex)// Handle Registration Number Already Exists Exception
-            {
-                return BadRequest(ex.Message);
+                return Ok("Company Application successfully submitted!");
             }
             catch (Exception ex)//Handle other errors
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, "Internal Server Error");
+                return BadRequest(ex.Message);
             }
 
         }

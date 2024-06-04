@@ -4,33 +4,45 @@ using System.Text.Json.Serialization;
 namespace FirstStep.Models
 {
     public class Advertisement
-    {
+    {   
         [Key]
         public required int advertisement_id { get; set; }
 
         public int? job_number { get; set; }
 
+        [MaxLength(100)]
         public required string title { get; set; }
 
+        [MaxLength(40)]
         public required string country { get; set; }
 
+        [MaxLength(40)]
         public required string city { get; set; }
 
+        [MaxLength(15)]
         public required string employeement_type { get; set; }
 
+        [MaxLength(15)]
         public required string arrangement { get; set; }
 
-        public required bool is_experience_required { get; set; }
+        [MaxLength(15)]
+        public required string experience { get; set; }
 
-        public float salary { get; set; }
+        public float? salary { get; set; }
+
+        [MaxLength(5)]
+        public string? currency_unit { get; set; }
 
         public required DateTime posted_date { get; set; } = DateTime.Now;
 
-        public DateTime submission_deadline { get; set; }
+        public DateTime? submission_deadline { get; set; }
 
+        public DateTime? expired_date { get; set; }
+
+        [MaxLength(7)]
         public required string current_status { get; set; }
 
-        [MaxLength(2500)]
+        [MaxLength(4000)]
         public string? job_description { get; set; }
 
 

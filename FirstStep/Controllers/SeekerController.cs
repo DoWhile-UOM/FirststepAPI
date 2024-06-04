@@ -38,12 +38,37 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetSeekerProfile(seekerId));
         }
 
+        [HttpGet]
+        [Route("GetSeekerDetails/{seekerId:int}")]
+        public async Task<ActionResult<SeekerApplicationDto>> GetSeekerDetails(int seekerId)
+        {
+            return Ok(await _service.GetSeekerDetails(seekerId));
+        }
+
         [HttpPost]
         [Route("AddSeeker")]
         public async Task<IActionResult> AddSeeker(AddSeekerDto newSeeker)
         {
-            await _service.Create(newSeeker);
-            return Ok($"Suessfully added new seeker: {newSeeker.first_name} {newSeeker.last_name}");
+            //var result=await _service.Create(newSeeker);
+
+            //return Ok($"Suessfully added new seeker: {newSeeker.first_name} {newSeeker.last_name}"+ result);
+
+            try
+            {
+                var response = await _service.Create(newSeeker);// UserRegRequestDto must modify 
+
+                return response switch
+                {
+                    "Seeker added successfully" => Ok(response),
+                    "Null User" => BadRequest(response),
+                    "Email Already exist" => BadRequest(response),
+                    _ => BadRequest(response),
+                };
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
       

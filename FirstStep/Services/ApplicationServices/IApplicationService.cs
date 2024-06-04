@@ -1,4 +1,5 @@
-﻿using FirstStep.Models;
+using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -8,24 +9,26 @@ namespace FirstStep.Services
 
         public Task<Application> GetById(int id);
 
-        public Task<IEnumerable<Application>> GetByAdvertisementId(int id);
+        public Task<ApplicationListingPageDto> GetApplicationList(int jobID, string status);
+
+        public Task<ApplicationListingPageDto> GetAssignedApplicationList(int hraID, int jobID, string status);
 
         public Task<IEnumerable<Application>> GetBySeekerId(int id);
 
-        public Task Create(Application application);
+        public Task Create(AddApplicationDto newApplicationDto);
 
         public Task Update(Application application);
 
+        public Task ChangeAssignedHRA(int applicationId, int hrAssistantId);
+
         public Task Delete(int id);
 
-        public Task<int> NumberOfApplicationsByAdvertisementId(int id);
+        public Task Delete(Application application);
 
-        public Task<int> TotalEvaluatedApplications(int id);
+        public string GetCurrentApplicationStatus(Application application);
 
-        public Task<int> TotalNotEvaluatedApplications(int id);
+        public Task InitiateTaskDelegation(int advertisement_id, IEnumerable<int>? hrassistant_ids);
 
-        public Task<int> AcceptedApplications(int id);
-
-        public Task<int> RejectedApplications(int id);
+        public Task InitiateTaskDelegation(Advertisement advertisement);
     }
 }

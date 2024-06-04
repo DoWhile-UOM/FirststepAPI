@@ -14,8 +14,12 @@ namespace FirstStep.Services
         public Task<Company> FindByID(int id);
 
         public Task<CompanyProfileDetailsDto> GetById(int id);
+        
+        public Task<CompanyApplicationDto> GetCompanyApplicationById(int companyID);
+  
+        public Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList();
 
-        public Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID);
+        public Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID, int pageLength);
 
         public Task Create(AddCompanyDto company);
 
@@ -26,6 +30,8 @@ namespace FirstStep.Services
         public Task UpdateUnregisteredCompany(int companyID, UpdateUnRegCompanyDto company);
 
         public Task UpdateRegisteredCompany(int companyID, UpdateCompanyDto company);
+      
+        public Task<Company> FindByRegCheckID(string id);
 
         public Task Delete(int id);
 

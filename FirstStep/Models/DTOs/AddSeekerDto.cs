@@ -6,6 +6,8 @@
 
         public  string last_name { get; set; }
 
+        public required string password { get; set; }
+
         public int phone_number { get; set; }
 
         public string email { get; set; }
@@ -18,7 +20,7 @@
 
         public int field_id { get; set; }
 
-        public string cVurl { get; set; }
+        public required string cVurl { get; set; }
 
         public string? profile_picture { get; set; }
 
@@ -26,9 +28,6 @@
 
         public virtual List<string>? seekerSkills { get; set; }
 
-        public string password_hash { get; set; }
-
-
-
+        //public string password_hash { get; set; }
     }
 }
