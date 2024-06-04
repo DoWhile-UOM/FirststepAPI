@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,13 +25,36 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetAll());
         }
 
+        //[HttpPost]
+        //[Route("AddRevision")]
+
+        //public async Task<IActionResult> AddRevision(Revision newRevision)
+        //{
+        //    await _service.Create(newRevision);
+        //    return Ok();
+        //}
+
         [HttpPost]
         [Route("AddRevision")]
-        
-        public async Task<IActionResult> AddRevision(Revision newRevision)
+        public async Task<IActionResult> AddRevision([FromBody] AddRevisionDto newRevisionDto)
         {
-            await _service.Create(newRevision);
-            return Ok();
+            try
+            {
+                await _service.AddRevision(newRevisionDto);
+                return Ok("Revision added successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         [HttpPut]

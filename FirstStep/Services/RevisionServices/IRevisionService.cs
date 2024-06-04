@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -19,5 +20,6 @@ namespace FirstStep.Services
         public Task Update(Revision revision);
 
         public Task Delete(int id);
+        public Task AddRevision(AddRevisionDto newRevisionDto);
     }
 }

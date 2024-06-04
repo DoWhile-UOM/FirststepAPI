@@ -51,29 +51,7 @@ namespace FirstStep.Controllers
             //return Ok(await _service.GetSeekerApplicationViewByApplicationId(id));
         }
 
-        [HttpPost]
-        [Route("AddRevision")]
-        public async Task<IActionResult> AddRevision([FromBody] AddRevisionDto newRevisionDto)
-        {
-            try
-            {
-                await _service.AddRevision(newRevisionDto);
-                return Ok("Revision added successfully.");
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (NullReferenceException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
+       
          [HttpGet]
         [Route("GetRevisionHistory/{applicationId:int}")]
         public async Task<ActionResult<IEnumerable<RevisionHistoryDto>>> GetRevisionHistory(int applicationId)

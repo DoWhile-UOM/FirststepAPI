@@ -31,8 +31,6 @@ namespace FirstStep.Services
 
         public Task InitiateTaskDelegation(int advertisement_id, IEnumerable<int>? hrassistant_ids);
 
-        public Task AddRevision(AddRevisionDto newRevisionDto);
-
         public Task<IEnumerable<RevisionHistoryDto>> GetRevisionHistory(int applicationId);
     }
 
