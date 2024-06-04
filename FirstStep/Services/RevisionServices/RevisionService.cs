@@ -86,12 +86,12 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task AddRevision(AddRevisionDto newRevisionDto)
+        public async Task AddRevision(Revision newRevision)
         {
             var application = await _context.Applications
                 .Include(a => a.revisions)
                 .ThenInclude(r => r.employee)
-                .SingleOrDefaultAsync(a => a.application_Id == newRevisionDto.application_id);
+                .SingleOrDefaultAsync(a => a.application_Id == newRevision.application_id);
 
             if (application == null)
             {
@@ -105,22 +105,7 @@ namespace FirstStep.Services
                 throw new InvalidOperationException("Revisions cannot be added after an HR Manager's revision.");
             }
 
-            var employee = await _context.Employees.FindAsync(newRevisionDto.employee_id);
-            if (employee == null)
-            {
-                throw new NullReferenceException("Employee not found.");
-            }
-
-            var newRevision = new Revision
-            {
-                application_id = newRevisionDto.application_id,
-                comment = newRevisionDto.comment,
-                status = newRevisionDto.status,
-                date = DateTime.Now,
-                employee_id = newRevisionDto.employee_id,
-                employee_role = employee.user_type // Set the role from the employee
-            };
-
+            newRevision.date = DateTime.Now;
             _context.Revisions.Add(newRevision);
             await _context.SaveChangesAsync();
         }

@@ -27,9 +27,9 @@ namespace FirstStep.Models.DTOs
 
         public string? current_status { get; set; }
 
-        public bool is_evaluated { get; set; }
+        public bool is_evaluated { get; set; }  
 
-        public Revision? last_revision { get; set; }
+        public RevisionDto? last_revision { get; set; }  // Added property for the latest revision
 
         public int seeker_id { get; set; }
     }
