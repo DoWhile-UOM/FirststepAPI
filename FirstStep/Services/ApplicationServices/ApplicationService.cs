@@ -432,7 +432,29 @@ namespace FirstStep.Services
             }
         }
 
+        //tasks delegation ends here
         //get application status by application id in seeker dashboard to look application status in stepper which shows submission,screening and finalize with dates
+        /*   public async Task<ApplicationStatusDto> GetApplicationStatus(int applicationId)
+           {
+               var application = await GetById(applicationId);
+               if (application == null)
+               {
+                   return null;
+               }
+               string currentStatus = GetCurrentApplicationStatus(application);
+               var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
+               var applicationStatus = new ApplicationStatusDto
+               {
+
+                   status = currentStatus,
+                   submitted_date = application.submitted_date,
+                   screening_date = lastRevision?.date ?? DateTime.Now,
+                   finalize_date = lastRevision?.date ?? DateTime.Now,
+                   cVurl = application.CVurl
+               };
+
+               return applicationStatus;
+           }*/
         public async Task<ApplicationStatusDto> GetApplicationStatus(int applicationId)
         {
             var application = await GetById(applicationId);
@@ -440,24 +462,51 @@ namespace FirstStep.Services
             {
                 return null;
             }
-            string currentStatus = GetCurrentApplicationStatus(application);
-            var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
-            var applicationStatus = new ApplicationStatusDto
+            //if advertisment is active status on applicationStatusDto is "Submitted"
+            if (application.advertisement.current_status == AdvertisementValidation.Status.active.ToString())
             {
-                
-                status = currentStatus,
-                submitted_date = application.submitted_date,
-                screening_date = lastRevision?.date ?? DateTime.Now,
-                finalize_date = lastRevision?.date ?? DateTime.Now,
-                cVurl = application.CVurl
-            };
+                return new ApplicationStatusDto
+                {
+                    status = ApplicationStatus.NotEvaluated.ToString(),
+                    cv_name = application.CVurl
+                };
+            }
+            //else if advertisment is hold  and application status  is passes or not evaluated status on applicationStatusDto is "screening".
+            else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() && (application.status == ApplicationStatus.Pass.ToString() || application.status == ApplicationStatus.NotEvaluated.ToString()))
+            {
+                return new ApplicationStatusDto
+                {
+                    status = ApplicationStatus.NotEvaluated.ToString(),
+                    cv_name = application.CVurl
+                };
+            }
+            //else if  application status  is accepted or rejected status on applicationStatusDto is "finalized"
+            else if (application.status == ApplicationStatus.Accepted.ToString() || application.status == ApplicationStatus.Rejected.ToString())
+            {
+                return new ApplicationStatusDto
+                {
+                    status = ApplicationStatus.Done.ToString(),
+                    cv_name = application.CVurl
+                };
+            }
 
-            return applicationStatus;
+
+
+
+
+
+
+
+
+
+
+
+
+
         }
-
 
     }
 
-        //tasks delegation ends here
-  }
+
+}
 
