@@ -434,42 +434,6 @@ namespace FirstStep.Services
 
         //tasks delegation ends here
 
-        /*   public async Task<ApplicationStatusDto> GetApplicationStatus(int applicationId)
-               {
-               var application = await GetById(applicationId);
-               if (application is null)
-               {
-                   throw new NullReferenceException("Application not found.");
-               }
-               var applicationStatus = new ApplicationStatusDto
-               {
-                   status = "",
-                   cv_name = application.CVurl,
-                   //submited date
-                   submitted_date = application.submitted_date
-               };
-
-               // If advertisement is active status on ApplicationStatusDto is "Submitted"
-
-               if (application.advertisement.current_status == AdvertisementValidation.Status.active.ToString())
-                      {
-                         applicationStatus.status = "Submitted";
-                      }
-
-               // If advertisement is on hold and application status is Pass or NotEvaluated, status on ApplicationStatusDto is "Screening"
-                    else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
-                              (application.status == ApplicationStatus.Pass.ToString() || application.status == ApplicationStatus.NotEvaluated.ToString()))
-                     {
-                         applicationStatus.status = "Screening";
-                     }
-                     // If application status is Accepted or Rejected, status on ApplicationStatusDto is "Finalized"
-                     else if (application.status == ApplicationStatus.Accepted.ToString() || application.status == ApplicationStatus.Rejected.ToString())
-                     {
-                         applicationStatus.status = "Finalized";
-                     }
-
-                     return applicationStatus;
-                 }*/
         public async Task<ApplicationStatusDto> GetApplicationStatus(int applicationId)
         {
             var application = await GetById(applicationId);
@@ -491,18 +455,18 @@ namespace FirstStep.Services
                 status = "",//initialize status
             };
  
-                if (application.advertisement.current_status == AdvertisementValidation.Status.active.ToString())
-                {
-                    applicationStatus.status = "Submitted";
-                }
-                else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
-                    (application.status == ApplicationStatus.Pass.ToString() || application.status == ApplicationStatus.NotEvaluated.ToString()))
-                {
-                    applicationStatus.status = "Screening";
-                }
-            
+           if (application.advertisement.current_status == AdvertisementValidation.Status.active.ToString())
+            {
+                applicationStatus.status = "Submitted";
+            }
+            else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
+                (application.status == ApplicationStatus.Pass.ToString() || application.status == ApplicationStatus.NotEvaluated.ToString()))
+            {
+                applicationStatus.status = "Screening";
+            }
 
-            if (application.status == ApplicationStatus.Accepted.ToString() || application.status == ApplicationStatus.Rejected.ToString())
+
+            else if (application.status == ApplicationStatus.Accepted.ToString() || application.status == ApplicationStatus.Rejected.ToString())
             {
                 applicationStatus.status = "Finalized";
             }
