@@ -85,6 +85,14 @@ namespace FirstStep.Services
 
             _context.Revisions.Add(revision);
             await _context.SaveChangesAsync();
+
+            // Update application status
+            var application = await _context.Applications.FindAsync(revision.application_id);
+            if (application != null)
+            {
+                application.status = revision.status;
+                await _context.SaveChangesAsync();
+            }
         }
 
 
@@ -98,6 +106,14 @@ namespace FirstStep.Services
             dbRevision.status = revision.status;
 
             await _context.SaveChangesAsync();
+
+            // Update application status
+            var application = await _context.Applications.FindAsync(revision.application_id);
+            if (application != null)
+            {
+                application.status = revision.status;
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task Delete(int id)

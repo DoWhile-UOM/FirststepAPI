@@ -306,7 +306,7 @@ namespace FirstStep.Services
 
         public string GetCurrentApplicationStatus(Application application)
         {
-            if (application.revisions == null)
+            if (application.revisions == null || !application.revisions.Any())
             {
                 return ApplicationStatus.NotEvaluated.ToString();
             }
