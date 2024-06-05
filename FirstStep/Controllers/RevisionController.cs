@@ -25,6 +25,32 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetAll());
         }
 
+        // RevisionController.cs
+
+        [HttpGet]
+        [Route("GetRevisionHistory/{applicationId:int}")]
+        public async Task<ActionResult<IEnumerable<RevisionHistoryDto>>> GetRevisionHistory(int applicationId)
+        {
+            var revisions = await _service.GetByApplicationID(applicationId);
+            if (!revisions.Any())
+            {
+                return NotFound("No revisions found for this application.");
+            }
+
+            var revisionHistoryDtos = revisions.Select(r => new RevisionHistoryDto
+            {
+                revision_id = r.revision_id,
+                comment = r.comment,
+                status = r.status,
+                created_date = r.date,
+                employee_name = r.employee.first_name + " " + r.employee.last_name,
+                employee_role = r.employee.user_type
+            });
+
+            return Ok(revisionHistoryDtos);
+        }
+
+
         [HttpPost]
         [Route("CreateRevision")]
 
