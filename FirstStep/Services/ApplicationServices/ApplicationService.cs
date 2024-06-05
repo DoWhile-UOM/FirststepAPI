@@ -110,7 +110,10 @@ namespace FirstStep.Services
 
         public async Task<Application> GetById(int id)
         {
-            Application? application = await _context.Applications.FindAsync(id);
+            Application? application = await _context.Applications
+                .Include("advertisement")
+                .Where(a => a.application_Id == id)
+                .FirstOrDefaultAsync();
 
             if (application is null)
             {
@@ -231,7 +234,7 @@ namespace FirstStep.Services
             {
                 application_Id = application.application_Id,
                 submitted_date = application.submitted_date,
-                email = application.seeker.email,
+                email = application.seeker!.email,
                 first_name = application.seeker.first_name,
                 last_name = application.seeker.last_name,
                 phone_number = application.seeker.phone_number,
@@ -452,29 +455,34 @@ namespace FirstStep.Services
             {
                 cv_name = application.CVurl,
                 submitted_date = application.submitted_date,
-                status = "",//initialize status
+                status = "",
             };
  
-           if (application.advertisement.current_status == AdvertisementValidation.Status.active.ToString())
+            if (AdvertisementValidation.IsActive(application.advertisement))
             {
                 applicationStatus.status = "Submitted";
             }
-            else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
-                (application.status == ApplicationStatus.Pass.ToString() || application.status == ApplicationStatus.NotEvaluated.ToString()))
+            else if (AdvertisementValidation.IsHold(application.advertisement) &&
+                (application.status == ApplicationStatus.Pass.ToString() || 
+                application.status == ApplicationStatus.NotEvaluated.ToString()))
             {
                 applicationStatus.status = "Screening";
             }
-
-
-            else if (application.status == ApplicationStatus.Accepted.ToString() || application.status == ApplicationStatus.Rejected.ToString())
+            else if (application.status == ApplicationStatus.Accepted.ToString() ||
+                (AdvertisementValidation.IsHold(application.advertisement) && 
+                application.status == ApplicationStatus.Rejected.ToString()))
             {
+                // Show a message on frontend as "You will recive an email on the next steps"
                 applicationStatus.status = "Finalized";
+            }
+            else
+            {
+                // When advetisement is closed even the application is not evaluated, passed or rejected
+                applicationStatus.status = "Rejected";
             }
 
             return applicationStatus;
         }
-
-
     }
 }
 
