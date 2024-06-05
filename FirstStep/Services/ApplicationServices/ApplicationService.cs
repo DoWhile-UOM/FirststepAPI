@@ -270,7 +270,6 @@ namespace FirstStep.Services
         }
 
 
-
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)
         {
             // get all applications that send by the seeker and not completed
