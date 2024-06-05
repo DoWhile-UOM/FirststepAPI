@@ -52,13 +52,16 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetBySeekerId(id));
         }
 
-        //get application status by application id 
+        //get appplication status by application ID
         [HttpGet]
-        [Route("GetApplicationStatus/{applicationId}")]
-        public async Task<ActionResult<ApplicationStatusDto>> GetApplicationStatus(int applicationId)
+        [Route("GetApplicationStatus/{id}")]
+        public async Task<ActionResult<ApplicationStatusDto>> GetApplicationStatus(int id)
         {
-            return Ok(await _service.GetApplicationStatus(applicationId));
+            return Ok(await _service.GetApplicationStatus(id));
         }
+
+
+
 
 
 

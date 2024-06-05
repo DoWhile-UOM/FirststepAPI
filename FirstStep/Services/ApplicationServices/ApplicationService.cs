@@ -433,80 +433,107 @@ namespace FirstStep.Services
         }
 
         //tasks delegation ends here
-        //get application status by application id in seeker dashboard to look application status in stepper which shows submission,screening and finalize with dates
+
         /*   public async Task<ApplicationStatusDto> GetApplicationStatus(int applicationId)
-           {
-               var application = await GetById(applicationId);
-               if (application == null)
                {
-                   return null;
+               var application = await GetById(applicationId);
+               if (application is null)
+               {
+                   throw new NullReferenceException("Application not found.");
                }
-               string currentStatus = GetCurrentApplicationStatus(application);
-               var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
                var applicationStatus = new ApplicationStatusDto
                {
-
-                   status = currentStatus,
-                   submitted_date = application.submitted_date,
-                   screening_date = lastRevision?.date ?? DateTime.Now,
-                   finalize_date = lastRevision?.date ?? DateTime.Now,
-                   cVurl = application.CVurl
+                   status = "",
+                   cv_name = application.CVurl,
+                   //submited date
+                   submitted_date = application.submitted_date
                };
 
-               return applicationStatus;
-           }*/
+               // If advertisement is active status on ApplicationStatusDto is "Submitted"
+
+               if (application.advertisement.current_status == AdvertisementValidation.Status.active.ToString())
+                      {
+                         applicationStatus.status = "Submitted";
+                      }
+
+               // If advertisement is on hold and application status is Pass or NotEvaluated, status on ApplicationStatusDto is "Screening"
+                    else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
+                              (application.status == ApplicationStatus.Pass.ToString() || application.status == ApplicationStatus.NotEvaluated.ToString()))
+                     {
+                         applicationStatus.status = "Screening";
+                     }
+                     // If application status is Accepted or Rejected, status on ApplicationStatusDto is "Finalized"
+                     else if (application.status == ApplicationStatus.Accepted.ToString() || application.status == ApplicationStatus.Rejected.ToString())
+                     {
+                         applicationStatus.status = "Finalized";
+                     }
+
+                     return applicationStatus;
+                 }*/
         public async Task<ApplicationStatusDto> GetApplicationStatus(int applicationId)
         {
             var application = await GetById(applicationId);
-            if (application == null)
+
+            if (application is null)
             {
-                return null;
+                throw new NullReferenceException("Application not found.");
             }
-            //if advertisment is active status on applicationStatusDto is "Submitted"
-            if (application.advertisement.current_status == AdvertisementValidation.Status.active.ToString())
+
+            if (application.advertisement == null)
             {
-                return new ApplicationStatusDto
+                throw new NullReferenceException("Advertisement not found."); 
+            }
+
+            var applicationStatus = new ApplicationStatusDto
+            {
+                cv_name = application.CVurl,
+                submitted_date = application.submitted_date,
+                status = "",//initialize status
+            };
+ 
+                if (application.advertisement.current_status == AdvertisementValidation.Status.active.ToString())
                 {
-                    status = ApplicationStatus.NotEvaluated.ToString(),
-                    cv_name = application.CVurl
-                };
-            }
-            //else if advertisment is hold  and application status  is passes or not evaluated status on applicationStatusDto is "screening".
-            else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() && (application.status == ApplicationStatus.Pass.ToString() || application.status == ApplicationStatus.NotEvaluated.ToString()))
-            {
-                return new ApplicationStatusDto
+                    applicationStatus.status = "Submitted";
+                }
+                else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
+                    (application.status == ApplicationStatus.Pass.ToString() || application.status == ApplicationStatus.NotEvaluated.ToString()))
                 {
-                    status = ApplicationStatus.NotEvaluated.ToString(),
-                    cv_name = application.CVurl
-                };
-            }
-            //else if  application status  is accepted or rejected status on applicationStatusDto is "finalized"
-            else if (application.status == ApplicationStatus.Accepted.ToString() || application.status == ApplicationStatus.Rejected.ToString())
+                    applicationStatus.status = "Screening";
+                }
+            
+
+            if (application.status == ApplicationStatus.Accepted.ToString() || application.status == ApplicationStatus.Rejected.ToString())
             {
-                return new ApplicationStatusDto
-                {
-                    status = ApplicationStatus.Done.ToString(),
-                    cv_name = application.CVurl
-                };
+                applicationStatus.status = "Finalized";
             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+            return applicationStatus;
         }
 
+
     }
-
-
 }
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
 
