@@ -231,7 +231,7 @@ namespace FirstStep.Services
             {
                 application_Id = application.application_Id,
                 submitted_date = application.submitted_date,
-                email = application.seeker.email,
+                email = application.seeker!.email,
                 first_name = application.seeker.first_name,
                 last_name = application.seeker.last_name,
                 phone_number = application.seeker.phone_number,
