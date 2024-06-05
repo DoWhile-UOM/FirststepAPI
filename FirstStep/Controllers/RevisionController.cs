@@ -25,38 +25,16 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetAll());
         }
 
-        //[HttpPost]
-        //[Route("AddRevision")]
-
-        //public async Task<IActionResult> AddRevision(Revision newRevision)
-        //{
-        //    await _service.Create(newRevision);
-        //    return Ok();
-        //}
-
         [HttpPost]
-        [Route("AddRevision")]
-        public async Task<IActionResult> AddRevision([FromBody] AddRevisionDto newRevisionDto)
+        [Route("CreateRevision")]
+
+        public async Task<IActionResult> CreateRevision(Revision reqRevision)
         {
-            try
-            {
-                await _service.AddRevision(newRevisionDto);
-                return Ok("Revision added successfully.");
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (NullReferenceException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            await _service.Create(reqRevision);
+            return Ok();
         }
 
+      
         [HttpPut]
         [Route("UpdateRevision")]
 
