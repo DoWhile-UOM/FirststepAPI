@@ -109,7 +109,7 @@ namespace FirstStepTest
             Coordinate seekerLocation = new Coordinate { Longitude = 79.861244, Latitude = 6.927079 };
 
             // Act
-            await TestSkillMatchingAlgorithm(seekerId, seekerLocation);
+            await Test_SkillMatchingAlgorithm_ForDistance(seekerId, seekerLocation);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace FirstStepTest
             Coordinate seekerLocation = new Coordinate { Longitude = 80.636696, Latitude = 7.291418 };
 
             // Act
-            await TestSkillMatchingAlgorithm(seekerId, seekerLocation);
+            await Test_SkillMatchingAlgorithm_ForDistance(seekerId, seekerLocation);
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace FirstStepTest
             Coordinate seekerLocation = new Coordinate { Longitude = 80.220978, Latitude = 6.053519 };
 
             // Act
-            await TestSkillMatchingAlgorithm(seekerId, seekerLocation);
+            await Test_SkillMatchingAlgorithm_ForDistance(seekerId, seekerLocation);
         }
 
         [Fact]
@@ -142,10 +142,61 @@ namespace FirstStepTest
             Coordinate seekerLocation = new Coordinate { Longitude = 80.014366, Latitude = 7.087310 };
 
             // Act
-            await TestSkillMatchingAlgorithm(seekerId, seekerLocation);
+            await Test_SkillMatchingAlgorithm_ForDistance(seekerId, seekerLocation);
         }
 
-        private async Task TestSkillMatchingAlgorithm(int seekerId, Coordinate seekerLocation)
+        [Fact]
+        public async Task TestSkillMatchingAlgorithm_Jaffna()
+        {
+            // arange
+            int seekerId = 1073;
+            Coordinate seekerLocation = new Coordinate { Longitude = 80.005974, Latitude = 9.661623 };
+
+            // Act
+            await Test_SkillMatchingAlgorithm_ForDistance(seekerId, seekerLocation);
+        }
+
+        [Fact]
+        public async Task TestSkillMatchingAlgorithm_ForSeekerSkills_Colombo()
+        {
+            // arange
+            int seekerId = 1073;
+            Coordinate seekerLocation = new Coordinate { Longitude = 79.861244, Latitude = 6.927079 };
+
+            // Act
+            await Test_SkillMatchingAlgorithm_ForSeekerSkills(seekerId, seekerLocation);
+        }
+
+        private async Task Test_SkillMatchingAlgorithm_ForSeekerSkills(int seekerId, Coordinate seekerLocation)
+        {
+            // find the seekers
+            var seekers = await _seekerService.GetAll();
+
+            Assert.True(seekers.Count() > 0);
+
+            var seeker = await _seekerService.GetById(seekerId);
+
+            if (seeker.skills == null)
+            {
+                // add random skills to the seeker
+                var skills = await _context.Skills.ToListAsync();
+
+                seeker.skills = new List<Skill>();
+
+                Random random = new Random();
+
+                for (int i = 0; i < 5; i++)
+                {
+                    seeker.skills.Add(skills.ElementAt(random.Next(0, skills.Count())));
+                }
+            }
+
+            // Act
+            AdvertisementFirstPageDto result = await _advertisementService
+                .GetRecommendedAdvertisements(seekerId, (float)seekerLocation.Longitude, (float)seekerLocation.Latitude, 100);
+        }
+
+        private async Task Test_SkillMatchingAlgorithm_ForDistance(int seekerId, Coordinate seekerLocation)
         {
             // find the seekers
             var seekers = await _seekerService.GetAll();
