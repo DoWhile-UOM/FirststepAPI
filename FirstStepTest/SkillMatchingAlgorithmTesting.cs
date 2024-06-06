@@ -97,9 +97,6 @@ namespace FirstStepTest
                 var companies = originalContext.Companies.AsNoTracking().ToList();
                 _context.Companies.AddRange(companies);
 
-                var employees = originalContext.Employees.AsNoTracking().ToList();
-                _context.Employees.AddRange(employees);
-
                 _context.SaveChanges();
             }
         }
