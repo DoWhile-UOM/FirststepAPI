@@ -123,6 +123,28 @@ namespace FirstStepTest
             await TestSkillMatchingAlgorithm(seekerId, seekerLocation);
         }
 
+        [Fact]
+        public async Task TestSkillMatchingAlgorithm_Galle()
+        {
+            // arange
+            int seekerId = 1073;
+            Coordinate seekerLocation = new Coordinate { Longitude = 80.220978, Latitude = 6.053519 };
+
+            // Act
+            await TestSkillMatchingAlgorithm(seekerId, seekerLocation);
+        }
+
+        [Fact]
+        public async Task TestSkillMatchingAlgorithm_Gampaha()
+        {
+            // arange
+            int seekerId = 1073;
+            Coordinate seekerLocation = new Coordinate { Longitude = 80.014366, Latitude = 7.087310 };
+
+            // Act
+            await TestSkillMatchingAlgorithm(seekerId, seekerLocation);
+        }
+
         private async Task TestSkillMatchingAlgorithm(int seekerId, Coordinate seekerLocation)
         {
             // find the seekers
