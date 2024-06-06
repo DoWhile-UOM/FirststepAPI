@@ -14,7 +14,7 @@ namespace FirstStep.Services
             _context = context;
         }
 
-        enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected }
+        enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected ,Passed }
 
         public async Task<IEnumerable<Revision>> GetAll()
         {
