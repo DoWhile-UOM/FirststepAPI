@@ -2,10 +2,10 @@
 using FirstStep.Data;
 using FirstStep.Helper;
 using FirstStep.MapperProfile;
+using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace FirstStepTest
 {
-    public class AdvertisementServiceTest :IDisposable
+    public class SkillMatchingAlgorithmTesting: IDisposable
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
@@ -31,7 +31,7 @@ namespace FirstStepTest
         private readonly EmployeeService _employeeService;
         //private readonly EmailService _emailService;
 
-        public AdvertisementServiceTest()
+        public SkillMatchingAlgorithmTesting()
         {
             // Set up DbContext options to use in-memory database
             var options = new DbContextOptionsBuilder<DataContext>()
@@ -94,28 +94,77 @@ namespace FirstStepTest
                 var revisions = originalContext.Revisions.AsNoTracking().ToList();
                 _context.Revisions.AddRange(revisions);
 
+                var companies = originalContext.Companies.AsNoTracking().ToList();
+                _context.Companies.AddRange(companies);
+
+                var employees = originalContext.Employees.AsNoTracking().ToList();
+                _context.Employees.AddRange(employees);
+
                 _context.SaveChanges();
             }
         }
 
         [Fact]
-        public async Task IsExpired_ReturnsTrue_WhenAdvertisementIsExpired()
+        public async Task TestSkillMatchingAlgorithm_Colombo()
         {
-            // Act
-            var result = await _advertisementService.IsExpired(1057);
+            // arange
+            int seekerId = 1073;
+            Coordinate seekerLocation = new Coordinate { Longitude = 79.861244, Latitude = 6.927079 };
 
-            // Assert
-            Assert.True(result);
+            // Act
+            await TestSkillMatchingAlgorithm(seekerId, seekerLocation);
         }
 
         [Fact]
-        public async Task IsExpired_ReturnsFalse_WhenAdvertisementIsNotExpired()
+        public async Task TestSkillMatchingAlgorithm_Kandy()
         {
+            // arange
+            int seekerId = 1073;
+            Coordinate seekerLocation = new Coordinate { Longitude = 80.636696, Latitude = 7.291418 };
+
             // Act
-            var result = await _advertisementService.IsExpired(1055);
+            await TestSkillMatchingAlgorithm(seekerId, seekerLocation);
+        }
+
+        private async Task TestSkillMatchingAlgorithm(int seekerId, Coordinate seekerLocation)
+        {
+            // find the seekers
+            var seekers = await _seekerService.GetAll();
+
+            Assert.True(seekers.Count() > 0);
+
+            // remove all the skills of the seeker
+            var seeker = await _seekerService.GetById(seekerId);
+
+            if (seeker.skills != null){
+                seeker.skills.Clear();
+                _context.SaveChanges();
+            }
+
+            // Act
+            AdvertisementFirstPageDto result = await _advertisementService
+                .GetRecommendedAdvertisements(seekerId, (float)seekerLocation.Longitude, (float)seekerLocation.Latitude, 100);
+
+            // distance array
+            List<float> distances = new List<float>();
 
             // Assert
-            Assert.False(result);
+            // check the distance of each advertisement
+            foreach (var advertisement in result.FirstPageAdvertisements)
+            {
+                float distance = await Map.GetDistance(advertisement.city, seekerLocation);
+
+                // add the distance to the list
+                distances.Add(distance);
+            }
+
+            Assert.True(result.FirstPageAdvertisements.Count() > 0);
+
+            // check if the distances are in ascending order
+            for (int i = 0; i < distances.Count - 1; i++)
+            {
+                Assert.True(distances[i] <= distances[i + 1]);
+            }
         }
 
         public void Dispose()

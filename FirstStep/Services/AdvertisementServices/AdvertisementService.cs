@@ -7,7 +7,6 @@ using FirstStep.Validation;
 using Microsoft.EntityFrameworkCore;
 using KdTree;
 using KdTree.Math;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FirstStep.Services
 {
