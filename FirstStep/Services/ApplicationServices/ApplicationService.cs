@@ -5,7 +5,6 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace FirstStep.Services
 {
@@ -91,7 +90,7 @@ namespace FirstStep.Services
 
         public async Task Delete(int id)
         {
-            Application application = await GetById(id);
+            Application application = await FindById(id);
 
             _context.Applications.Remove(application);
             await _context.SaveChangesAsync();
@@ -110,7 +109,17 @@ namespace FirstStep.Services
 
         public async Task<Application> GetById(int id)
         {
-            Application? application = await _context.Applications.FindAsync(id);
+            return await FindById(id);
+        }
+
+        private async Task<Application> FindById(int id)
+        {
+            Application? application = await _context.Applications
+                .Include(a => a.seeker)
+                .Include(a => a.revisions)
+                .Include(r => r.assigned_hrAssistant)
+                .Where(a => a.application_Id == id)
+                .FirstOrDefaultAsync();
 
             if (application is null)
             {
@@ -213,62 +222,44 @@ namespace FirstStep.Services
         }
 
         public async Task<ApplicationViewDto> GetSeekerApplications(int id)
-
         {
-            var application = await _context.Applications
-                .Include(a => a.seeker)
-                .Include(a => a.revisions)
-                .ThenInclude(r => r.employee) 
-                .SingleOrDefaultAsync(a => a.application_Id == id);
+            var application = await FindById(id);
 
-            if (application is null) { throw new NullReferenceException("Application not found."); }
-
-            // Get the current application status
-            string currentStatus;
-            try
-            {
-                currentStatus = GetCurrentApplicationStatus(application);
-            }
-            catch (InvalidOperationException)
-            {
-                // Handle the case where there are no revisions
-                currentStatus = ApplicationStatus.NotEvaluated.ToString();
+            if (application is null) 
+            { 
+                throw new NullReferenceException("Application not found."); 
             }
 
             // Get the latest revision
-            var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
-
-            bool isEvaluated = lastRevision != null && lastRevision.status != ApplicationStatus.NotEvaluated.ToString();
+            var lastRevision = await _revisionService.GetLastRevision(application.application_Id);
 
             // Return the Application View DTO including the last revision details
-            return new ApplicationViewDto
+            var applicationDto = _mapper.Map<ApplicationViewDto>(application.seeker);
+
+            applicationDto.application_Id = application.application_Id;
+            applicationDto.submitted_date = application.submitted_date;
+            applicationDto.seeker_id = application.seeker_id;
+            applicationDto.cVurl = application.CVurl!; // when this is defualt cv, get from the seeker's profile
+
+            applicationDto.is_evaluated = lastRevision != null && lastRevision.status != ApplicationStatus.NotEvaluated.ToString();
+            applicationDto.current_status = GetCurrentApplicationStatus(application);
+
+            if (lastRevision is not null)
             {
-                application_Id = application.application_Id,
-                submitted_date = application.submitted_date,
-                email = application.seeker!.email,
-                first_name = application.seeker.first_name,
-                last_name = application.seeker.last_name,
-                phone_number = application.seeker.phone_number,
-                bio = application.seeker.bio,
-                cVurl = application.seeker.CVurl,
-                profile_picture = application.seeker.profile_picture,
-                linkedin = application.seeker.linkedin,
-                current_status = currentStatus,
-                is_evaluated = isEvaluated,
-                last_revision = lastRevision == null ? null : new RevisionDto
+                applicationDto.last_revision = new RevisionDto
                 {
                     revision_id = lastRevision.revision_id,
-                    comment = lastRevision.comment,
+                    comment = lastRevision.comment!,
                     status = lastRevision.status,
                     created_date = lastRevision.date,
                     employee_id = lastRevision.employee_id,
-                    name = lastRevision.employee.first_name + " " + lastRevision.employee.last_name, // Populate name
-                    role = lastRevision.employee.user_type // Populate role
-                },
-                seeker_id = application.seeker_id
-            };
-        }
+                    name = lastRevision.employee!.first_name + " " + lastRevision.employee!.last_name,
+                    role = lastRevision.employee!.user_type
+                };
+            }
 
+            return applicationDto;
+        }
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)
         {
@@ -282,7 +273,7 @@ namespace FirstStep.Services
 
         public async Task Update(Application application)
         {
-            Application dbApplication = await GetById(application.application_Id);
+            Application dbApplication = await FindById(application.application_Id);
 
             dbApplication.status = application.status;
             dbApplication.submitted_date = application.submitted_date;
@@ -293,7 +284,7 @@ namespace FirstStep.Services
         public async Task ChangeAssignedHRA(int applicationId, int hrAssistantId)
         {
             // find the application
-            Application application = await GetById(applicationId);
+            Application application = await FindById(applicationId);
 
             // find the hr assistant
             if (await _employeeService.GetById(hrAssistantId) != null)
@@ -315,36 +306,6 @@ namespace FirstStep.Services
             Revision lastRevision = application.revisions.OrderBy(a => a.date).Last();
 
             return lastRevision.status;
-        }
-
-        public async Task<int> NumberOfApplicationsByAdvertisementId(int jobId)
-        {
-            int NumberOfApplications = await _context.Applications.Where(a => a.advertisement_id == jobId).CountAsync();
-            return NumberOfApplications;
-        }
-
-        public async Task<int> TotalEvaluatedApplications(int jobId)
-        {
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status != ApplicationStatus.NotEvaluated.ToString()).CountAsync();
-            return TolaEvaluatedApplications;
-        }
-
-        public async Task<int> TotalNotEvaluatedApplications(int jobId)
-        {
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status == ApplicationStatus.NotEvaluated.ToString()).CountAsync();
-            return TolaEvaluatedApplications;
-        }
-
-        public async Task<int> AcceptedApplications(int jobId)
-        {
-            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status == ApplicationStatus.Accepted.ToString()).CountAsync();
-            return AcceptedApplications;
-        }
-
-        public async Task<int> RejectedApplications(int jobId)
-        {
-            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status == ApplicationStatus.Rejected.ToString()).CountAsync();
-            return AcceptedApplications;
         }
 
         //Task delegation strats here
@@ -442,10 +403,9 @@ namespace FirstStep.Services
                 await Update(applications[(noOfHrAssistants * noOfApplicationsPerAssistant + i)]);
             }
         }
-
         //tasks delegation ends here
 
-         public async Task<IEnumerable<RevisionHistoryDto>> GetRevisionHistory(int applicationId)
+        public async Task<IEnumerable<RevisionHistoryDto>> GetRevisionHistory(int applicationId)
         {
             var revisions = await _context.Revisions
                 .Include(r => r.employee)
@@ -459,11 +419,9 @@ namespace FirstStep.Services
                 comment = r.comment,
                 status = r.status,
                 created_date = r.date,
-                employee_name = r.employee.first_name + " " + r.employee.last_name,
-                employee_role = r.employee.user_type
+                employee_name = r.employee!.first_name + " " + r.employee!.last_name,
+                employee_role = r.employee!.user_type
             });
         }
-
-
     }
 }

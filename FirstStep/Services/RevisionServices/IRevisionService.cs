@@ -15,6 +15,8 @@ namespace FirstStep.Services
 
         public string GetCurrentStatus(Application application);
 
+        public Task<Revision?> GetLastRevision(int applicationID);
+
         public Task Create(Revision revision);
 
         public Task Update(Revision revision);

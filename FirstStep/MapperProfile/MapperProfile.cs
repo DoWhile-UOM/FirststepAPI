@@ -54,6 +54,7 @@ namespace FirstStep.MapperProfile
                     opt => opt.MapFrom(src => src.seeker!.first_name + " " + src.seeker!.last_name));
 
             CreateMap<AddApplicationDto, Application>();
+            CreateMap<Seeker, ApplicationViewDto>();
             
             CreateMap<Company, ViewCompanyListDto>();
             CreateMap<Company, CompanyApplicationDto>();

@@ -61,6 +61,17 @@ namespace FirstStep.Services
             return last_revision.status;
         }
 
+        public async Task<Revision?> GetLastRevision(int applicationID)
+        {
+            var lastRevision = await _context.Revisions
+                .Include("employee")
+                .Where(r => r.application_id == applicationID)
+                .OrderByDescending(r => r.date)
+                .FirstOrDefaultAsync();
+
+            return lastRevision;
+        }
+
         public string GetCurrentStatus(Application application)
         {
             if (application.revisions is null)
