@@ -200,16 +200,13 @@ namespace FirstStep.Services
             for (int i = 0; i < applications.Count(); i++)
             {
                 Application dbApplication = applications.ElementAt(i);
-                string applicationStatus = _revisionService.GetCurrentStatus(dbApplication); ;
 
-                if (applicationStatus != status && status != "all")
+                if (dbApplication.status != status && status != "all")
                 {
                     continue;
                 }
 
                 var application = _mapper.Map<ApplicationListDto>(dbApplication);
-
-                application.status = applicationStatus;
 
                 if (application.status != ApplicationStatus.NotEvaluated.ToString())
                 {

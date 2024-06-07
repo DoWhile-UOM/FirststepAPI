@@ -4,7 +4,7 @@
     {
         public int revision_id { get; set; }
 
-        public string comment { get; set; }
+        public string? comment { get; set; }
 
         public required string status { get; set; }
 

@@ -19,13 +19,10 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllRevisions")]
-
         public async Task<ActionResult<IEnumerable<Revision>>> GetRevisions()
         {
             return Ok(await _service.GetAll());
         }
-
-        // RevisionController.cs
 
         [HttpGet]
         [Route("GetRevisionHistory/{applicationId:int}")]
@@ -43,8 +40,8 @@ namespace FirstStep.Controllers
                 comment = r.comment,
                 status = r.status,
                 created_date = r.date,
-                employee_name = r.employee.first_name + " " + r.employee.last_name,
-                employee_role = r.employee.user_type
+                employee_name = r.employee!.first_name + " " + r.employee!.last_name,
+                employee_role = r.employee!.user_type
             });
 
             return Ok(revisionHistoryDtos);
@@ -53,7 +50,6 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("CreateRevision")]
-
         public async Task<IActionResult> CreateRevision(Revision reqRevision)
         {
             await _service.Create(reqRevision);
@@ -63,7 +59,6 @@ namespace FirstStep.Controllers
       
         [HttpPut]
         [Route("UpdateRevision")]
-
         public async Task<IActionResult> UpdateRevision(Revision reqRevision)
         {
             await _service.Update(reqRevision);
@@ -72,7 +67,6 @@ namespace FirstStep.Controllers
 
         [HttpDelete]
         [Route("DeleteRevisionById/{id}")]
-
         public async Task<IActionResult> DeleteRevisionById(int id)
         {
             await _service.Delete(id);
