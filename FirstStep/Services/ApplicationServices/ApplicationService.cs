@@ -18,8 +18,8 @@ namespace FirstStep.Services
         private readonly IEmployeeService _employeeService;
 
         public ApplicationService(
-            DataContext context, 
-            IMapper mapper, 
+            DataContext context,
+            IMapper mapper,
             IRevisionService revisionService,
             IFileService fileService,
             IEmployeeService employeeService)
@@ -57,7 +57,7 @@ namespace FirstStep.Services
 
             foreach (var application in applications)
             {
-                if (application.advertisement_id == newApplicationDto.advertisement_id 
+                if (application.advertisement_id == newApplicationDto.advertisement_id
                     && application.seeker_id == newApplicationDto.seeker_id
                     && application.status == ApplicationStatus.NotEvaluated.ToString())
                 {
@@ -67,9 +67,9 @@ namespace FirstStep.Services
 
             string cvBlobName = "";
             //use new cv
-            if(!newApplicationDto.UseDefaultCv)
+            if (!newApplicationDto.UseDefaultCv)
             {
-                if(newApplicationDto.cv == null)
+                if (newApplicationDto.cv == null)
                 {
                     throw new InvalidDataException("cv file is required if not using the default cv");
                 }
@@ -92,7 +92,7 @@ namespace FirstStep.Services
         public async Task Delete(int id)
         {
             Application application = await GetById(id);
-            
+
             _context.Applications.Remove(application);
             await _context.SaveChangesAsync();
         }
@@ -287,7 +287,7 @@ namespace FirstStep.Services
             dbApplication.status = application.status;
             dbApplication.submitted_date = application.submitted_date;
 
-            await _context.SaveChangesAsync();           
+            await _context.SaveChangesAsync();
         }
 
         public async Task ChangeAssignedHRA(int applicationId, int hrAssistantId)
@@ -299,7 +299,7 @@ namespace FirstStep.Services
             if (await _employeeService.GetById(hrAssistantId) != null)
             {
                 application.assigned_hrAssistant_id = hrAssistantId;
-                
+
                 await Update(application);
             }
         }
@@ -348,27 +348,24 @@ namespace FirstStep.Services
         }
 
         //Task delegation strats here
-
-        //selecting applcations for evalution
         private async Task<List<Application>> SelectApplicationsForEvaluation(Advertisement advertisement)
         {
             // Initialize applicationsOfTheAdvertisement as an empty list
             List<Application> applicationsOfTheAdvertisement = new List<Application>();
-            
+
             var stauts = advertisement.current_status;
 
             if (stauts == AdvertisementValidation.Status.hold.ToString() && AdvertisementValidation.IsExpired(advertisement))
             {
                 applicationsOfTheAdvertisement = (await FindByAdvertisementId(advertisement.advertisement_id)).Where(a => a.assigned_hrAssistant_id == null).ToList();
-                
+
                 // return applications that need evaluate
                 return applicationsOfTheAdvertisement;
             }
-            
+
             throw new NullReferenceException("No applications for evaluation."); // HTTP 204 No Content
         }
 
-        // initiating task delegation
         public async Task InitiateTaskDelegation(int advertisement_id, IEnumerable<int>? hrassistant_ids)
         {
             //get the advertisement
@@ -379,19 +376,33 @@ namespace FirstStep.Services
                 throw new NullReferenceException("Advertisement not found."); // HTTP 204 No Content
             }
 
-            IEnumerable<Employee> hrAssistants;
-            
-            if (hrassistant_ids is not null)
+            if (hrassistant_ids is not null && hrassistant_ids.Count() >= 0)
             {
-                // get requested hr assistants
-                hrAssistants = await _employeeService.GetEmployees(hrassistant_ids);
+                var hrAssistants = await _employeeService.GetEmployees(hrassistant_ids);
+
+                List<Application> applicationsForEvaluation = await GetApplicationsForTaskDelegation(advertisement, hrAssistants);
+
+                // Delegate tasks to HR assistants
+                await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
             }
             else
             {
-                // get all HR assistants for the specified company
-                hrAssistants = await _employeeService.GetAllHRAssistants(advertisement.hrManager!.company_id);
+                await InitiateTaskDelegation(advertisement);
             }
+        }
 
+        public async Task InitiateTaskDelegation(Advertisement advertisement)
+        {
+            var hrAssistants = await _employeeService.GetAllHRAssistants(advertisement.hrManager!.company_id);
+
+            List<Application> applicationsForEvaluation = await GetApplicationsForTaskDelegation(advertisement, hrAssistants);
+
+            // Delegate tasks to HR assistants
+            await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
+        }
+
+        private async Task<List<Application>> GetApplicationsForTaskDelegation(Advertisement advertisement, IEnumerable<Employee> hrAssistants)
+        {
             // Get applications that need evaluation for the specified company
             List<Application> applicationsForEvaluation = await SelectApplicationsForEvaluation(advertisement);
 
@@ -407,14 +418,9 @@ namespace FirstStep.Services
                 throw new NullReferenceException("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
             }
 
-            // Delegate tasks to HR assistants
-            await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
-
-            // Return a success response
-            // HTTP 200 OK
+            return applicationsForEvaluation;
         }
 
-        // delagateTaks 
         private async Task DelegateTask(List<Employee> hrAssistants, List<Application> applications)
         {
             var remainingApplications = applications.Count % hrAssistants.Count;
