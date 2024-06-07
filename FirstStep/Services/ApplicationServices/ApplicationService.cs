@@ -212,21 +212,35 @@ namespace FirstStep.Services
             return applicationList;
         }
 
-        public async Task<ApplicationViewDto> GetSeekerApplicationViewByApplicationId(int id)
+        public async Task<ApplicationViewDto> GetSeekerApplications(int id)
+
         {
             var application = await _context.Applications
-                .Include("seeker")
-                .Include("revisions")
+                .Include(a => a.seeker)
+                .Include(a => a.revisions)
+                .ThenInclude(r => r.employee) 
                 .SingleOrDefaultAsync(a => a.application_Id == id);
 
             if (application is null) { throw new NullReferenceException("Application not found."); }
 
             // Get the current application status
-            string currentStatus = GetCurrentApplicationStatus(application);
+            string currentStatus;
+            try
+            {
+                currentStatus = GetCurrentApplicationStatus(application);
+            }
+            catch (InvalidOperationException)
+            {
+                // Handle the case where there are no revisions
+                currentStatus = ApplicationStatus.NotEvaluated.ToString();
+            }
 
             // Get the latest revision
             var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
 
+            bool isEvaluated = lastRevision != null && lastRevision.status != ApplicationStatus.NotEvaluated.ToString();
+
+            // Return the Application View DTO including the last revision details
             return new ApplicationViewDto
             {
                 application_Id = application.application_Id,
@@ -238,24 +252,21 @@ namespace FirstStep.Services
                 bio = application.seeker.bio,
                 cVurl = application.seeker.CVurl,
                 profile_picture = application.seeker.profile_picture,
-                current_status = currentStatus,  // Add the current status to the DTO
+                linkedin = application.seeker.linkedin,
+                current_status = currentStatus,
+                is_evaluated = isEvaluated,
                 last_revision = lastRevision == null ? null : new RevisionDto
                 {
                     revision_id = lastRevision.revision_id,
                     comment = lastRevision.comment,
                     status = lastRevision.status,
                     created_date = lastRevision.date,
-                    employee_id = lastRevision.employee_id
-                }
+                    employee_id = lastRevision.employee_id,
+                    name = lastRevision.employee.first_name + " " + lastRevision.employee.last_name, // Populate name
+                    role = lastRevision.employee.user_type // Populate role
+                },
+                seeker_id = application.seeker_id
             };
-
-            //Application application = await GetById(id);
-
-            //ApplicationViewDto applicationView = _mapper.Map<ApplicationViewDto>(application);
-
-            //applicationView.revisionList = _revisionService.GetRevisionsByApplicationId(id);
-
-            //return applicationView;
         }
 
 
@@ -295,7 +306,7 @@ namespace FirstStep.Services
 
         public string GetCurrentApplicationStatus(Application application)
         {
-            if (application.revisions == null)
+            if (application.revisions == null || !application.revisions.Any())
             {
                 return ApplicationStatus.NotEvaluated.ToString();
             }
@@ -433,5 +444,26 @@ namespace FirstStep.Services
         }
 
         //tasks delegation ends here
+
+         public async Task<IEnumerable<RevisionHistoryDto>> GetRevisionHistory(int applicationId)
+        {
+            var revisions = await _context.Revisions
+                .Include(r => r.employee)
+                .Where(r => r.application_id == applicationId)
+                .OrderBy(r => r.date)  // Order revisions by date
+                .ToListAsync();
+
+            return revisions.Select(r => new RevisionHistoryDto
+            {
+                revision_id = r.revision_id,
+                comment = r.comment,
+                status = r.status,
+                created_date = r.date,
+                employee_name = r.employee.first_name + " " + r.employee.last_name,
+                employee_role = r.employee.user_type
+            });
+        }
+
+
     }
 }

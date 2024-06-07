@@ -1,5 +1,6 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -13,7 +14,7 @@ namespace FirstStep.Services
             _context = context;
         }
 
-        enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected }
+        enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected ,Passed }
 
         public async Task<IEnumerable<Revision>> GetAll()
         {
@@ -77,13 +78,24 @@ namespace FirstStep.Services
             return last_revision.status;
         }
 
+
         public async Task Create(Revision revision)
         {
             revision.revision_id = 0;
 
             _context.Revisions.Add(revision);
             await _context.SaveChangesAsync();
+
+            // Update application status
+            var application = await _context.Applications.FindAsync(revision.application_id);
+            if (application != null)
+            {
+                application.status = revision.status;
+                await _context.SaveChangesAsync();
+            }
         }
+
+
 
         public async Task Update(Revision revision)
         {
@@ -94,6 +106,14 @@ namespace FirstStep.Services
             dbRevision.status = revision.status;
 
             await _context.SaveChangesAsync();
+
+            // Update application status
+            var application = await _context.Applications.FindAsync(revision.application_id);
+            if (application != null)
+            {
+                application.status = revision.status;
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task Delete(int id)
