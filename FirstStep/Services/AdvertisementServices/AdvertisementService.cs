@@ -7,7 +7,6 @@ using FirstStep.Validation;
 using Microsoft.EntityFrameworkCore;
 using KdTree;
 using KdTree.Math;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FirstStep.Services
 {
@@ -168,22 +167,36 @@ namespace FirstStep.Services
             return advertisements.Where(e => e.current_status == AdvertisementValidation.Status.active.ToString()).ToList();
         }
 
-        public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status)
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetCompanyAdvertisementList(int emp_id, string status)
         {
             AdvertisementValidation.CheckStatus(status);
 
-            var dbAdvertisements = await FindByCompanyID(companyID);
+            Employee? employee = await _context.Employees.FindAsync(emp_id);
 
-            return CreateCompanyAdvertisementList(dbAdvertisements, status);
+            if (employee is null)
+            {
+                throw new NullReferenceException("Employee is not found");
+            }
+
+            var dbAdvertisements = await FindByCompanyID(employee.company_id);
+
+            return CreateCompanyAdvertisementList(dbAdvertisements, status, employee);
         }
 
-        public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title)
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetCompanyAdvertisementList(int emp_id, string status, string title)
         {
             AdvertisementValidation.CheckStatus(status);
+
+            Employee? employee = await _context.Employees.FindAsync(emp_id);
+
+            if (employee is null)
+            {
+                throw new NullReferenceException("Employee is not found");
+            }
 
             if (title != null)
             {
-                var dbAdvertisements = await FindByCompanyID(companyID);
+                var dbAdvertisements = await FindByCompanyID(employee.company_id);
 
                 // filter advertisements by title
                 var filteredAdvertisements = dbAdvertisements.Where(x => x.title.ToLower().Contains(title.ToLower())).ToList();
@@ -201,11 +214,11 @@ namespace FirstStep.Services
                     }
                 }
 
-                return CreateCompanyAdvertisementList(filteredAdvertisements, status);
+                return CreateCompanyAdvertisementList(filteredAdvertisements, status, employee);
             }
             else
             {
-                return await GetByCompanyID(companyID, status);
+                return await GetCompanyAdvertisementList(employee.company_id, status);
             }
         }
 
@@ -346,8 +359,12 @@ namespace FirstStep.Services
                 // set the expired date to 10 days after the current date, because need to hold saved advertisements for 10 days
                 advertisement.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
 
-                // execute task delegation on expired advertisements
-                await _applicationService.InitiateTaskDelegation(advertisement);
+                try
+                {
+                    // execute task delegation on expired advertisements
+                    await _applicationService.InitiateTaskDelegation(advertisement);
+                }
+                catch { }
             }
 
             await _context.SaveChangesAsync();
@@ -617,7 +634,7 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of JobOfferDtos and create advertisement list for the company (Company Admin and HR Manager)
-        private IEnumerable<AdvertisementTableRowDto> CreateCompanyAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        private IEnumerable<AdvertisementTableRowDto> CreateCompanyAdvertisementList(IEnumerable<Advertisement> dbAds, string status, Employee employee)
         {
             var jobOfferDtos = new List<AdvertisementTableRowDto>();
 
@@ -631,6 +648,16 @@ namespace FirstStep.Services
                 var jobOfferDto = _mapper.Map<AdvertisementTableRowDto>(ad);
 
                 jobOfferDto.field_name = ad.job_Field!.field_name;
+
+                if (employee.user_type != User.UserType.ca.ToString() 
+                    && ad.hrManager_id != employee.user_id)
+                {
+                    jobOfferDto.has_permision_for_handling = false;
+                }
+                else
+                {
+                    jobOfferDto.has_permision_for_handling = true;
+                }
 
                 jobOfferDto.no_of_applications = ad.applications!.Count();
 

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using FirstStep.Data;
+using FirstStep.Helper;
 using FirstStep.MapperProfile;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -62,7 +64,7 @@ namespace FirstStepTest
         private void SeedDatabaseFromOriginal()
         {
             var originalOptions = new DbContextOptionsBuilder<DataContext>()
-                .UseSqlServer("Data Source=192.248.11.34;Database=jobsearch-app;User ID=JobAppMasterUser;Password=FirstStep2024;TrustServerCertificate=true")
+                .UseSqlServer("Data Source=192.248.11.34;Database=jobsearch-app;User ID=JobAppMasterUser;Password=FirstStep2024User;TrustServerCertificate=true")
                 .Options;
 
             using (var originalContext = new DataContext(originalOptions))
@@ -76,6 +78,21 @@ namespace FirstStepTest
 
                 var jobFields = originalContext.JobFields.AsNoTracking().ToList();
                 _context.JobFields.AddRange(jobFields);
+
+                var seekers = originalContext.Seekers.AsNoTracking().ToList();
+                _context.Seekers.AddRange(seekers);
+
+                var skills = originalContext.Skills.AsNoTracking().ToList();
+                _context.Skills.AddRange(skills);
+
+                var applications = originalContext.Applications.AsNoTracking().ToList();
+                _context.Applications.AddRange(applications);
+
+                var professionKeywords = originalContext.ProfessionKeywords.AsNoTracking().ToList();
+                _context.ProfessionKeywords.AddRange(professionKeywords);
+
+                var revisions = originalContext.Revisions.AsNoTracking().ToList();
+                _context.Revisions.AddRange(revisions);
 
                 _context.SaveChanges();
             }

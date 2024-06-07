@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Numerics;
-
-namespace FirstStep.Models.DTOs
+﻿namespace FirstStep.Models.DTOs
 {
     public class ApplicationViewDto
     {
@@ -29,7 +26,7 @@ namespace FirstStep.Models.DTOs
 
         public bool is_evaluated { get; set; }  
 
-        public RevisionDto? last_revision { get; set; }  // Added property for the latest revision
+        public RevisionDto? last_revision { get; set; }
 
         public int seeker_id { get; set; }
     }

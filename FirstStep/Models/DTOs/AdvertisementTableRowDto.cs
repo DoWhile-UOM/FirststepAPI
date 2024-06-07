@@ -8,6 +8,7 @@
         public DateTime posted_date { get; set; }
         public string current_status { get; set; }
         public string field_name { get; set; }
+        public bool has_permision_for_handling { get; set; }
         public int no_of_applications { get; set; }
         public int no_of_evaluated_applications { get; set; }
         public int no_of_accepted_applications { get; set; }
