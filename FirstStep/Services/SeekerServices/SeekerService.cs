@@ -164,6 +164,31 @@ namespace FirstStep.Services
             // advertisement and the keyword relationship is similar to the seeker and the skill relationship
         }
 
+        public async Task<SeekerProfileViewDto> GetSeekerDetailsForSeekerProfileView(int id)
+        {
+            var seeker = await _context.Seekers.FindAsync(id);
+            if (seeker == null)
+            {
+                throw new NullReferenceException("Seeker not found.");
+            }
+
+            return new SeekerProfileViewDto
+            {
+                first_name = seeker.first_name,
+                last_name = seeker.last_name,
+                email = seeker.email,
+                phone_number = seeker.phone_number,
+                bio = seeker.bio,
+                description = seeker.description,
+                university = seeker.university,
+                profile_picture = seeker.profile_picture,
+                linkedin = seeker.linkedin,
+                field_id = seeker.field_id,
+                user_id = seeker.user_id
+
+            };
+        }
+
         public async Task Delete(int id)
         {
             Seeker seeker = await GetById(id);
