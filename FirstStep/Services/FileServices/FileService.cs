@@ -29,6 +29,14 @@ namespace FirstStep.Services
                     file.CopyTo(memoryStream);
                     memoryStream.Position = 0;
                     var client = await _blobcontainerClient.UploadBlobAsync(fileName, memoryStream, default);
+                    //Set Content-Disposition to inline if it's a PDF
+                    if (file.ContentType == "application/pdf")
+                    {
+                        var blobClient = _blobcontainerClient.GetBlobClient(fileName);
+                        var blobHttpHeader = new BlobHttpHeaders();
+                        blobHttpHeader.ContentDisposition = "inline";
+                        await blobClient.SetHttpHeadersAsync(blobHttpHeader);
+                    }
                     azureResponse.Add(client);
                 }
             };
@@ -47,7 +55,13 @@ namespace FirstStep.Services
             {
                await  blobClient.UploadAsync(stream, true);
             }
-
+            //Set Content-Disposition to inline if it's a PDF
+            if (file.ContentType == "application/pdf")
+            {
+                var blobHttpHeader = new BlobHttpHeaders();
+                blobHttpHeader.ContentDisposition = "inline";
+                await blobClient.SetHttpHeadersAsync(blobHttpHeader);
+            }
             return fileName;
         }
 
