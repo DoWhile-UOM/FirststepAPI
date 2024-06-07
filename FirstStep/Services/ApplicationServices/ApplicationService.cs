@@ -75,11 +75,20 @@ namespace FirstStep.Services
                 }
                 cvBlobName = await _fileService.UploadFileWithApplication(newApplicationDto.cv);
             }
+            else
+            {
+                //use default cv use in the seeker profile
+                var seeker = await _context.Seekers.FindAsync(newApplicationDto.seeker_id);
+                //handle the case where the seeker is not found
+                if (seeker == null)
+                {
+                    throw new InvalidDataException("Seeker not found.");
+                }
+                cvBlobName = seeker.CVurl;
+            }
 
-            //upload cv file to Azure Blob Storage
-
+            //create new application
             Application newApplication = _mapper.Map<Application>(newApplicationDto);
-
             newApplication.status = ApplicationStatus.NotEvaluated.ToString();
 
             //store cv file name in the database
