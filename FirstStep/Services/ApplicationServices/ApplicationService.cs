@@ -5,6 +5,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static FirstStep.Services.ApplicationService;
 
 namespace FirstStep.Services
 {
@@ -242,7 +243,7 @@ namespace FirstStep.Services
             applicationDto.cVurl = application.CVurl!; // when this is defualt cv, get from the seeker's profile
 
             applicationDto.is_evaluated = lastRevision != null && lastRevision.status != ApplicationStatus.NotEvaluated.ToString();
-            applicationDto.current_status = GetCurrentApplicationStatus(application);
+            applicationDto.current_status = application.status;
 
             if (lastRevision is not null)
             {
@@ -293,19 +294,6 @@ namespace FirstStep.Services
 
                 await Update(application);
             }
-        }
-
-        public string GetCurrentApplicationStatus(Application application)
-        {
-            if (application.revisions == null || !application.revisions.Any())
-            {
-                return ApplicationStatus.NotEvaluated.ToString();
-            }
-
-            // get last revision
-            Revision lastRevision = application.revisions.OrderBy(a => a.date).Last();
-
-            return lastRevision.status;
         }
 
         //Task delegation strats here
@@ -422,6 +410,35 @@ namespace FirstStep.Services
                 employee_name = r.employee!.first_name + " " + r.employee!.last_name,
                 employee_role = r.employee!.user_type
             });
+        }
+
+        public string GetApplicationStatus(Application application)
+        {
+            if (application.advertisement is null)
+            {
+                throw new NullReferenceException("Advertisement not found.");
+            }
+
+            if (AdvertisementValidation.IsActive(application.advertisement))
+            {
+                return "Submitted";
+            }
+            else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
+                (application.status == ApplicationStatus.Pass.ToString() ||
+                application.status == ApplicationStatus.NotEvaluated.ToString()))
+            {
+                return "Screening";
+            }
+            else if (application.status == ApplicationStatus.Accepted.ToString() ||
+                (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
+                application.status == ApplicationStatus.Rejected.ToString()))
+            {
+                return "Finalized";
+            }
+            else
+            {
+                return "Rejected";
+            }
         }
     }
 }

@@ -457,7 +457,7 @@ namespace FirstStep.Services
                 var appliedAdvertisement = _mapper.Map<AppliedAdvertisementShortDto>(dbAdvertisement);
 
                 // find the current application status by checking the last revision for the application
-                appliedAdvertisement.application_status = _applicationService.GetCurrentApplicationStatus(submitApplication);
+                appliedAdvertisement.application_status = _applicationService.GetApplicationStatus(submitApplication);
 
                 appliedAdvertisement.application_id = submitApplication.application_Id;
 

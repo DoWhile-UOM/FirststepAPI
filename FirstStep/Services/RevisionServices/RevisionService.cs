@@ -89,7 +89,6 @@ namespace FirstStep.Services
             return last_revision.status;
         }
 
-
         public async Task Create(Revision revision)
         {
             revision.revision_id = 0;
@@ -105,8 +104,6 @@ namespace FirstStep.Services
                 await _context.SaveChangesAsync();
             }
         }
-
-
 
         public async Task Update(Revision revision)
         {
