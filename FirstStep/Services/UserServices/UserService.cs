@@ -199,7 +199,7 @@ namespace FirstStep.Services
                 throw new Exception("User doesn't exist");
             }
            //handling changing password
-            if(user.password_hash != null)
+            if(user.password_hash.Length != 0)
             {
                 //password strength check
                 var passCheck = UserCreateHelper.PasswordStrengthCheck(user.password_hash);
