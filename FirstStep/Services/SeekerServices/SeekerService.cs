@@ -145,6 +145,8 @@ namespace FirstStep.Services
             dbSeeker.CVurl = updateDto.CVurl;
             dbSeeker.profile_picture = updateDto.profile_picture;
             dbSeeker.linkedin = updateDto.linkedin;
+            dbSeeker.field_id = updateDto.field_id;
+
 
             dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
 
