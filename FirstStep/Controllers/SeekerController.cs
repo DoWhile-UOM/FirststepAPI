@@ -46,13 +46,9 @@ namespace FirstStep.Controllers
 
         public async Task<IActionResult> AddSeeker(AddSeekerDto newSeeker)
         {
-            //var result=await _service.Create(newSeeker);
-
-            //return Ok($"Suessfully added new seeker: {newSeeker.first_name} {newSeeker.last_name}"+ result);
-
             try
             {
-                var response = await _service.Create(newSeeker);// UserRegRequestDto must modify 
+                var response = await _service.Create(newSeeker);
 
                 return response switch
                 {
@@ -67,6 +63,8 @@ namespace FirstStep.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+
 
         [HttpPut]
         [Route("UpdateSeeker/{seekerId:int}")]
@@ -89,6 +87,21 @@ namespace FirstStep.Controllers
         {
             await _service.Delete(seekerId);
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("GetSeekerDetailsForSeekerProfileView/{seekerId:int}")]
+        public async Task<ActionResult<SeekerProfileViewDto>> GetSeekerDetailsForSeekerProfileView(int seekerId)
+        {
+            try
+            {
+                var seekerProfileViewDto = await _service.GetSeekerDetailsForSeekerProfileView(seekerId);
+                return Ok(seekerProfileViewDto);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
