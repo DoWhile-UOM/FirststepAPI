@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using FirstStep.Data;
 using FirstStep.Models.DTOs;
+using FirstStep.Models;
 using FirstStep.Services;
+using Org.BouncyCastle.Security;
+using AutoMapper;
 
 namespace FirstStep.Controllers
 {
@@ -29,11 +32,11 @@ namespace FirstStep.Controllers
     {
         private readonly DataContext _context;
         private readonly IUserService _userService;
-
+        
         public UserController(DataContext authContext, IUserService userservice)
         {
             _context = authContext;
-            _userService = userservice;
+            _userService = userservice; 
         }
 
         [HttpPost]
@@ -56,38 +59,6 @@ namespace FirstStep.Controllers
             {
                 return BadRequest(e.Message);
             }
-        }
-
-        [HttpPost]
-        [Route("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegRequest userObjfull)
-        {
-
-            UserRegRequestDto userObj = new()
-            {
-                email = userObjfull.email,
-                password_hash = userObjfull.password_hash,
-                first_name = userObjfull.first_name,
-                last_name = userObjfull.last_name
-            };
-
-            try
-            {
-                var response = await _userService.RegisterUser(userObj, userObjfull.type, userObjfull.company_id);// UserRegRequestDto must modify 
-
-                return response switch
-                {
-                    "User Registered Successfully" => Ok(response),
-                    "Null User" => BadRequest(response),
-                    "Email Already exist" => BadRequest(response),
-                    _ => BadRequest(response),
-                };
-            }
-            catch(Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-
         }
 
         [Authorize]
@@ -119,5 +90,30 @@ namespace FirstStep.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpGet]
+        [Route("GetUser/userId:int")]
+        public async Task<IActionResult> GetUserById(int user_id)
+        {
+            UpdateEmployeeDto? employee = await _userService.GetUserById(user_id);
+            if(employee is null)
+            {
+                return NoContent();
+            }
+            return Ok(employee);
+        }
+
+        [HttpPut]
+        [Route("UpdateUser")]
+        public async Task<IActionResult> UpdateUser(UpdateUserDto user)
+        {
+            if(user == null)
+            {
+                return NoContent();
+            }
+            await _userService.UpdateUser(user);
+            return Ok();
+        }
+
     }
 }

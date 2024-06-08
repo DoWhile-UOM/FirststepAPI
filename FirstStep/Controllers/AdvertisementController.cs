@@ -59,12 +59,12 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetRecommendedAdvertisements/seekerID={seekerID:int}/pageLength={pageLength:int}/city={city}")]
-        public async Task<ActionResult<AdvertisementFirstPageDto>> GetRecommendedAdvertisements(int seekerID, string city, int pageLength)
+        [Route("GetRecommendedAdvertisements/seekerID={seekerID:int}/len={pageLength:int}/long={lon}/lat={lat}")]
+        public async Task<ActionResult<AdvertisementFirstPageDto>> GetRecommendedAdvertisements(int seekerID, string lon, string lat, int pageLength)
         {
             try
             {
-                return Ok(await _service.GetRecommendedAdvertisements(seekerID, city, pageLength));
+                return Ok(await _service.GetRecommendedAdvertisements(seekerID, float.Parse(lon), float.Parse(lat), pageLength));
             }
             catch (Exception e)
             {
@@ -101,12 +101,12 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
+        [Route("GetCompanyAdvertisementList/{emp_id:int}/filterby={status}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetCompanyAdvertisementList(int emp_id, string status)
         {
             try
             {
-                return Ok(await _service.GetByCompanyID(companyID, status));
+                return Ok(await _service.GetCompanyAdvertisementList(emp_id, status));
             }
             catch (Exception e)
             {
@@ -115,12 +115,12 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}/title={title}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status, string title)
+        [Route("GetCompanyAdvertisementList/{emp_id:int}/filterby={status}/title={title}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetCompanyAdvertisementList(int emp_id, string status, string title)
         {
             try
             {
-                return Ok(await _service.GetByCompanyID(companyID, status, title));
+                return Ok(await _service.GetCompanyAdvertisementList(emp_id, status, title));
             }
             catch (Exception e)
             {
