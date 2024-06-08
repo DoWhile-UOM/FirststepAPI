@@ -4,7 +4,7 @@ namespace FirstStep.Validation
 {
     public static class AdvertisementValidation
     {
-        public enum Status { active, hold, closed }
+        public enum Status { active, hold, closed, interview }
 
         public static bool IsExpired(Advertisement advertisement)
         {
@@ -19,6 +19,16 @@ namespace FirstStep.Validation
         public static bool IsActive(Advertisement advertisement)
         {
             if (advertisement.current_status != Status.active.ToString())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool IsHold(Advertisement advertisement)
+        {
+            if (advertisement.current_status != Status.hold.ToString())
             {
                 return false;
             }
