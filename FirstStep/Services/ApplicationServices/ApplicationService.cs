@@ -65,6 +65,10 @@ namespace FirstStep.Services
                 }
             }
 
+            //create new application
+            Application newApplication = _mapper.Map<Application>(newApplicationDto);
+            newApplication.status = ApplicationStatus.NotEvaluated.ToString();
+
             if (!newApplicationDto.UseDefaultCv)
             {
                 if (newApplicationDto.cv == null)
@@ -73,7 +77,7 @@ namespace FirstStep.Services
                 }
                 
                 // assign new cv
-                newApplication.CVurl = await _fileService.UploadFileWithApplication(newApplicationDto.cv);
+                newApplication.CVurl = await _fileService.UploadFile(newApplicationDto.cv);
             }
             else
             {
@@ -86,10 +90,6 @@ namespace FirstStep.Services
                 }
                 newApplication.CVurl = seeker.CVurl;
             }
-
-            //create new application
-            Application newApplication = _mapper.Map<Application>(newApplicationDto);
-            newApplication.status = ApplicationStatus.NotEvaluated.ToString();
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();
