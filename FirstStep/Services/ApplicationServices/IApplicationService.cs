@@ -33,6 +33,8 @@ namespace FirstStep.Services
 
         public Task InitiateTaskDelegation(Advertisement advertisement);
 
+        public  Task<ApplicationStatusDto> GetApplicationStatus(int applicationId);
+
         public string GetApplicationStatus(Application application);
     }
 

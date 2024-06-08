@@ -26,6 +26,16 @@ namespace FirstStep.Validation
             return true;
         }
 
+        public static bool IsHold(Advertisement advertisement)
+        {
+            if (advertisement.current_status != Status.hold.ToString())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public static bool IsSaved(Advertisement advertisement, Seeker seeker)
         {
             if (advertisement.savedSeekers is null || !advertisement.savedSeekers.Contains(seeker))
