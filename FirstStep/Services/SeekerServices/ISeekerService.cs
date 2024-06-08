@@ -9,7 +9,8 @@ namespace FirstStep.Services
 
         public Task<Seeker> GetById(int id);
 
-        public Task<UpdateSeekerDto> GetSeekerProfile(int id);
+        public Task<UpdateSeekerDto?> GetSeekerProfileById(int seekerId);
+
 
         public Task Create(AddSeekerDto newSeeker);
 

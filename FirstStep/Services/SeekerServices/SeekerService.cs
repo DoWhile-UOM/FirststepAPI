@@ -45,13 +45,34 @@ namespace FirstStep.Services
             return seeker;
         }
 
-        public async Task<UpdateSeekerDto> GetSeekerProfile(int id)
+        public async Task<UpdateSeekerDto?> GetSeekerProfileById(int id)
         {
             Seeker seeker = await GetById(id);
+            if (seeker == null)
+            {
+                return null;
+            }
 
-            return _mapper.Map<UpdateSeekerDto>(seeker);
+            // Manually map Seeker to UpdateSeekerDto
+            var updateSeekerDto = new UpdateSeekerDto
+            {
+                email = seeker.email,
+                // Password is not mapped for security reasons
+                first_name = seeker.first_name,
+                last_name = seeker.last_name,
+                phone_number = seeker.phone_number,
+                bio = seeker.bio,
+                description = seeker.description,
+                university = seeker.university,
+                CVurl = seeker.CVurl,
+                profile_picture = seeker.profile_picture,
+                linkedin = seeker.linkedin,
+                field_id = seeker.field_id,
+                seekerSkills = seeker.skills?.Select(s => s.skill_name).ToList()
+            };
+
+            return updateSeekerDto;
         }
-
         public async Task<SeekerApplicationDto> GetSeekerDetails(int id)
         {
             Seeker seeker = await GetById(id);
@@ -139,9 +160,9 @@ namespace FirstStep.Services
             {
                 throw new KeyNotFoundException("Seeker not found.");
             }
-                        
+
             // Hash the new password if it has been changed
-            if (!string.IsNullOrEmpty(updateDto.password))
+            if (!string.IsNullOrEmpty(updateDto.password) && updateDto.password != "********")
             {
                 var passCheck = UserCreateHelper.PasswordStrengthCheck(updateDto.password);
                 if (!string.IsNullOrEmpty(passCheck))

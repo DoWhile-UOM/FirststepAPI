@@ -30,13 +30,18 @@ namespace FirstStep.Controllers
         {
             return Ok(await _service.GetById(seekerId));
         }
-
         [HttpGet]
         [Route("GetSeekerProfile/{seekerId:int}")]
         public async Task<ActionResult<UpdateSeekerDto>> GetSeekerProfile(int seekerId)
         {
-            return Ok(await _service.GetSeekerProfile(seekerId));
+            var seekerProfile = await _service.GetSeekerProfileById(seekerId);
+            if (seekerProfile == null)
+            {
+                return NotFound("Seeker not found");
+            }
+            return Ok(seekerProfile);
         }
+
 
         [HttpGet]
         [Route("GetSeekerDetails/{seekerId:int}")]
