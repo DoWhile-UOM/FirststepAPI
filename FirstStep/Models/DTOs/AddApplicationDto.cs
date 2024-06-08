@@ -2,7 +2,6 @@
 {
     public class AddApplicationDto
     {
-        
         public required int advertisement_id { get; set; }
 
         public required int seeker_id { get; set; }

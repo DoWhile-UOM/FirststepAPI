@@ -288,5 +288,50 @@ namespace FirstStep.Services
 
             return company.verification_status;
         }
+        /*  public async Task<bool> SaveCompanyLogo(IFormFile file, int companyId)
+          {
+              var response = await _fileService.UploadFiles(new List<IFormFile> { file });
+              if(response == null || response.Count == 0)
+              {
+                  return false;
+              }
+              // Get the URL of the uploaded file
+              var blobName = file.FileName;
+              var fileUrl = await _fileService.GetBlobImageUrl(blobName);
+
+              // Save the file information in the database
+              var company = await FindByID(companyId);
+              if(company == null)
+              {
+                  return false;
+              }
+              company.company_logo= fileUrl;
+
+              await _context.SaveChangesAsync();
+
+              return true;
+
+          }*/
+        public async Task<bool> SaveCompanyLogo(IFormFile file, int companyId)
+        {
+            var logoBlobName = await _fileService.UploadFile(file);
+            if (logoBlobName == null)
+            {
+                return false;
+            }
+            
+            // Save the file information in the database
+            var company = await FindByID(companyId);
+            if (company == null)
+            {
+                return false;
+            }
+            company.company_logo = logoBlobName;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+
+        }
     }
 }
