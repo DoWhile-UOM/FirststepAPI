@@ -130,14 +130,29 @@ namespace FirstStep.Services
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
         }
-        
+
         public async Task Update(int seekerId, UpdateSeekerDto updateDto)
-        {   
+        {
             Seeker dbSeeker = await GetById(seekerId);
+
+            if (dbSeeker == null)
+            {
+                throw new KeyNotFoundException("Seeker not found.");
+            }
+                        
+            // Hash the new password if it has been changed
+            if (!string.IsNullOrEmpty(updateDto.password))
+            {
+                var passCheck = UserCreateHelper.PasswordStrengthCheck(updateDto.password);
+                if (!string.IsNullOrEmpty(passCheck))
+                {
+                    throw new InvalidDataException(passCheck.ToString());
+                }
+                dbSeeker.password_hash = PasswordHasher.Hasher(updateDto.password);
+            }
 
             dbSeeker.first_name = updateDto.first_name;
             dbSeeker.last_name = updateDto.last_name;
-            dbSeeker.email = updateDto.email;
             dbSeeker.phone_number = updateDto.phone_number;
             dbSeeker.bio = updateDto.bio;
             dbSeeker.description = updateDto.description;
@@ -146,7 +161,6 @@ namespace FirstStep.Services
             dbSeeker.profile_picture = updateDto.profile_picture;
             dbSeeker.linkedin = updateDto.linkedin;
             dbSeeker.field_id = updateDto.field_id;
-
 
             dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
 
