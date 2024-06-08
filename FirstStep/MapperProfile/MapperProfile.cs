@@ -47,6 +47,7 @@ namespace FirstStep.MapperProfile
             CreateMap<AddEmployeeDto, HRManager>();
             CreateMap<AddEmployeeDto, HRAssistant>();
             CreateMap<Company, CompanyProfileDetailsDto>();
+            CreateMap<User,UpdateEmployeeDto>();
 
             CreateMap<Application, ApplicationListDto>()
                 .ForMember(
@@ -54,6 +55,7 @@ namespace FirstStep.MapperProfile
                     opt => opt.MapFrom(src => src.seeker!.first_name + " " + src.seeker!.last_name));
 
             CreateMap<AddApplicationDto, Application>();
+            CreateMap<Seeker, ApplicationViewDto>();
             
             CreateMap<Company, ViewCompanyListDto>();
             CreateMap<Company, CompanyApplicationDto>();
@@ -63,6 +65,15 @@ namespace FirstStep.MapperProfile
                 .ForMember(
                     des => des.field_name,
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
+
+            //map application with ApplicationStatusDto to get application status by application id to show in the seeker dashboard in stepper which shows submission,screening and finalize with dates
+            CreateMap<Application, ApplicationStatusDto>();
+                
+
+
+
+
+
         }
     }
 }

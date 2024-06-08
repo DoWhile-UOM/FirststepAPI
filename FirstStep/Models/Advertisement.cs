@@ -39,7 +39,7 @@ namespace FirstStep.Models
 
         public DateTime? expired_date { get; set; }
 
-        [MaxLength(7)]
+        [MaxLength(10)]
         public required string current_status { get; set; }
 
         [MaxLength(4000)]

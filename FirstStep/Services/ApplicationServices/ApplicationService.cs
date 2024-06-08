@@ -5,7 +5,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
+using static FirstStep.Services.ApplicationService;
 
 namespace FirstStep.Services
 {
@@ -18,8 +18,8 @@ namespace FirstStep.Services
         private readonly IEmployeeService _employeeService;
 
         public ApplicationService(
-            DataContext context, 
-            IMapper mapper, 
+            DataContext context,
+            IMapper mapper,
             IRevisionService revisionService,
             IFileService fileService,
             IEmployeeService employeeService)
@@ -57,7 +57,7 @@ namespace FirstStep.Services
 
             foreach (var application in applications)
             {
-                if (application.advertisement_id == newApplicationDto.advertisement_id 
+                if (application.advertisement_id == newApplicationDto.advertisement_id
                     && application.seeker_id == newApplicationDto.seeker_id
                     && application.status == ApplicationStatus.NotEvaluated.ToString())
                 {
@@ -65,34 +65,36 @@ namespace FirstStep.Services
                 }
             }
 
-            string cvBlobName = "";
-            //use new cv
-            if(!newApplicationDto.UseDefaultCv)
+            string cvBlobName;
+       
+            if(newApplicationDto.UseDefaultCv)
             {
-                if(newApplicationDto.cv == null)
-                {
-                    throw new InvalidDataException("cv file is required if not using the default cv");
-                }
-                cvBlobName = await _fileService.UploadFileWithApplication(newApplicationDto.cv);
+                //use a placeholder for the default cv
+                cvBlobName = "default-cv-name";  
             }
-
+            else
+            {
+                if (newApplicationDto.cv == null)
+                {
+                    throw new InvalidDataException("cv is required if not using default cv");
+                }
+                cvBlobName = await _fileService.UploadFile(newApplicationDto.cv);
+            }          
             //upload cv file to Azure Blob Storage
-
             Application newApplication = _mapper.Map<Application>(newApplicationDto);
 
             newApplication.status = ApplicationStatus.NotEvaluated.ToString();
-
             //store cv file name in the database
             newApplication.CVurl = cvBlobName;
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();
         }
-
+        
         public async Task Delete(int id)
         {
-            Application application = await GetById(id);
-            
+            Application application = await FindById(id);
+
             _context.Applications.Remove(application);
             await _context.SaveChangesAsync();
         }
@@ -110,7 +112,17 @@ namespace FirstStep.Services
 
         public async Task<Application> GetById(int id)
         {
-            Application? application = await _context.Applications.FindAsync(id);
+            return await FindById(id);
+        }
+
+        private async Task<Application> FindById(int id)
+        {
+            Application? application = await _context.Applications
+                .Include(a => a.seeker)
+                .Include(a => a.revisions)
+                .Include(r => r.assigned_hrAssistant)
+                .Where(a => a.application_Id == id)
+                .FirstOrDefaultAsync();
 
             if (application is null)
             {
@@ -190,16 +202,13 @@ namespace FirstStep.Services
             for (int i = 0; i < applications.Count(); i++)
             {
                 Application dbApplication = applications.ElementAt(i);
-                string applicationStatus = _revisionService.GetCurrentStatus(dbApplication); ;
 
-                if (applicationStatus != status && status != "all")
+                if (dbApplication.status != status && status != "all")
                 {
                     continue;
                 }
 
                 var application = _mapper.Map<ApplicationListDto>(dbApplication);
-
-                application.status = applicationStatus;
 
                 if (application.status != ApplicationStatus.NotEvaluated.ToString())
                 {
@@ -212,52 +221,45 @@ namespace FirstStep.Services
             return applicationList;
         }
 
-        public async Task<ApplicationViewDto> GetSeekerApplicationViewByApplicationId(int id)
+        public async Task<ApplicationViewDto> GetSeekerApplications(int id)
         {
-            var application = await _context.Applications
-                .Include("seeker")
-                .Include("revisions")
-                .SingleOrDefaultAsync(a => a.application_Id == id);
+            var application = await FindById(id);
 
-            if (application is null) { throw new NullReferenceException("Application not found."); }
-
-            // Get the current application status
-            string currentStatus = GetCurrentApplicationStatus(application);
+            if (application is null) 
+            { 
+                throw new NullReferenceException("Application not found."); 
+            }
 
             // Get the latest revision
-            var lastRevision = application.revisions?.OrderByDescending(r => r.date).FirstOrDefault();
+            var lastRevision = await _revisionService.GetLastRevision(application.application_Id);
 
-            return new ApplicationViewDto
+            // Return the Application View DTO including the last revision details
+            var applicationDto = _mapper.Map<ApplicationViewDto>(application.seeker);
+
+            applicationDto.application_Id = application.application_Id;
+            applicationDto.submitted_date = application.submitted_date;
+            applicationDto.seeker_id = application.seeker_id;
+            applicationDto.cVurl = application.CVurl!; // when this is defualt cv, get from the seeker's profile
+
+            applicationDto.is_evaluated = lastRevision != null && lastRevision.status != ApplicationStatus.NotEvaluated.ToString();
+            applicationDto.current_status = application.status;
+
+            if (lastRevision is not null)
             {
-                application_Id = application.application_Id,
-                submitted_date = application.submitted_date,
-                email = application.seeker.email,
-                first_name = application.seeker.first_name,
-                last_name = application.seeker.last_name,
-                phone_number = application.seeker.phone_number,
-                bio = application.seeker.bio,
-                cVurl = application.seeker.CVurl,
-                profile_picture = application.seeker.profile_picture,
-                current_status = currentStatus,  // Add the current status to the DTO
-                last_revision = lastRevision == null ? null : new RevisionDto
+                applicationDto.last_revision = new RevisionDto
                 {
                     revision_id = lastRevision.revision_id,
-                    comment = lastRevision.comment,
+                    comment = lastRevision.comment!,
                     status = lastRevision.status,
                     created_date = lastRevision.date,
-                    employee_id = lastRevision.employee_id
-                }
-            };
+                    employee_id = lastRevision.employee_id,
+                    name = lastRevision.employee!.first_name + " " + lastRevision.employee!.last_name,
+                    role = lastRevision.employee!.user_type
+                };
+            }
 
-            //Application application = await GetById(id);
-
-            //ApplicationViewDto applicationView = _mapper.Map<ApplicationViewDto>(application);
-
-            //applicationView.revisionList = _revisionService.GetRevisionsByApplicationId(id);
-
-            //return applicationView;
+            return applicationDto;
         }
-
 
         public async Task<IEnumerable<Application>> GetBySeekerId(int id)
         {
@@ -271,93 +273,47 @@ namespace FirstStep.Services
 
         public async Task Update(Application application)
         {
-            Application dbApplication = await GetById(application.application_Id);
+            Application dbApplication = await FindById(application.application_Id);
 
             dbApplication.status = application.status;
             dbApplication.submitted_date = application.submitted_date;
 
-            await _context.SaveChangesAsync();           
+            await _context.SaveChangesAsync();
         }
 
         public async Task ChangeAssignedHRA(int applicationId, int hrAssistantId)
         {
             // find the application
-            Application application = await GetById(applicationId);
+            Application application = await FindById(applicationId);
 
             // find the hr assistant
             if (await _employeeService.GetById(hrAssistantId) != null)
             {
                 application.assigned_hrAssistant_id = hrAssistantId;
-                
+
                 await Update(application);
             }
         }
 
-        public string GetCurrentApplicationStatus(Application application)
-        {
-            if (application.revisions == null)
-            {
-                return ApplicationStatus.NotEvaluated.ToString();
-            }
-
-            // get last revision
-            Revision lastRevision = application.revisions.OrderBy(a => a.date).Last();
-
-            return lastRevision.status;
-        }
-
-        public async Task<int> NumberOfApplicationsByAdvertisementId(int jobId)
-        {
-            int NumberOfApplications = await _context.Applications.Where(a => a.advertisement_id == jobId).CountAsync();
-            return NumberOfApplications;
-        }
-
-        public async Task<int> TotalEvaluatedApplications(int jobId)
-        {
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status != ApplicationStatus.NotEvaluated.ToString()).CountAsync();
-            return TolaEvaluatedApplications;
-        }
-
-        public async Task<int> TotalNotEvaluatedApplications(int jobId)
-        {
-            int TolaEvaluatedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status == ApplicationStatus.NotEvaluated.ToString()).CountAsync();
-            return TolaEvaluatedApplications;
-        }
-
-        public async Task<int> AcceptedApplications(int jobId)
-        {
-            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status == ApplicationStatus.Accepted.ToString()).CountAsync();
-            return AcceptedApplications;
-        }
-
-        public async Task<int> RejectedApplications(int jobId)
-        {
-            int AcceptedApplications = await _context.Applications.Where(a => a.advertisement_id == jobId && a.status == ApplicationStatus.Rejected.ToString()).CountAsync();
-            return AcceptedApplications;
-        }
-
         //Task delegation strats here
-
-        //selecting applcations for evalution
         private async Task<List<Application>> SelectApplicationsForEvaluation(Advertisement advertisement)
         {
             // Initialize applicationsOfTheAdvertisement as an empty list
             List<Application> applicationsOfTheAdvertisement = new List<Application>();
-            
+
             var stauts = advertisement.current_status;
 
             if (stauts == AdvertisementValidation.Status.hold.ToString() && AdvertisementValidation.IsExpired(advertisement))
             {
                 applicationsOfTheAdvertisement = (await FindByAdvertisementId(advertisement.advertisement_id)).Where(a => a.assigned_hrAssistant_id == null).ToList();
-                
+
                 // return applications that need evaluate
                 return applicationsOfTheAdvertisement;
             }
-            
+
             throw new NullReferenceException("No applications for evaluation."); // HTTP 204 No Content
         }
 
-        // initiating task delegation
         public async Task InitiateTaskDelegation(int advertisement_id, IEnumerable<int>? hrassistant_ids)
         {
             //get the advertisement
@@ -368,19 +324,33 @@ namespace FirstStep.Services
                 throw new NullReferenceException("Advertisement not found."); // HTTP 204 No Content
             }
 
-            IEnumerable<Employee> hrAssistants;
-            
-            if (hrassistant_ids is not null)
+            if (hrassistant_ids is not null && hrassistant_ids.Count() >= 0)
             {
-                // get requested hr assistants
-                hrAssistants = await _employeeService.GetEmployees(hrassistant_ids);
+                var hrAssistants = await _employeeService.GetEmployees(hrassistant_ids);
+
+                List<Application> applicationsForEvaluation = await GetApplicationsForTaskDelegation(advertisement, hrAssistants);
+
+                // Delegate tasks to HR assistants
+                await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
             }
             else
             {
-                // get all HR assistants for the specified company
-                hrAssistants = await _employeeService.GetAllHRAssistants(advertisement.hrManager!.company_id);
+                await InitiateTaskDelegation(advertisement);
             }
+        }
 
+        public async Task InitiateTaskDelegation(Advertisement advertisement)
+        {
+            var hrAssistants = await _employeeService.GetAllHRAssistants(advertisement.hrManager!.company_id);
+
+            List<Application> applicationsForEvaluation = await GetApplicationsForTaskDelegation(advertisement, hrAssistants);
+
+            // Delegate tasks to HR assistants
+            await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
+        }
+
+        private async Task<List<Application>> GetApplicationsForTaskDelegation(Advertisement advertisement, IEnumerable<Employee> hrAssistants)
+        {
             // Get applications that need evaluation for the specified company
             List<Application> applicationsForEvaluation = await SelectApplicationsForEvaluation(advertisement);
 
@@ -396,14 +366,9 @@ namespace FirstStep.Services
                 throw new NullReferenceException("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
             }
 
-            // Delegate tasks to HR assistants
-            await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
-
-            // Return a success response
-            // HTTP 200 OK
+            return applicationsForEvaluation;
         }
 
-        // delagateTaks 
         private async Task DelegateTask(List<Employee> hrAssistants, List<Application> applications)
         {
             var remainingApplications = applications.Count % hrAssistants.Count;
@@ -425,7 +390,125 @@ namespace FirstStep.Services
                 await Update(applications[(noOfHrAssistants * noOfApplicationsPerAssistant + i)]);
             }
         }
-
         //tasks delegation ends here
+
+        public async Task<ApplicationStatusDto> GetApplicationStatus(int applicationId)
+        {
+            var application = await GetById(applicationId);
+
+            if (application is null)
+            {
+                throw new NullReferenceException("Application not found.");
+            }
+
+            if (application.advertisement == null)
+            {
+                throw new NullReferenceException("Advertisement not found."); 
+            }
+
+            var applicationStatus = new ApplicationStatusDto
+            {
+                cv_name = application.CVurl,
+                submitted_date = application.submitted_date,
+                status = "",
+            };
+ 
+            if (AdvertisementValidation.IsActive(application.advertisement))
+            {
+                applicationStatus.status = "Submitted";
+            }
+            else if (AdvertisementValidation.IsHold(application.advertisement) &&
+                (application.status == ApplicationStatus.Pass.ToString() || 
+                application.status == ApplicationStatus.NotEvaluated.ToString()))
+            {
+                applicationStatus.status = "Screening";
+            }
+            else if (application.status == ApplicationStatus.Accepted.ToString() ||
+                (AdvertisementValidation.IsHold(application.advertisement) && 
+                application.status == ApplicationStatus.Rejected.ToString()))
+            {
+                // Show a message on frontend as "You will recive an email on the next steps"
+                applicationStatus.status = "Finalized";
+            }
+            else
+            {
+                // When advetisement is closed even the application is not evaluated, passed or rejected
+                applicationStatus.status = "Rejected";
+            }
+
+            return applicationStatus;
+        }
+        
+        public async Task<IEnumerable<RevisionHistoryDto>> GetRevisionHistory(int applicationId)
+        {
+            var revisions = await _context.Revisions
+                .Include(r => r.employee)
+                .Where(r => r.application_id == applicationId)
+                .OrderBy(r => r.date)  // Order revisions by date
+                .ToListAsync();
+
+            return revisions.Select(r => new RevisionHistoryDto
+            {
+                revision_id = r.revision_id,
+                comment = r.comment,
+                status = r.status,
+                created_date = r.date,
+                employee_name = r.employee!.first_name + " " + r.employee!.last_name,
+                employee_role = r.employee!.user_type
+            });
+        }
+
+        public string GetApplicationStatus(Application application)
+        {
+            if (application.advertisement is null)
+            {
+                throw new NullReferenceException("Advertisement not found.");
+            }
+
+            if (AdvertisementValidation.IsActive(application.advertisement))
+            {
+                return "Submitted";
+            }
+            else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
+                (application.status == ApplicationStatus.Pass.ToString() ||
+                application.status == ApplicationStatus.NotEvaluated.ToString()))
+            {
+                return "Screening";
+            }
+            else if (application.status == ApplicationStatus.Accepted.ToString() ||
+                (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
+                application.status == ApplicationStatus.Rejected.ToString()))
+            {
+                return "Finalized";
+            }
+            else
+            {
+                return "Rejected";
+            }
+        }
     }
 }
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
