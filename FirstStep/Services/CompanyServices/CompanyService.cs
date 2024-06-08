@@ -12,19 +12,19 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IAdvertisementService _advertisementService;
-        private readonly IEmailService _emailService;//Email Service dependency injection
+        private readonly IEmailService _emailService;
         private readonly IFileService _fileService;
 
         // Random ID generation
         private static readonly Random random = new Random();
         private static readonly HashSet<string> seenIds = new HashSet<string>();
 
-        public CompanyService(IEmailService emailService, DataContext context, IMapper mapper, IAdvertisementService advertisementService,IFileService fileService)
+        public CompanyService(IEmailService emailService, DataContext context, IMapper mapper, IAdvertisementService advertisementService, IFileService fileService)
         {
             _context = context;
             _mapper = mapper;
             _advertisementService = advertisementService;
-            _emailService=emailService;
+            _emailService = emailService;
             _fileService = fileService;
         }
 
@@ -84,6 +84,15 @@ namespace FirstStep.Services
             // feed all advertisments under the company to DTO as an array of advertisementCardDtos
             advertisementCompanyDto.companyAdvertisements = await _advertisementService.CreateFirstPageResults(dbAdvertisements, seekerID, pageLength);
             
+            if (dbCompany.company_logo == null)
+            {
+                advertisementCompanyDto.company_logo = "";
+            }
+            else
+            {
+                advertisementCompanyDto.company_logo = await _fileService.GetBlobImageUrl(dbCompany.company_logo);
+            }
+
             return advertisementCompanyDto;
         }
 
@@ -226,8 +235,6 @@ namespace FirstStep.Services
 
             unRegCompany.company_logo = company.company_logo;
             unRegCompany.company_description = company.company_description;
-            unRegCompany.company_city = company.company_city;
-            unRegCompany.company_province = company.company_province;
             unRegCompany.company_business_scale = company.company_business_scale;
 
             await _context.SaveChangesAsync();
@@ -270,8 +277,6 @@ namespace FirstStep.Services
             dbCompany.company_phone_number = company.company_phone_number;
             dbCompany.company_logo = company.company_logo;
             dbCompany.company_description = company.company_description;
-            dbCompany.company_city = company.company_city;
-            dbCompany.company_province = company.company_province;
             dbCompany.company_business_scale = company.company_business_scale;
 
             await _context.SaveChangesAsync();

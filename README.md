@@ -1,2 +1,2 @@
-# FirststepAPI
-Backend of firststep job matching platform
+# Firststep
+Backend of FirstStep job matching platform

@@ -15,6 +15,7 @@
         public DateTime? submission_deadline { get; set; }
         public string? job_description { get; set; }
         public string? company_name { get; set; }
+        public string? company_logo_url { get; set; }
         public string? field_name { get; set; }
         public bool is_expired { get; set; }
         public ICollection<Skill> skills { get; set; }
