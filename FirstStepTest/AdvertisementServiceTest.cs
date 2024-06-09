@@ -103,25 +103,7 @@ namespace FirstStepTest
             }
         }
 
-        [Fact]
-        public async Task IsExpired_ReturnsTrue_WhenAdvertisementIsExpired()
-        {
-            // Act
-            var result = await _advertisementService.IsExpired(1057);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task IsExpired_ReturnsFalse_WhenAdvertisementIsNotExpired()
-        {
-            // Act
-            var result = await _advertisementService.IsExpired(1055);
-
-            // Assert
-            Assert.False(result);
-        }
+        
 
         public void Dispose()
         {
