@@ -245,10 +245,13 @@ namespace FirstStep.Services
             dbCompany.business_reg_no = company.business_reg_no;
             dbCompany.company_website = company.company_website;
             dbCompany.company_phone_number = company.company_phone_number;
+            dbCompany.company_business_scale = company.company_business_scale;
             dbCompany.verification_status = false;
             dbCompany.business_reg_certificate = company.business_reg_certificate;
             dbCompany.certificate_of_incorporation = company.certificate_of_incorporation;
             dbCompany.company_applied_date = company.company_applied_date;
+            dbCompany.comment = null;
+            dbCompany.verified_system_admin_id = null;
 
             await _context.SaveChangesAsync();
         }
