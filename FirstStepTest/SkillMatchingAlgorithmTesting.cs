@@ -68,8 +68,12 @@ namespace FirstStepTest
 
         private void SeedDatabaseFromOriginal()
         {
+            //var originalOptions = new DbContextOptionsBuilder<DataContext>()
+            //    .UseSqlServer("Data Source=192.248.11.34;Database=jobsearch-app;User ID=JobAppMasterUser;Password=FirstStep2024User;TrustServerCertificate=true")
+            //    .Options;
+
             var originalOptions = new DbContextOptionsBuilder<DataContext>()
-                .UseSqlServer("Data Source=192.248.11.34;Database=jobsearch-app;User ID=JobAppMasterUser;Password=FirstStep2024User;TrustServerCertificate=true")
+                .UseSqlServer("Server=tcp:firststepserver.database.windows.net;Initial Catalog=firststepdb;Persist Security Info=False;User ID=adminteam;Password=58ashates88$8;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;")
                 .Options;
 
             using (var originalContext = new DataContext(originalOptions))
@@ -110,7 +114,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_Colombo()
         {
             // arange
-            int seekerId = 1073;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 79.861244, Latitude = 6.927079 };
 
             // Act
@@ -121,7 +125,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_Kandy()
         {
             // arange
-            int seekerId = 1073;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 80.636696, Latitude = 7.291418 };
 
             // Act
@@ -132,7 +136,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_Galle()
         {
             // arange
-            int seekerId = 1073;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 80.220978, Latitude = 6.053519 };
 
             // Act
@@ -143,7 +147,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_Gampaha()
         {
             // arange
-            int seekerId = 1073;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 80.014366, Latitude = 7.087310 };
 
             // Act
@@ -154,7 +158,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_Jaffna()
         {
             // arange
-            int seekerId = 1073;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 80.005974, Latitude = 9.661623 };
 
             // Act
@@ -165,7 +169,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_ForSeekerSkills_Colombo()
         {
             // arange
-            int seekerId = 1073;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 79.861244, Latitude = 6.927079 };
 
             // Act
@@ -176,7 +180,7 @@ namespace FirstStepTest
         public async Task IsExpired_ReturnsTrue_WhenAdvertisementIsExpired()
         {
             // Act
-            var result = await _advertisementService.IsExpired(1057);
+            var result = await _advertisementService.IsExpired(1);
 
             // Assert
             Assert.True(result);
@@ -186,7 +190,7 @@ namespace FirstStepTest
         public async Task IsExpired_ReturnsFalse_WhenAdvertisementIsNotExpired()
         {
             // Act
-            var result = await _advertisementService.IsExpired(1055);
+            var result = await _advertisementService.IsExpired(2);
 
             // Assert
             Assert.False(result);
