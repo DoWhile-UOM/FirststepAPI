@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Storage.Blobs;
 using FirstStep.Data;
 using FirstStep.Helper;
 using FirstStep.MapperProfile;
@@ -17,6 +18,7 @@ namespace FirstStepTest
     public class SkillMatchingAlgorithmTesting: IDisposable
     {
         private readonly DataContext _context;
+        private readonly BlobServiceClient _blobServiceClient;
         private readonly IMapper _mapper;
 
         private readonly AdvertisementService _advertisementService;
@@ -38,6 +40,9 @@ namespace FirstStepTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
+            // setup BlobServiceClient
+            _blobServiceClient = new BlobServiceClient("DefaultEndpointsProtocol=https;AccountName=firststep;AccountKey=uufTzzJ+uB7BRnKG9cN2RUi0mw92n5lTl2EMvnOTw6xv7sfPQSWBqJxHll+Zn2FNc06cGf8Qgrkb+ASteH1KEQ==;EndpointSuffix=core.windows.net");
+
             // Initialize DbContext
             _context = new DataContext(options);
 
@@ -55,7 +60,7 @@ namespace FirstStepTest
             _seekerService = new SeekerService(_context, _mapper, _skillService);
             _keywordService = new ProfessionKeywordService(_context, _mapper);
             _revisionService = new RevisionService(_context);
-            _fileService = new FileService();
+            _fileService = new FileService(_blobServiceClient);
             _employeeService = new EmployeeService(_context, _mapper);
             _applicationService = new ApplicationService(_context, _mapper, _revisionService, _fileService, _employeeService);
             _advertisementService = new AdvertisementService(_context, _mapper, _keywordService, _skillService, _seekerService, _applicationService, _fileService);
@@ -165,6 +170,26 @@ namespace FirstStepTest
 
             // Act
             await Test_SkillMatchingAlgorithm_ForSeekerSkills(seekerId, seekerLocation);
+        }
+
+        [Fact]
+        public async Task IsExpired_ReturnsTrue_WhenAdvertisementIsExpired()
+        {
+            // Act
+            var result = await _advertisementService.IsExpired(1057);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task IsExpired_ReturnsFalse_WhenAdvertisementIsNotExpired()
+        {
+            // Act
+            var result = await _advertisementService.IsExpired(1055);
+
+            // Assert
+            Assert.False(result);
         }
 
         private async Task Test_SkillMatchingAlgorithm_ForSeekerSkills(int seekerId, Coordinate seekerLocation)
