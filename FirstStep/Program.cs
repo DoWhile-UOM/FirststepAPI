@@ -47,7 +47,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 // DataContext Configuration
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("FITiotServerConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"));
 });
 
 // Azure Blob Storage Configuration
