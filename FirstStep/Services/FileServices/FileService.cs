@@ -9,11 +9,10 @@ namespace FirstStep.Services
     {
         BlobServiceClient _blobServiceClient;
         BlobContainerClient _blobcontainerClient;
-        string azureconnectionstring = "DefaultEndpointsProtocol=https;AccountName=firststep;AccountKey=uufTzzJ+uB7BRnKG9cN2RUi0mw92n5lTl2EMvnOTw6xv7sfPQSWBqJxHll+Zn2FNc06cGf8Qgrkb+ASteH1KEQ==;EndpointSuffix=core.windows.net";
 
-        public FileService()
+        public FileService(BlobServiceClient blobServiceClient)
         {
-            _blobServiceClient = new BlobServiceClient(azureconnectionstring);
+            _blobServiceClient = blobServiceClient;
             _blobcontainerClient = _blobServiceClient.GetBlobContainerClient("firststep");
         }
 
