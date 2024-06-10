@@ -48,6 +48,10 @@ namespace FirstStep.Services
         {
             Company company = await FindByID(id);
             CompanyProfileDetailsDto companydto = _mapper.Map<CompanyProfileDetailsDto>(company);
+            if (companydto.company_logo != null)
+            {
+                companydto.company_logo = await _fileService.GetBlobImageUrl(companydto.company_logo);
+            }
             return companydto;
         }
 
