@@ -9,7 +9,7 @@ namespace FirstStep.Services
         public Task<List<BlobItem>> GetUploadedBlobs();
         public Task<string> GenerateSasTokenAsync( string blobName);
         public Task<string> GetBlobUrl(string blobName);
-        public Task<string> GetBlobUrls(string blobName);
+        public Task<string> GetBlobImageUrl(string blobName);
         public Task DeleteBlobAsync(string blobName);
 
     }

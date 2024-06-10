@@ -92,7 +92,7 @@ namespace FirstStep.Services
             return blobUrlWithSas;
         }
         //get blob image url with sas token
-        public async Task<string> GetBlobUrls(string blobName)
+        public async Task<string> GetBlobImageUrl(string blobName)
         {
             var sasToken = await GenerateSasTokenAsync(blobName);
             var blobClient = _blobcontainerClient.GetBlobClient(blobName);

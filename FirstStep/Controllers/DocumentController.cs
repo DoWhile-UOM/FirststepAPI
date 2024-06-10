@@ -41,9 +41,9 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetImageUrl")]
-        public async Task<IActionResult> GetBlobUrls(string blobName)
+        public async Task<IActionResult> GetImageUrl(string blobName)
         {
-            var blobUrl = await _azureBlobService.GetBlobUrls(blobName);
+            var blobUrl = await _azureBlobService.GetBlobImageUrl(blobName);
             return Ok(blobUrl);
         }
 
