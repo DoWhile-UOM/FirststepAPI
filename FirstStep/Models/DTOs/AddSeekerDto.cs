@@ -28,6 +28,5 @@
 
         public virtual List<string>? seekerSkills { get; set; }
 
-        //public string password_hash { get; set; }
     }
 }

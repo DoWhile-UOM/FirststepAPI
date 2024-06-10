@@ -99,17 +99,11 @@ namespace FirstStep.Services
 
         public async Task Create(AddSeekerDto newSeeker)
         {
-            // map the AddSeekerDto to a Seeker object
-            var seeker = _mapper.Map<Seeker>(newSeeker);
-
-            // user type is seeker
-            seeker.user_type = "seeker";
-
             if (newSeeker == null)
                 throw new NullReferenceException("Null User");
 
             //check if email already exists
-            if (await _context.Users.AnyAsync(x => x.email == seeker.email))
+            if (await _context.Users.AnyAsync(x => x.email == newSeeker.email))
                 throw new InvalidDataException("Email Already exist");
 
             //password strength check
@@ -117,36 +111,18 @@ namespace FirstStep.Services
 
             if (!string.IsNullOrEmpty(passCheck))
                 throw new InvalidDataException(passCheck.ToString());
+            
+            // map the AddSeekerDto to a Seeker object
+            var seeker = _mapper.Map<Seeker>(newSeeker);
 
+            // user type is seeker
+            seeker.user_type = "seeker";
+            
             //Hash password before saving to database
             seeker.password_hash = PasswordHasher.Hasher(newSeeker.password);
 
             // Add skills to seeker
-            if (newSeeker.seekerSkills != null)
-            {
-                seeker.skills = new List<Skill>();
-
-                foreach (var skill in newSeeker.seekerSkills)
-                {
-                    // check whether the skill exists in the database
-                    var dbSkill = await _seekerSkillService.GetByName(skill);
-
-                    if (dbSkill != null)
-                    {
-                        // if it exists, add it to the seeker's list of skills
-                        seeker.skills.Add(dbSkill);
-                    }
-                    else
-                    {
-                        // if it doesn't exist, create it and add it to the seeker's list of skills
-                        seeker.skills.Add(new Skill
-                        {
-                            skill_id = 0,
-                            skill_name = skill
-                        });
-                    }
-                }
-            }
+            seeker.skills = await IncludeSkillsToSeeker(newSeeker.seekerSkills);
 
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
