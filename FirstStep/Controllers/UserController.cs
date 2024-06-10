@@ -59,6 +59,50 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
+        [Route("RestpassRequest/{userEmail}")]
+        public async Task<IActionResult> ResetPassReuest(string userEmail)
+        {
+            try
+            {
+                var response = await _userService.ResetPasswordRequest(userEmail);
+
+                return response switch
+                {
+                    { IsSuccessful: true } => Ok(response.Token),
+                    { IsSuccessful: false } => BadRequest(response.ErrorMessage),
+                    _ => BadRequest(response.ErrorMessage),
+                };
+
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("restpass")]
+        public async Task<IActionResult> ResetPass([FromBody] PasswordResetDto userObj)
+        {
+            try
+            {
+                var response = await _userService.ResetPassword(userObj);
+
+                return response switch
+                {
+                    { IsSuccessful: true } => Ok(response.Token),
+                    { IsSuccessful: false } => BadRequest(response.ErrorMessage),
+                    _ => BadRequest(response.ErrorMessage),
+                };
+
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] UserRegRequest userObjfull)
         {

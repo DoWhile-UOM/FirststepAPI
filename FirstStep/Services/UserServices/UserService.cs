@@ -9,6 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace FirstStep.Services
 {
@@ -18,6 +21,9 @@ namespace FirstStep.Services
         private readonly ICompanyService _companyService;
         private readonly IEmployeeService _employeeService;
         private readonly IEmailService _emailService;
+        // Dictionary for reset password
+        private readonly Dictionary<string, int> _passwordResetTokens = new Dictionary<string, int>();
+        private static readonly Random random = new Random();
 
         public UserService(DataContext context, 
             ICompanyService companyService, 
@@ -49,6 +55,68 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();// save changes to database
 
             return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken } };
+        }
+        //Reset Password Request
+        public async Task<AuthenticationResult> ResetPasswordRequest(string userEmail)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.email == userEmail);
+            if (user == null)
+                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "User Not Found" };
+
+            string token=GenerateRandomString(10);
+
+            _passwordResetTokens.Add(token,user.user_id);
+
+
+            //Call Email service to send reset password email
+            var result = await _emailService.CARegIsSuccessfull(user.email, token, "test");
+            Console.WriteLine(token);
+
+            return new AuthenticationResult { IsSuccessful = true};
+        }
+
+        private static string GenerateRandomString(int length)
+        {
+            const string charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            return new string(Enumerable.Repeat(charset, length)
+                          .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        public async Task<AuthenticationResult> ResetPassword(PasswordResetDto userObj)
+        {
+            if (userObj.token == null)
+            {
+                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "Token is Null" }; 
+            }
+
+            foreach (var kvp in _passwordResetTokens)
+            {
+                Console.WriteLine($"Token: {kvp.Key}, User ID: {kvp.Value}");
+            }
+
+            Console.WriteLine(_passwordResetTokens.TryGetValue(userObj.token, out var test));
+            if (_passwordResetTokens.TryGetValue(userObj.token, out var userId))
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.user_id == userId);
+
+                if (user == null)
+                    return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "User Not Found" };
+
+                //password strength check
+                var passCheck = PasswordStrengthCheck(userObj.password);
+
+                if (!string.IsNullOrEmpty(passCheck))
+                {
+                    return new AuthenticationResult { IsSuccessful = false, ErrorMessage = passCheck.ToString() };
+                }
+
+                user.password_hash = PasswordHasher.Hasher(userObj.password);//Hash password before saving to database
+                _context.SaveChanges();
+                return new AuthenticationResult { IsSuccessful = true };
+
+            }
+
+            return new AuthenticationResult { IsSuccessful = false , ErrorMessage = "Error Occured" };
         }
 
         //Refresh Token
