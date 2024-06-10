@@ -22,7 +22,7 @@ namespace FirstStep.Services
         private readonly IEmployeeService _employeeService;
         private readonly IEmailService _emailService;
         // Dictionary for reset password
-        private readonly Dictionary<string, int> _passwordResetTokens = new Dictionary<string, int>();
+        private readonly static Dictionary<string, int> _passwordResetTokens = new Dictionary<string, int>();
         private static readonly Random random = new Random();
 
         public UserService(DataContext context, 
@@ -112,7 +112,7 @@ namespace FirstStep.Services
 
                 user.password_hash = PasswordHasher.Hasher(userObj.password);//Hash password before saving to database
                 _context.SaveChanges();
-                return new AuthenticationResult { IsSuccessful = true };
+                return new AuthenticationResult { IsSuccessful = true , ResponseMessage="Password Change Successful"};
 
             }
 
