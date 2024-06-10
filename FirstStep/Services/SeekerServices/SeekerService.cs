@@ -161,7 +161,7 @@ namespace FirstStep.Services
                 throw new KeyNotFoundException("Seeker not found.");
             }
 
-            // Hash the new password if it has been changed
+            // Hash the new password if it has been changed and is not the placeholder
             if (!string.IsNullOrEmpty(updateDto.password) && updateDto.password != "********")
             {
                 var passCheck = UserCreateHelper.PasswordStrengthCheck(updateDto.password);

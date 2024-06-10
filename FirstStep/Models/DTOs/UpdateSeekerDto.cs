@@ -7,7 +7,7 @@ namespace FirstStep.Models.DTOs
         [Required, EmailAddress]
         public string email { get; set; }
 
-        public string password { get; set; }
+        public string? password { get; set; }
 
         [Required]
         public string first_name { get; set; }
