@@ -81,7 +81,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("restpass")]
+        [Route("Restpass")]
         public async Task<IActionResult> ResetPass([FromBody] PasswordResetDto userObj)
         {
             try
