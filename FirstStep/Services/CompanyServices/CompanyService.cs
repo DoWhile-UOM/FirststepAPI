@@ -106,6 +106,14 @@ namespace FirstStep.Services
         {
             Company company = await FindByID(companyID);
             CompanyApplicationDto companydto = _mapper.Map<CompanyApplicationDto>(company);
+            if(companydto.business_reg_certificate != null)
+            {
+                companydto.business_reg_certificate = await _fileService.GetBlobImageUrl(companydto.business_reg_certificate);
+            }
+            if (companydto.certificate_of_incorporation != null) 
+            {
+                companydto.certificate_of_incorporation = await _fileService.GetBlobImageUrl(companydto.certificate_of_incorporation);
+            }
             return companydto;
         }
         
