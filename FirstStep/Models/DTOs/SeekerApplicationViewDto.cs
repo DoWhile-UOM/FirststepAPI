@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public struct SeekerApplicationDto
+    public class SeekerApplicationViewDto
     {
         public required string email { get; set; }
 
@@ -17,6 +17,5 @@
         public string? profile_picture { get; set; }
 
         public string? linkedin { get; set; }
-
     }
 }

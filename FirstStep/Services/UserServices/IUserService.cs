@@ -8,8 +8,10 @@ namespace FirstStep.Services
 
         Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto);
 
-        Task<string> RegisterUser(UserRegRequestDto userObj, string? type, string? company_id);
-
         Task<bool> CheckEmailExist(string Email);
+
+        Task<UpdateEmployeeDto> GetUserById(int user_id);
+
+        Task UpdateUser(UpdateUserDto user);
     }
 }

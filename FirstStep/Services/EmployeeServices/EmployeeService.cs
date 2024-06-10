@@ -26,7 +26,11 @@ namespace FirstStep.Services
 
         public async Task<Employee> GetById(int id)
         {
-            Employee? employee = await _context.Employees.FindAsync(id);
+            Employee? employee = await _context.Employees
+                .Include("company")
+                .Where(e => e.user_id == id)
+                .FirstOrDefaultAsync();
+
             if (employee is null)
             {
                 throw new Exception("Employee not found.");
@@ -203,6 +207,28 @@ namespace FirstStep.Services
         public async Task Delete(int id)
         {
             Employee employee = await GetById(id);
+
+            if (employee.user_type == User.UserType.ca.ToString())
+            {
+                throw new FieldAccessException("Company Admin cannot be deleted");
+            }
+            else if (employee.user_type == User.UserType.hrm.ToString())
+            {
+                // check whether the HR Manager has created any advertisement
+                var advertisements = await _context.Advertisements.Where(a => a.hrManager_id == id).ToListAsync();
+
+                if (advertisements.Count > 0)
+                {
+                    // find the company admin of hrm's company
+                    int ca = (int)employee.company!.company_admin_id!;
+
+                    // set the advertisements' created hr manager as the company admin of the deleting HR Manager's company
+                    foreach (var ad in advertisements)
+                    {
+                        ad.hrManager_id = ca;
+                    }
+                }
+            }
 
             _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();
