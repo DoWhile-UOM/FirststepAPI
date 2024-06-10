@@ -4,7 +4,7 @@ namespace FirstStep.Models.DTOs
 {
     public struct UpdateSeekerDto
     {
-        [Required, EmailAddress]
+        [Required]
         public string email { get; set; }
 
         public string? password { get; set; }

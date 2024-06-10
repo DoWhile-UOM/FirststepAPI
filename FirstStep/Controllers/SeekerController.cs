@@ -77,14 +77,6 @@ namespace FirstStep.Controllers
         [Route("UpdateSeeker/{seekerId:int}")]
         public async Task<IActionResult> UpdateSeeker(int seekerId, UpdateSeekerDto updateDto)
         {
-            //if (string.IsNullOrWhiteSpace(updateDto.CVurl))
-            //{
-            //    return BadRequest(new { errors = new { CVurl = new[] { "The CVurl field is required." } } });
-            //}
-            //if (string.IsNullOrWhiteSpace(updateDto.password))
-            //{
-            //    return BadRequest(new { errors = new { password = new[] { "The password field is required." } } });
-            //}
             try
             {
                 await _service.Update(seekerId, updateDto);
@@ -95,14 +87,6 @@ namespace FirstStep.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
-
-        //[HttpPut]
-        //[Route("UpdateSeeker/{seekerId:int}")]
-        //public async Task<IActionResult> UpdateSeeker(int seekerId, UpdateSeekerDto updateDto)
-        //{
-        //    await _service.Update(seekerId, updateDto);
-        //    return Ok();
-        //}
 
 
         [HttpDelete]
