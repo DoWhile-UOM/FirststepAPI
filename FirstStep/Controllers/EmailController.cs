@@ -3,8 +3,6 @@ using FirstStep.Services;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 
-/*Controller for Email Service*/
-
 namespace FirstStep.Controllers
 {
     [Route("api/[controller]")]

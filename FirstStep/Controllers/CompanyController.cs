@@ -143,17 +143,9 @@ namespace FirstStep.Controllers
             return Ok($"Successfully updated registered company on ID: {companyId}.");
         }
 
-        [HttpDelete]
-        [Route("DeleteCompany/{companyId:int}")]
-        public async Task<IActionResult> DeleteCompany(int companyId)
-        {
-            await _service.Delete(companyId);
-            return Ok($"Successfully removed unregistered company: {companyId}.");
-        }
-
         [HttpPatch]
         [Route("UpdateCompanyLogo")]
-        public async Task<IActionResult> UpdateCompanyLogo( IFormFile file, int companyId)
+        public async Task<IActionResult> UpdateCompanyLogo(IFormFile file, int companyId)
         {
             if (file == null || file.Length == 0)
             {
@@ -166,6 +158,13 @@ namespace FirstStep.Controllers
             }
             return Ok("File uploaded successfully.");
         }
-        
+
+        [HttpDelete]
+        [Route("DeleteCompany/{companyId:int}")]
+        public async Task<IActionResult> DeleteCompany(int companyId)
+        {
+            await _service.Delete(companyId);
+            return Ok($"Successfully removed unregistered company: {companyId}.");
+        }
     }
 }

@@ -33,26 +33,10 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetBlobUrl")]
-        public async Task<IActionResult> GetBlobUrl(string blobName)
-        {
-            var response = await _azureBlobService.GetBlobUrl(blobName);
-            return Ok(response);
-        }
-
-        [HttpGet]
-        [Route("GetImageUrl")]
         public async Task<IActionResult> GetImageUrl(string blobName)
         {
-            var blobUrl = await _azureBlobService.GetBlobImageUrl(blobName);
+            var blobUrl = await _azureBlobService.GetBlobUrl(blobName);
             return Ok(blobUrl);
-        }
-
-        [HttpDelete]
-        [Route("DeleteBlob/{blobName}")]
-        public async Task<IActionResult> DeleteBlob(string blobName)
-        {
-            await _azureBlobService.DeleteBlobAsync(blobName);
-            return Ok();
         }
 
         [HttpPost]

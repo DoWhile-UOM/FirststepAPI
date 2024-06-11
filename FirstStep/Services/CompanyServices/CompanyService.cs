@@ -50,7 +50,7 @@ namespace FirstStep.Services
             CompanyProfileDetailsDto companydto = _mapper.Map<CompanyProfileDetailsDto>(company);
             if (companydto.company_logo != null)
             {
-                companydto.company_logo = await _fileService.GetBlobImageUrl(companydto.company_logo);
+                companydto.company_logo = await _fileService.GetBlobUrl(companydto.company_logo);
             }
             return companydto;
         }
@@ -94,7 +94,7 @@ namespace FirstStep.Services
             }
             else
             {
-                advertisementCompanyDto.company_logo = await _fileService.GetBlobImageUrl(dbCompany.company_logo);
+                advertisementCompanyDto.company_logo = await _fileService.GetBlobUrl(dbCompany.company_logo);
             }
 
             return advertisementCompanyDto;
@@ -108,11 +108,11 @@ namespace FirstStep.Services
             CompanyApplicationDto companydto = _mapper.Map<CompanyApplicationDto>(company);
             if(companydto.business_reg_certificate != null)
             {
-                companydto.business_reg_certificate = await _fileService.GetBlobImageUrl(companydto.business_reg_certificate);
+                companydto.business_reg_certificate = await _fileService.GetBlobUrl(companydto.business_reg_certificate);
             }
             if (companydto.certificate_of_incorporation != null) 
             {
-                companydto.certificate_of_incorporation = await _fileService.GetBlobImageUrl(companydto.certificate_of_incorporation);
+                companydto.certificate_of_incorporation = await _fileService.GetBlobUrl(companydto.certificate_of_incorporation);
             }
             return companydto;
         }
@@ -312,7 +312,7 @@ namespace FirstStep.Services
               }
               // Get the URL of the uploaded file
               var blobName = file.FileName;
-              var fileUrl = await _fileService.GetBlobImageUrl(blobName);
+              var fileUrl = await _fileService.GetBlobUrl(blobName);
 
               // Save the file information in the database
               var company = await FindByID(companyId);

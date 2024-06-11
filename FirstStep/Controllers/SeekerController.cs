@@ -30,9 +30,24 @@ namespace FirstStep.Controllers
         {
             return Ok(await _service.GetById(seekerId));
         }
-        
+
         [HttpGet]
         [Route("GetSeekerProfile/{seekerId:int}")]
+        public async Task<ActionResult<SeekerProfileViewDto>> GetSeekerDetailsForSeekerProfileView(int seekerId)
+        {
+            try
+            {
+                var seekerProfileViewDto = await _service.GetSeekerDetailsForSeekerProfileView(seekerId);
+                return Ok(seekerProfileViewDto);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetSeekerProfile/Update/{seekerId:int}")]
         public async Task<ActionResult<UpdateSeekerDto>> GetSeekerProfile(int seekerId)
         {
             var seekerProfile = await _service.GetSeekerProfileById(seekerId);
@@ -94,21 +109,6 @@ namespace FirstStep.Controllers
         {
             await _service.Delete(seekerId);
             return Ok();
-        }
-
-        [HttpGet]
-        [Route("GetSeekerDetailsForSeekerProfileView/{seekerId:int}")]
-        public async Task<ActionResult<SeekerProfileViewDto>> GetSeekerDetailsForSeekerProfileView(int seekerId)
-        {
-            try
-            {
-                var seekerProfileViewDto = await _service.GetSeekerDetailsForSeekerProfileView(seekerId);
-                return Ok(seekerProfileViewDto);
-            }
-            catch (NullReferenceException ex)
-            {
-                return NotFound(ex.Message);
-            }
         }
     }
 }
