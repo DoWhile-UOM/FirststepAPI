@@ -90,11 +90,11 @@ namespace FirstStep.Controllers
 
         [HttpPut]
         [Route("UpdateSeeker/{seekerId:int}")]
-        public async Task<IActionResult> UpdateSeeker(int seekerId, UpdateSeekerDto updateDto)
+        public async Task<IActionResult> UpdateSeeker(int seekerId, [FromForm] UpdateSeekerDto updateDto, IFormFile? cvFile)
         {
             try
             {
-                await _service.Update(seekerId, updateDto);
+                await _service.Update(seekerId, updateDto, cvFile);
                 return Ok();
             }
             catch (Exception e)

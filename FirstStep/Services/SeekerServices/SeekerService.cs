@@ -13,13 +13,16 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly ISkillService _seekerSkillService;
+        private readonly IFileService _fileService;
 
-        public SeekerService(DataContext context, IMapper mapper, ISkillService seekerSkillService)
+        public SeekerService(DataContext context, IMapper mapper, ISkillService seekerSkillService, IFileService fileService)
         {
             _context = context;
             _mapper = mapper;
             _seekerSkillService = seekerSkillService;
+            _fileService = fileService;
         }
+        
 
         public async Task<IEnumerable<Seeker>> GetAll()
         {
@@ -53,18 +56,18 @@ namespace FirstStep.Services
                 return null;
             }
 
-            // Manually map Seeker to UpdateSeekerDto
+            var cvUrl = await _fileService.GetBlobUrl(seeker.CVurl);
+
             var updateSeekerDto = new UpdateSeekerDto
             {
                 email = seeker.email,
-                // Password is not mapped for security reasons
                 first_name = seeker.first_name,
                 last_name = seeker.last_name,
                 phone_number = seeker.phone_number,
                 bio = seeker.bio,
                 description = seeker.description,
                 university = seeker.university,
-                CVurl = seeker.CVurl,
+                CVurl = cvUrl, // Updated to fetch URL from file service
                 profile_picture = seeker.profile_picture,
                 linkedin = seeker.linkedin,
                 field_id = seeker.field_id,
@@ -73,6 +76,7 @@ namespace FirstStep.Services
 
             return updateSeekerDto;
         }
+
         public async Task<SeekerApplicationDto> GetSeekerDetails(int id)
         {
             Seeker seeker = await GetById(id);
@@ -128,7 +132,7 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(int seekerId, UpdateSeekerDto updateDto)
+        public async Task Update(int seekerId, UpdateSeekerDto updateDto, IFormFile? cvFile = null)
         {
             Seeker dbSeeker = await GetById(seekerId);
 
@@ -154,16 +158,18 @@ namespace FirstStep.Services
             dbSeeker.bio = updateDto.bio;
             dbSeeker.description = updateDto.description;
             dbSeeker.university = updateDto.university;
-            dbSeeker.CVurl = updateDto.CVurl;
-            dbSeeker.profile_picture = updateDto.profile_picture;
             dbSeeker.linkedin = updateDto.linkedin;
             dbSeeker.field_id = updateDto.field_id;
 
             dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
 
+            if (cvFile != null)
+            {
+                dbSeeker.CVurl = await _fileService.UploadFile(cvFile);
+            }
+
             await _context.SaveChangesAsync();
         }
-
         private async Task<ICollection<Skill>?> IncludeSkillsToSeeker(ICollection<string>? newSkills)
         {
             var skills = new List<Skill>();
