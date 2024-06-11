@@ -65,27 +65,31 @@ namespace FirstStep.Services
                 }
             }
 
-            string cvBlobName;
-       
-            if(newApplicationDto.UseDefaultCv)
-            {
-                //use a placeholder for the default cv
-                cvBlobName = "default-cv-name";  
-            }
-            else
+            //create new application
+            Application newApplication = _mapper.Map<Application>(newApplicationDto);
+            newApplication.status = ApplicationStatus.NotEvaluated.ToString();
+
+            if (!newApplicationDto.UseDefaultCv)
             {
                 if (newApplicationDto.cv == null)
                 {
-                    throw new InvalidDataException("cv is required if not using default cv");
+                    throw new InvalidDataException("cv file is required if not using the default cv");
                 }
-                cvBlobName = await _fileService.UploadFile(newApplicationDto.cv);
-            }          
-            //upload cv file to Azure Blob Storage
-            Application newApplication = _mapper.Map<Application>(newApplicationDto);
-
-            newApplication.status = ApplicationStatus.NotEvaluated.ToString();
-            //store cv file name in the database
-            newApplication.CVurl = cvBlobName;
+                
+                // assign new cv
+                newApplication.CVurl = await _fileService.UploadFile(newApplicationDto.cv);
+            }
+            else
+            {
+                //use default cv use in the seeker profile
+                var seeker = await _context.Seekers.FindAsync(newApplicationDto.seeker_id);
+                //handle the case where the seeker is not found
+                if (seeker == null)
+                {
+                    throw new InvalidDataException("Seeker not found.");
+                }
+                newApplication.CVurl = seeker.CVurl;
+            }
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();

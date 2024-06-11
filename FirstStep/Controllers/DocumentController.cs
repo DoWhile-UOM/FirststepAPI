@@ -62,5 +62,13 @@ namespace FirstStep.Controllers
             var response = await _azureBlobService.UploadFiles(files);
             return Ok(response);
         }
+
+        [HttpDelete]
+        [Route("DeleteBlob/{blobName}")]
+        public async Task<IActionResult> DeleteBlob(string blobName)
+        {
+            await _azureBlobService.DeleteBlobAsync(blobName);
+            return Ok();
+        }
     }
 }

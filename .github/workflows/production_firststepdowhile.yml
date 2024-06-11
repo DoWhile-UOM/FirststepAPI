@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - firststepdowhile
+name: Build, test, and deploy ASP.Net Core app to Azure Web App - firststepdowhile
 
 on:
   push:
@@ -26,6 +23,22 @@ jobs:
 
       - name: Publish with dotnet
         run: dotnet publish FirstStep/Firststep.csproj --configuration Release --output ./published
+
+      - name: Restore test projects
+        run: dotnet restore FirstStepTest/FirstStepTest.csproj
+
+      - name: Build test projects
+        run: dotnet build FirstStepTest/FirstStepTest.csproj --configuration Release
+
+      - name: Run tests
+        run: dotnet test FirstStepTest/FirstStepTest.csproj --logger trx --results-directory ./TestResults
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: ./TestResults
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
