@@ -4,6 +4,7 @@
     public class CompanyApplicationDto
     {
         public int company_id { get; set; }
+        public required int business_reg_no { get; set; }
         public required string company_name { get; set; }
         public required bool verification_status { get; set; }
         public required string company_email { get; set; }
