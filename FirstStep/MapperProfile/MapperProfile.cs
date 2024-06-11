@@ -40,9 +40,13 @@ namespace FirstStep.MapperProfile
             CreateMap<Advertisement, AdvertisementTableRowDto>();
             CreateMap<Advertisement, AdvertisementHRATableRowDto>();
             
+            CreateMap<SeekerApplicationDto, Seeker>();
             CreateMap<Company, CompanyProfileDto>();
             CreateMap<Seeker, SeekerApplicationDto>();
             CreateMap<AddSeekerDto, Seeker>();
+            CreateMap<UpdateSeekerDto, Seeker>();
+
+            CreateMap<Company, CompanyProfileDto>();
             CreateMap<AddCompanyDto, Company>();
             CreateMap<AddEmployeeDto, HRManager>();
             CreateMap<AddEmployeeDto, HRAssistant>();

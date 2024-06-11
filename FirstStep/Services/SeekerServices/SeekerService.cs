@@ -3,6 +3,7 @@ using FirstStep.Data;
 using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -44,6 +45,34 @@ namespace FirstStep.Services
             return seeker;
         }
 
+        public async Task<UpdateSeekerDto?> GetSeekerProfileById(int id)
+        {
+            Seeker seeker = await GetById(id);
+            if (seeker == null)
+            {
+                return null;
+            }
+
+            // Manually map Seeker to UpdateSeekerDto
+            var updateSeekerDto = new UpdateSeekerDto
+            {
+                email = seeker.email,
+                // Password is not mapped for security reasons
+                first_name = seeker.first_name,
+                last_name = seeker.last_name,
+                phone_number = seeker.phone_number,
+                bio = seeker.bio,
+                description = seeker.description,
+                university = seeker.university,
+                CVurl = seeker.CVurl,
+                profile_picture = seeker.profile_picture,
+                linkedin = seeker.linkedin,
+                field_id = seeker.field_id,
+                seekerSkills = seeker.skills?.Select(s => s.skill_name).ToList()
+            };
+
+            return updateSeekerDto;
+        }
         public async Task<SeekerApplicationDto> GetSeekerDetails(int id)
         {
             Seeker seeker = await GetById(id);
@@ -68,100 +97,100 @@ namespace FirstStep.Services
             return seeker.job_Field;
         }
 
-        //public async Task Create(AddSeekerDto newSeeker)
-        public async Task<string> Create(AddSeekerDto newSeeker)
+        public async Task Create(AddSeekerDto newSeeker)
         {
-            // map the AddSeekerDto to a Seeker object
-            var seeker = _mapper.Map<Seeker>(newSeeker);
-
-            // user type is seeker
-            seeker.user_type = "seeker";
-
             if (newSeeker == null)
-                return "Null User";
+                throw new NullReferenceException("Null User");
 
             //check if email already exists
-            if (await _context.Users.AnyAsync(x => x.email == seeker.email))
-                return "Email Already exist";//email already exists
+            if (await _context.Users.AnyAsync(x => x.email == newSeeker.email))
+                throw new InvalidDataException("Email Already exist");
 
             //password strength check
             var passCheck = UserCreateHelper.PasswordStrengthCheck(newSeeker.password);
 
             if (!string.IsNullOrEmpty(passCheck))
-                return passCheck.ToString();
+                throw new InvalidDataException(passCheck.ToString());
+            
+            // map the AddSeekerDto to a Seeker object
+            var seeker = _mapper.Map<Seeker>(newSeeker);
 
+            // user type is seeker
+            seeker.user_type = "seeker";
+            
             //Hash password before saving to database
             seeker.password_hash = PasswordHasher.Hasher(newSeeker.password);
 
             // Add skills to seeker
-            if (newSeeker.seekerSkills != null)
-            {
-                seeker.skills = new List<Skill>();
-
-                foreach (var skill in newSeeker.seekerSkills)
-                {
-                    // check whether the skill exists in the database
-                    var dbSkill = await _seekerSkillService.GetByName(skill);
-
-                    if (dbSkill != null)
-                    {
-                        // if it exists, add it to the seeker's list of skills
-                        seeker.skills.Add(dbSkill);
-                    }
-                    else
-                    {
-                        // if it doesn't exist, create it and add it to the seeker's list of skills
-                        seeker.skills.Add(new Skill
-                        {
-                            skill_id = 0,
-                            skill_name = skill
-                        });
-                    }
-                }
-            }
+            seeker.skills = await IncludeSkillsToSeeker(newSeeker.seekerSkills);
 
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
-
-            return "Seeker added successfully";
         }
 
-
-        
-
-        public async Task Update(int seekerId, Seeker seeker)
+        public async Task Update(int seekerId, UpdateSeekerDto updateDto)
         {
-            // for get the seeker object from the database
             Seeker dbSeeker = await GetById(seekerId);
 
-            // update the Seeker object with the new values
-            dbSeeker.first_name = seeker.first_name;
-            dbSeeker.last_name = seeker.last_name;
-            dbSeeker.email = seeker.email;
-            dbSeeker.phone_number = seeker.phone_number;
-            dbSeeker.bio = seeker.bio;
-            dbSeeker.description = seeker.description;
-            dbSeeker.university = seeker.university;
-            dbSeeker.CVurl = seeker.CVurl;
-            dbSeeker.profile_picture = seeker.profile_picture;
-            dbSeeker.linkedin = seeker.linkedin;
+            if (dbSeeker == null)
+            {
+                throw new KeyNotFoundException("Seeker not found.");
+            }
 
-            // update the Seeker's skills
-            // Ruwanide you need to implement this part
+            // Hash the new password if it has been changed and is not the placeholder
+            if (!string.IsNullOrEmpty(updateDto.password) && updateDto.password != "********")
+            {
+                var passCheck = UserCreateHelper.PasswordStrengthCheck(updateDto.password);
+                if (!string.IsNullOrEmpty(passCheck))
+                {
+                    throw new InvalidDataException(passCheck.ToString());
+                }
+                dbSeeker.password_hash = PasswordHasher.Hasher(updateDto.password);
+            }
 
-            // save the changes
+            dbSeeker.first_name = updateDto.first_name;
+            dbSeeker.last_name = updateDto.last_name;
+            dbSeeker.phone_number = updateDto.phone_number;
+            dbSeeker.bio = updateDto.bio;
+            dbSeeker.description = updateDto.description;
+            dbSeeker.university = updateDto.university;
+            dbSeeker.CVurl = updateDto.CVurl;
+            dbSeeker.profile_picture = updateDto.profile_picture;
+            dbSeeker.linkedin = updateDto.linkedin;
+            dbSeeker.field_id = updateDto.field_id;
+
+            dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
+
             await _context.SaveChangesAsync();
+        }
 
+        private async Task<ICollection<Skill>?> IncludeSkillsToSeeker(ICollection<string>? newSkills)
+        {
+            var skills = new List<Skill>();
 
-            // after implementing the above steps,
-            // you should be change the function parameter type to UpdateSeekerDto
-            // as well as the function return type to Task<UpdateSeekerDto>
-            // also need to update the controller and the interface
+            if (newSkills != null)
+            {
+                foreach (var skillName in newSkills)
+                {
+                    var dbSkill = await _seekerSkillService.GetByName(skillName.ToLower());
 
-
-            // you can refer the code segment in advertisement service for updating the relationships
-            // line 180 to 212 - function name: IncludeProfessionKeywordsToAdvertisement()
-            // advertisement and the keyword relationship is similar to the seeker and the skill relationship
+                    if (dbSkill != null)
+                    {
+                        skills.Add(dbSkill);
+                    }
+                    else
+                    {
+                        skills.Add(new Skill
+                        {
+                            skill_id = 0,
+                            skill_name = skillName.ToLower()  
+                        });
+                   
+                    }
+                }
+                return skills;
+            }
+            return null;
         }
 
         public async Task<SeekerProfileViewDto> GetSeekerDetailsForSeekerProfileView(int id)

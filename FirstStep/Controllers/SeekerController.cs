@@ -19,7 +19,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllSeekers")]
-
         public async Task<ActionResult<IEnumerable<Seeker>>> GetAllSeekers()
         {
             return Ok(await _service.GetAll());
@@ -27,10 +26,21 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetSeeker/{seekerId:int}")]
-
         public async Task<ActionResult<Seeker>> GetSeekerById(int seekerId)
         {
             return Ok(await _service.GetById(seekerId));
+        }
+        
+        [HttpGet]
+        [Route("GetSeekerProfile/{seekerId:int}")]
+        public async Task<ActionResult<UpdateSeekerDto>> GetSeekerProfile(int seekerId)
+        {
+            var seekerProfile = await _service.GetSeekerProfileById(seekerId);
+            if (seekerProfile == null)
+            {
+                return NotFound("Seeker not found");
+            }
+            return Ok(seekerProfile);
         }
 
         [HttpGet]
@@ -40,49 +50,46 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetSeekerDetails(seekerId));
         }
 
-
         [HttpPost]
         [Route("AddSeeker")]
-
         public async Task<IActionResult> AddSeeker(AddSeekerDto newSeeker)
         {
             try
             {
-                var response = await _service.Create(newSeeker);
-
-                return response switch
-                {
-                    "Seeker added successfully" => Ok(response),
-                    "Null User" => BadRequest(response),
-                    "Email Already exist" => BadRequest(response),
-                    _ => BadRequest(response),
-                };
+                await _service.Create(newSeeker);
+                return Ok(newSeeker);
+            }
+            catch (NullReferenceException e)
+            {
+                return StatusCode(StatusCodes.Status204NoContent, e.Message);
+            }
+            catch (InvalidDataException e)
+            {
+                return StatusCode(StatusCodes.Status406NotAcceptable, e.Message);
             }
             catch (Exception e)
             {
-                return BadRequest(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
 
-
-
         [HttpPut]
         [Route("UpdateSeeker/{seekerId:int}")]
-
-        public async Task<IActionResult> UpdateSeeker(Seeker reqseeker, int seekerId)
+        public async Task<IActionResult> UpdateSeeker(int seekerId, UpdateSeekerDto updateDto)
         {
-            if (seekerId != reqseeker.user_id)
+            try
             {
-                return BadRequest("Context is not matching");
+                await _service.Update(seekerId, updateDto);
+                return Ok();
             }
-
-            await _service.Update(seekerId, reqseeker);
-            return Ok($"Successfully Updated SeekerID: {reqseeker.first_name} {reqseeker.last_name}");
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
         [HttpDelete]
         [Route("DeleteSeeker/{seekerId:int}")]
-
         public async Task<IActionResult> DeleteSeeker(int seekerId)
         {
             await _service.Delete(seekerId);
