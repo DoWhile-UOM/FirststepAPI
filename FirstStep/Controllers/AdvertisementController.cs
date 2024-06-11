@@ -101,12 +101,12 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status)
+        [Route("GetCompanyAdvertisementList/{emp_id:int}/filterby={status}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetCompanyAdvertisementList(int emp_id, string status)
         {
             try
             {
-                return Ok(await _service.GetByCompanyID(companyID, status));
+                return Ok(await _service.GetCompanyAdvertisementList(emp_id, status));
             }
             catch (Exception e)
             {
@@ -115,12 +115,12 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementsByCompanyID/{companyID:int}/filterby={status}/title={title}")]
-        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetAdvertisementsByCompanyID(int companyID, string status, string title)
+        [Route("GetCompanyAdvertisementList/{emp_id:int}/filterby={status}/title={title}")]
+        public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetCompanyAdvertisementList(int emp_id, string status, string title)
         {
             try
             {
-                return Ok(await _service.GetByCompanyID(companyID, status, title));
+                return Ok(await _service.GetCompanyAdvertisementList(emp_id, status, title));
             }
             catch (Exception e)
             {

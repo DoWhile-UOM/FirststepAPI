@@ -48,6 +48,10 @@ namespace FirstStep.Services
         {
             Company company = await FindByID(id);
             CompanyProfileDetailsDto companydto = _mapper.Map<CompanyProfileDetailsDto>(company);
+            if (companydto.company_logo != null)
+            {
+                companydto.company_logo = await _fileService.GetBlobImageUrl(companydto.company_logo);
+            }
             return companydto;
         }
 
@@ -102,6 +106,14 @@ namespace FirstStep.Services
         {
             Company company = await FindByID(companyID);
             CompanyApplicationDto companydto = _mapper.Map<CompanyApplicationDto>(company);
+            if(companydto.business_reg_certificate != null)
+            {
+                companydto.business_reg_certificate = await _fileService.GetBlobImageUrl(companydto.business_reg_certificate);
+            }
+            if (companydto.certificate_of_incorporation != null) 
+            {
+                companydto.certificate_of_incorporation = await _fileService.GetBlobImageUrl(companydto.certificate_of_incorporation);
+            }
             return companydto;
         }
         
@@ -254,10 +266,13 @@ namespace FirstStep.Services
             dbCompany.business_reg_no = company.business_reg_no;
             dbCompany.company_website = company.company_website;
             dbCompany.company_phone_number = company.company_phone_number;
+            dbCompany.company_business_scale = company.company_business_scale;
             dbCompany.verification_status = false;
             dbCompany.business_reg_certificate = company.business_reg_certificate;
             dbCompany.certificate_of_incorporation = company.certificate_of_incorporation;
             dbCompany.company_applied_date = company.company_applied_date;
+            dbCompany.comment = null;
+            dbCompany.verified_system_admin_id = null;
 
             await _context.SaveChangesAsync();
         }
@@ -287,6 +302,51 @@ namespace FirstStep.Services
             Company company = await FindByID(companyID);
 
             return company.verification_status;
+        }
+        /*  public async Task<bool> SaveCompanyLogo(IFormFile file, int companyId)
+          {
+              var response = await _fileService.UploadFiles(new List<IFormFile> { file });
+              if(response == null || response.Count == 0)
+              {
+                  return false;
+              }
+              // Get the URL of the uploaded file
+              var blobName = file.FileName;
+              var fileUrl = await _fileService.GetBlobImageUrl(blobName);
+
+              // Save the file information in the database
+              var company = await FindByID(companyId);
+              if(company == null)
+              {
+                  return false;
+              }
+              company.company_logo= fileUrl;
+
+              await _context.SaveChangesAsync();
+
+              return true;
+
+          }*/
+        public async Task<bool> SaveCompanyLogo(IFormFile file, int companyId)
+        {
+            var logoBlobName = await _fileService.UploadFile(file);
+            if (logoBlobName == null)
+            {
+                return false;
+            }
+            
+            // Save the file information in the database
+            var company = await FindByID(companyId);
+            if (company == null)
+            {
+                return false;
+            }
+            company.company_logo = logoBlobName;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+
         }
     }
 }

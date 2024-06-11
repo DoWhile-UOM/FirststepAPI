@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -13,6 +14,8 @@ namespace FirstStep.Services
         public Task<string> GetCurrentStatus(int applicationID);
 
         public string GetCurrentStatus(Application application);
+
+        public Task<Revision?> GetLastRevision(int applicationID);
 
         public Task Create(Revision revision);
 

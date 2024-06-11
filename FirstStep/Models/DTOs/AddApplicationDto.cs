@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Swashbuckle.AspNetCore.Annotations;
-
-namespace FirstStep.Models.DTOs
+﻿namespace FirstStep.Models.DTOs
 {
     public class AddApplicationDto
     {
-        
         public required int advertisement_id { get; set; }
 
         public required int seeker_id { get; set; }

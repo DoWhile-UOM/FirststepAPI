@@ -39,6 +39,34 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
+        [Route("GetSeekerApplications/{id}")]
+        public async Task<ActionResult<ApplicationViewDto>> GetSeekerApplications(int id)
+        {
+            var applicationViewDto = await _service.GetSeekerApplications(id);
+            if (applicationViewDto == null)
+            {
+                return NotFound("Application not found.");
+            }
+            return Ok(applicationViewDto);
+        }
+
+
+
+        [HttpGet]
+        [Route("GetRevisionHistory/{applicationId:int}")]
+        public async Task<ActionResult<IEnumerable<RevisionHistoryDto>>> GetRevisionHistory(int applicationId)
+        {
+            var revisionHistory = await _service.GetRevisionHistory(applicationId);
+
+            if (!revisionHistory.Any())
+            {
+                return NotFound("No revisions found for this application.");
+            }
+
+            return Ok(revisionHistory);
+        }
+
+        [HttpGet]
         [Route("GetAssignedApplicationList/hraId={hraId:int}/JobID={jobId:int}/status={status}")]
         public async Task<ActionResult<ApplicationListingPageDto>> GetAssignedApplicationList(int hraId, int jobId, string status)
         {
@@ -52,7 +80,28 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetBySeekerId(id));
         }
 
-        [HttpPost]
+        //get appplication status by advertisment id and seeker id
+        [HttpGet("status")]
+        public async Task<IActionResult> GetApplicationStatus(int advertisementId, int seekerId)
+        {
+            try
+            {
+                var status = await _service.GetApplicationStatus(advertisementId, seekerId);
+                return Ok(status);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+    
+
+
+    [HttpPost]
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
         {
