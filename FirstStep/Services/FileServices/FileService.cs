@@ -84,10 +84,18 @@ namespace FirstStep.Services
 
         public async Task<string> GetBlobUrl(string blobName)
         {
-            var sasToken = await GenerateSasTokenAsync(blobName);
             var blobClient = _blobcontainerClient.GetBlobClient(blobName);
 
-            //set the content disposition header to inline
+            // Check if the blob exists
+            bool exists = await blobClient.ExistsAsync();
+            if (!exists)
+            {
+                return null; // or throw an exception, or handle it as per your requirement
+            }
+
+            var sasToken = await GenerateSasTokenAsync(blobName);
+
+            // Set the content disposition header to inline
             var headers = new BlobHttpHeaders
             {
                 ContentDisposition = "inline"

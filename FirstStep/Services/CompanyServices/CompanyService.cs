@@ -106,14 +106,31 @@ namespace FirstStep.Services
         {
             Company company = await FindByID(companyID);
             CompanyApplicationDto companydto = _mapper.Map<CompanyApplicationDto>(company);
-            if(companydto.business_reg_certificate != null)
+            try
             {
-                companydto.business_reg_certificate = await _fileService.GetBlobUrl(companydto.business_reg_certificate);
+                if (companydto.business_reg_certificate != null)
+                {
+                    companydto.business_reg_certificate = await _fileService.GetBlobUrl(companydto.business_reg_certificate);
+                }
             }
-            if (companydto.certificate_of_incorporation != null) 
+            catch (Exception ex)
             {
-                companydto.certificate_of_incorporation = await _fileService.GetBlobUrl(companydto.certificate_of_incorporation);
+                Console.WriteLine($"Error retrieving business registration certificate: {ex.Message}");
+                companydto.business_reg_certificate = null;
             }
+            try
+            {
+                if (companydto.certificate_of_incorporation != null)
+                {
+                    companydto.certificate_of_incorporation = await _fileService.GetBlobUrl(companydto.certificate_of_incorporation);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving certificate of incorporation: {ex.Message}");
+                companydto.certificate_of_incorporation = null;
+            }
+
             return companydto;
         }
         

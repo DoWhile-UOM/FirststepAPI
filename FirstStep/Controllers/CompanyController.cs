@@ -39,10 +39,24 @@ namespace FirstStep.Controllers
         }
         
         [HttpGet]
-        [Route("GetCompanyApplicationById/{companyId:int}")]
+        [Route("GetCompanyApplicationById/{companyID:int}")]
         public async Task<ActionResult<CompanyApplicationDto>> GetCompanyApplicationById(int companyID)
         {
-            return Ok(await _service.GetCompanyApplicationById(companyID));
+            try
+            {
+                var result = await _service.GetCompanyApplicationById(companyID);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                // Handle case when the company ID is not found
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                // Handle other types of exceptions
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         [HttpGet]
