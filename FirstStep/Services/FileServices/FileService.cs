@@ -83,14 +83,31 @@ namespace FirstStep.Services
         }
 
         //need to delete if not needed
+        public async Task<string> GetBlobUrl(string blobName)
+        {
+            var sasToken = await GenerateSasTokenAsync(blobName);
+            var blobClient = _blobcontainerClient.GetBlobClient(blobName);
+            var blobUrlWithSas = $"{blobClient.Uri}?{sasToken}";
+            return blobUrlWithSas;
+        }
+        //get blob image url with sas token
         public async Task<string> GetBlobImageUrl(string blobName)
         {
             var sasToken = await GenerateSasTokenAsync(blobName);
             var blobClient = _blobcontainerClient.GetBlobClient(blobName);
 
+            //set the content disposition header to inline
+            var headers = new BlobHttpHeaders
+            {
+                ContentDisposition = "inline"
+            };
+            await blobClient.SetHttpHeadersAsync(headers);
+
             var blobUrlWithSas = $"{blobClient.Uri}?{sasToken}";
             return blobUrlWithSas;
+
         }
+
 
         //delete blob
         public async Task DeleteBlobAsync(string blobName)

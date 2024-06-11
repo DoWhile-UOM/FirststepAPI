@@ -80,20 +80,28 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetBySeekerId(id));
         }
 
-        //get appplication status by application ID
-        [HttpGet]
-        [Route("GetApplicationStatus/{id}")]
-        public async Task<ActionResult<ApplicationStatusDto>> GetApplicationStatus(int id)
+        //get appplication status by advertisment id and seeker id
+        [HttpGet("status")]
+        public async Task<IActionResult> GetApplicationStatus(int advertisementId, int seekerId)
         {
-            return Ok(await _service.GetApplicationStatus(id));
+            try
+            {
+                var status = await _service.GetApplicationStatus(advertisementId, seekerId);
+                return Ok(status);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
+    
 
 
-
-
-
-
-        [HttpPost]
+    [HttpPost]
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
         {

@@ -396,47 +396,54 @@ namespace FirstStep.Services
         }
         //tasks delegation ends here
 
-        public async Task<ApplicationStatusDto> GetApplicationStatus(int applicationId)
+        //implement service to get application status by advertisment id and seeker id
+        public async Task<ApplicationStatusDto> GetApplicationStatus(int advertisementId, int seekerId)
         {
-            var application = await GetById(applicationId);
+            var application = await _context.Applications
+                .Include("advertisement")
+                .Where(a => a.advertisement_id == advertisementId && a.seeker_id == seekerId)
+                .FirstOrDefaultAsync();
 
-            if (application is null)
+            if (application == null)
             {
                 throw new NullReferenceException("Application not found.");
             }
 
             if (application.advertisement == null)
             {
-                throw new NullReferenceException("Advertisement not found."); 
+                throw new NullReferenceException("Advertisement not found.");
             }
 
             var applicationStatus = new ApplicationStatusDto
             {
-                cv_name = application.CVurl,
+                //assign GetBlobImageUrl to dto cv name
+                cv_name = await _fileService.GetBlobImageUrl(application.CVurl!),
                 submitted_date = application.submitted_date,
                 status = "",
+                advertisement_id = advertisementId,
+                seeker_id = seekerId
             };
- 
+
             if (AdvertisementValidation.IsActive(application.advertisement))
             {
                 applicationStatus.status = "Submitted";
             }
             else if (AdvertisementValidation.IsHold(application.advertisement) &&
-                (application.status == ApplicationStatus.Pass.ToString() || 
-                application.status == ApplicationStatus.NotEvaluated.ToString()))
+                               (application.status == ApplicationStatus.Pass.ToString() ||
+                                              application.status == ApplicationStatus.NotEvaluated.ToString()))
             {
                 applicationStatus.status = "Screening";
             }
             else if (application.status == ApplicationStatus.Accepted.ToString() ||
-                (AdvertisementValidation.IsHold(application.advertisement) && 
-                application.status == ApplicationStatus.Rejected.ToString()))
+                               (AdvertisementValidation.IsHold(application.advertisement) &&
+                                              application.status == ApplicationStatus.Rejected.ToString()))
             {
-                // Show a message on frontend as "You will recive an email on the next steps"
+                // Show a message on frontend as "You will receive an email on the next steps"
                 applicationStatus.status = "Finalized";
             }
             else
             {
-                // When advetisement is closed even the application is not evaluated, passed or rejected
+                // When advertisement is closed even if the application is not evaluated, passed or rejected
                 applicationStatus.status = "Rejected";
             }
 
@@ -491,7 +498,10 @@ namespace FirstStep.Services
             }
         }
     }
+
 }
+ 
+
 
  
 
