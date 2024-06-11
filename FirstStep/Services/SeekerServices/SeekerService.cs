@@ -13,12 +13,15 @@ namespace FirstStep.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly ISkillService _seekerSkillService;
+        private readonly IFileService _fileService;
 
-        public SeekerService(DataContext context, IMapper mapper, ISkillService seekerSkillService)
+        public SeekerService(DataContext context, IMapper mapper, ISkillService seekerSkillService, IFileService fileService)
         {
             _context = context;
             _mapper = mapper;
             _seekerSkillService = seekerSkillService;
+            _fileService = fileService;
+
         }
 
         public async Task<IEnumerable<Seeker>> GetAll()
@@ -77,6 +80,9 @@ namespace FirstStep.Services
         {
             Seeker seeker = await GetById(id);
             SeekerApplicationDto seekerdto = _mapper.Map<SeekerApplicationDto>(seeker);
+            //assign GetBlobUrl to seekerApplicationDto default_cv_url 
+            seekerdto.defualt_cv_url = await _fileService.GetBlobUrl(seekerdto.cVurl);
+
             return seekerdto;
         }
 
