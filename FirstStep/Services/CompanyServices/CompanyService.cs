@@ -48,6 +48,10 @@ namespace FirstStep.Services
         {
             Company company = await FindByID(id);
             CompanyProfileDetailsDto companydto = _mapper.Map<CompanyProfileDetailsDto>(company);
+            if (companydto.company_logo != null)
+            {
+                companydto.company_logo = await _fileService.GetBlobUrl(companydto.company_logo);
+            }
             return companydto;
         }
 
@@ -90,7 +94,7 @@ namespace FirstStep.Services
             }
             else
             {
-                advertisementCompanyDto.company_logo = await _fileService.GetBlobImageUrl(dbCompany.company_logo);
+                advertisementCompanyDto.company_logo = await _fileService.GetBlobUrl(dbCompany.company_logo);
             }
 
             return advertisementCompanyDto;
@@ -102,6 +106,14 @@ namespace FirstStep.Services
         {
             Company company = await FindByID(companyID);
             CompanyApplicationDto companydto = _mapper.Map<CompanyApplicationDto>(company);
+            if(companydto.business_reg_certificate != null)
+            {
+                companydto.business_reg_certificate = await _fileService.GetBlobUrl(companydto.business_reg_certificate);
+            }
+            if (companydto.certificate_of_incorporation != null) 
+            {
+                companydto.certificate_of_incorporation = await _fileService.GetBlobUrl(companydto.certificate_of_incorporation);
+            }
             return companydto;
         }
         
@@ -254,10 +266,13 @@ namespace FirstStep.Services
             dbCompany.business_reg_no = company.business_reg_no;
             dbCompany.company_website = company.company_website;
             dbCompany.company_phone_number = company.company_phone_number;
+            dbCompany.company_business_scale = company.company_business_scale;
             dbCompany.verification_status = false;
             dbCompany.business_reg_certificate = company.business_reg_certificate;
             dbCompany.certificate_of_incorporation = company.certificate_of_incorporation;
             dbCompany.company_applied_date = company.company_applied_date;
+            dbCompany.comment = null;
+            dbCompany.verified_system_admin_id = null;
 
             await _context.SaveChangesAsync();
         }
@@ -297,7 +312,7 @@ namespace FirstStep.Services
               }
               // Get the URL of the uploaded file
               var blobName = file.FileName;
-              var fileUrl = await _fileService.GetBlobImageUrl(blobName);
+              var fileUrl = await _fileService.GetBlobUrl(blobName);
 
               // Save the file information in the database
               var company = await FindByID(companyId);

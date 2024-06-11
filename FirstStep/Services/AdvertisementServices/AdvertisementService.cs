@@ -130,7 +130,7 @@ namespace FirstStep.Services
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
             advertisementDto.company_name = _context.Companies.Find(dbAdvertismeent.hrManager!.company_id)!.company_name;
-            advertisementDto.company_logo_url = await _fileService.GetBlobImageUrl(dbAdvertismeent.hrManager!.company!.company_logo!);
+            advertisementDto.company_logo_url = await _fileService.GetBlobUrl(dbAdvertismeent.hrManager!.company!.company_logo!);
             advertisementDto.is_expired = AdvertisementValidation.IsExpired(dbAdvertismeent);
 
             return advertisementDto;
@@ -468,7 +468,7 @@ namespace FirstStep.Services
                     Company? company = await _context.Companies.FindAsync(company_id);
                     if (company == null) continue;
 
-                    appliedAdvertisement.company_logo_url = await _fileService.GetBlobImageUrl(company.company_logo!);
+                    appliedAdvertisement.company_logo_url = await _fileService.GetBlobUrl(company.company_logo!);
                     appliedAdvertisement.company_name = company.company_name;
 
                     recentAccessedCompanies.Add(company_id, (appliedAdvertisement.company_name, appliedAdvertisement.company_logo_url));
@@ -616,7 +616,7 @@ namespace FirstStep.Services
                     Company? company = await _context.Companies.FindAsync(company_id);
                     if (company == null) continue;
 
-                    adDto.company_logo_url = await _fileService.GetBlobImageUrl(company.company_logo!);
+                    adDto.company_logo_url = await _fileService.GetBlobUrl(company.company_logo!);
                     adDto.company_name = company.company_name;
 
                     recentAccessedCompanies.Add(company_id, (adDto.company_name, adDto.company_logo_url));

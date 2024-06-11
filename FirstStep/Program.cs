@@ -90,7 +90,6 @@ builder.Services.AddAuthentication(x =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("AshanMatheeshaSecretKeythisisSecret")),
         ValidateAudience = false,
         ValidateIssuer = false,
-        //ClockSkew = TimeSpan.Zero
     };
 });
 
@@ -104,11 +103,14 @@ app.UseCors(options =>
 }); 
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
