@@ -119,10 +119,7 @@ namespace FirstStep.Services
             otpBody.Body = builder.HtmlBody;
 
             return await SendEmail(otpBody);
-
-
         }
-
 
         public async Task<string> VerifyOTP(OTPRequest request)
         {
