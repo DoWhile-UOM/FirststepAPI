@@ -57,10 +57,10 @@ namespace FirstStepTest
 
             // Initialize the service with actual dependencies
             _skillService = new SkillService(_context);
-            _seekerService = new SeekerService(_context, _mapper, _skillService);
             _keywordService = new ProfessionKeywordService(_context, _mapper);
             _revisionService = new RevisionService(_context);
             _fileService = new FileService(_blobServiceClient);
+            _seekerService = new SeekerService(_context, _mapper, _skillService, _fileService);
             _employeeService = new EmployeeService(_context, _mapper);
             _applicationService = new ApplicationService(_context, _mapper, _revisionService, _fileService, _employeeService);
             _advertisementService = new AdvertisementService(_context, _mapper, _keywordService, _skillService, _seekerService, _applicationService, _fileService);
