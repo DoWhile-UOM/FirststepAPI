@@ -98,10 +98,8 @@ namespace FirstStep.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-    
 
-
-    [HttpPost]
+        [HttpPost]
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
         {

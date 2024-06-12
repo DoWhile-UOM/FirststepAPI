@@ -101,22 +101,30 @@ namespace FirstStep.Services
                 _context.OTPRequests.Add(OTPrequest);
             }
 
-            await _context.SaveChangesAsync();
-
-            var builder = new BodyBuilder();
             EmailDto otpBody = new EmailDto();
 
-            using (StreamReader SourceReader = File.OpenText("Template/CommonOTPEmailTemplate.html"))
+            try
             {
-                builder.HtmlBody = SourceReader.ReadToEnd();
+                var builder = new BodyBuilder();
+
+                using (StreamReader SourceReader = File.OpenText("Template/CommonOTPEmailTemplate.html"))
+                {
+                    builder.HtmlBody = SourceReader.ReadToEnd();
+                }
+
+                otpBody.To = request.email;
+                otpBody.Subject = "FirstStep Verification OTP";
+                builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", OTPrequest.otp.ToString());
+                builder.HtmlBody = builder.HtmlBody.Replace("{name}", "Test");//reciever= seeker's firstName / company name / Employee firstName
+                builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
+                otpBody.Body = builder.HtmlBody;
+            }
+            catch (Exception ex)
+            {
+                return "Error in File Reader" + ex.Message;
             }
 
-            otpBody.To = request.email;
-            otpBody.Subject = "FirstStep Verification OTP";
-            builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", OTPrequest.otp.ToString());
-            builder.HtmlBody = builder.HtmlBody.Replace("{name}", "Test");//reciever= seeker's firstName / company name / Employee firstName
-            builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
-            otpBody.Body = builder.HtmlBody;
+            await _context.SaveChangesAsync();
 
             return await SendEmail(otpBody);
         }
