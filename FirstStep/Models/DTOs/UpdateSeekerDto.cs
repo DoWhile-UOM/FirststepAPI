@@ -2,7 +2,7 @@
 
 namespace FirstStep.Models.DTOs
 {
-    public struct UpdateSeekerDto
+    public class UpdateSeekerDto
     {
         [Required]
         public string email { get; set; }
