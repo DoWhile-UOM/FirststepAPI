@@ -132,7 +132,7 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(int seekerId, UpdateSeekerDto updateDto, IFormFile? cvFile = null)
+        public async Task Update(int seekerId, UpdateSeekerDto updateDto)
         {
             Seeker dbSeeker = await GetById(seekerId);
 
@@ -151,7 +151,7 @@ namespace FirstStep.Services
                 }
                 dbSeeker.password_hash = PasswordHasher.Hasher(updateDto.password);
             }
-
+            dbSeeker.email = updateDto.email;
             dbSeeker.first_name = updateDto.first_name;
             dbSeeker.last_name = updateDto.last_name;
             dbSeeker.phone_number = updateDto.phone_number;
@@ -163,9 +163,9 @@ namespace FirstStep.Services
 
             dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
 
-            if (cvFile != null)
+            if (updateDto.cvFile != null)
             {
-                dbSeeker.CVurl = await _fileService.UploadFile(cvFile);
+                dbSeeker.CVurl = await _fileService.UploadFile(updateDto.cvFile);
             }
 
             await _context.SaveChangesAsync();

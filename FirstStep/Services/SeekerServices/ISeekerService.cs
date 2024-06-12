@@ -20,7 +20,7 @@ namespace FirstStep.Services
 
         public Task<JobField> GetSeekerField(int seekerId);
 
-        public Task Update(int seekerId, UpdateSeekerDto updateDto, IFormFile? cvFile);
+        public Task Update(int seekerId, UpdateSeekerDto updateDto);
 
 
         public Task Delete(int id);
