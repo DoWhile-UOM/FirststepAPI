@@ -66,7 +66,7 @@ namespace FirstStep.Services
                 
                 EmailDto request = new();
                 var builder = new BodyBuilder();
-                using (StreamReader SourceReader = System.IO.File.OpenText("Template/CompanyRegustrationSuccessfulTemplate.html"))
+                using (StreamReader SourceReader = System.IO.File.OpenText("././Template/CompanyRegustrationSuccessfulTemplate.html"))
                 {
                     builder.HtmlBody = SourceReader.ReadToEnd();
                 }
@@ -107,7 +107,7 @@ namespace FirstStep.Services
             {
                 var builder = new BodyBuilder();
 
-                using (StreamReader SourceReader = File.OpenText("Template/CommonOTPEmailTemplate.html"))
+                using (StreamReader SourceReader = File.OpenText("././Template/CommonOTPEmailTemplate.html"))
                 {
                     builder.HtmlBody = SourceReader.ReadToEnd();
                 }
@@ -121,7 +121,7 @@ namespace FirstStep.Services
             }
             catch (Exception ex)
             {
-                return "Error in File Reader" + ex.Message;
+                return "Error in File Reader: " + ex.Message;
             }
 
             await _context.SaveChangesAsync();
@@ -154,7 +154,7 @@ namespace FirstStep.Services
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
            
-            using (StreamReader SourceReader = File.OpenText("Template/JobApplicationSuccessfullySent.html"))
+            using (StreamReader SourceReader = File.OpenText("././Template/JobApplicationSuccessfullySent.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
@@ -175,7 +175,7 @@ namespace FirstStep.Services
       
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
-            using (StreamReader SourceReader = File.OpenText("Template/EvaluatedCompanyRegistrationApplicationTemplate.html"))
+            using (StreamReader SourceReader = File.OpenText("././Template/EvaluatedCompanyRegistrationApplicationTemplate.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
@@ -209,7 +209,7 @@ namespace FirstStep.Services
         {
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
-            using (StreamReader SourceReader = File.OpenText("Template/CARegSuccessfull.html"))
+            using (StreamReader SourceReader = File.OpenText("././Template/CARegSuccessfull.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
