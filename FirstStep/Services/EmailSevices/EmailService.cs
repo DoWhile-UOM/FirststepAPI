@@ -3,9 +3,10 @@ using Azure.Communication.Email;
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Template;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
-using System.Threading;
+using System.Resources;
 
 namespace FirstStep.Services
 {
@@ -107,11 +108,7 @@ namespace FirstStep.Services
             {
                 var builder = new BodyBuilder();
 
-                using (StreamReader SourceReader = File.OpenText("././Template/CommonOTPEmailTemplate.html"))
-                {
-                    builder.HtmlBody = SourceReader.ReadToEnd();
-                }
-
+                builder.HtmlBody = EmailTemplates.CommonOTP;
                 otpBody.To = request.email;
                 otpBody.Subject = "FirstStep Verification OTP";
                 builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", OTPrequest.otp.ToString());
