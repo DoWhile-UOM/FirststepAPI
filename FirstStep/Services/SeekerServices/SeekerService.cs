@@ -220,7 +220,10 @@ namespace FirstStep.Services
 
         public async Task<SeekerProfileViewDto> GetSeekerDetailsForSeekerProfileView(int id)
         {
-            var seeker = await _context.Seekers.FindAsync(id);
+            var seeker = await _context.Seekers
+                .Include(s => s.skills)
+                .FirstOrDefaultAsync(s => s.user_id == id);
+
             if (seeker == null)
             {
                 throw new NullReferenceException("Seeker not found.");
@@ -238,8 +241,9 @@ namespace FirstStep.Services
                 profile_picture = seeker.profile_picture,
                 linkedin = seeker.linkedin,
                 field_id = seeker.field_id,
-                user_id = seeker.user_id
-
+                user_id = seeker.user_id,
+                cVurl = seeker.CVurl,
+                seekerSkills = seeker.skills?.Select(s => s.skill_name).ToList()
             };
         }
 
