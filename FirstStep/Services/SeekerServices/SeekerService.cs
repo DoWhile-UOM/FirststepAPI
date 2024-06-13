@@ -130,6 +130,18 @@ namespace FirstStep.Services
             // Add skills to seeker
             seeker.skills = await IncludeSkillsToSeeker(newSeeker.seekerSkills);
 
+            // Upload CV file and get the URL
+            if (newSeeker.cvFile != null)
+            {
+                seeker.CVurl = await _fileService.UploadFile(newSeeker.cvFile);
+            }
+
+            // Upload profile picture file and get the URL
+            if (newSeeker.profilePictureFile != null)
+            {
+                seeker.profile_picture = await _fileService.UploadFile(newSeeker.profilePictureFile);
+            }
+
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
         }
