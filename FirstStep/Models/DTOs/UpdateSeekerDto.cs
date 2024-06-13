@@ -40,5 +40,8 @@ namespace FirstStep.Models.DTOs
 
         public IFormFile? cvFile { get; set; }
 
+        public IFormFile? profilePictureFile { get; set; } 
+
+
     }
 }

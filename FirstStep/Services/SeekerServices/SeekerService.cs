@@ -57,6 +57,8 @@ namespace FirstStep.Services
             }
 
             var cvUrl = await _fileService.GetBlobUrl(seeker.CVurl);
+            // Generate the full URL for the profile picture
+            var profilePictureUrl = seeker.profile_picture != null? await _fileService.GetBlobUrl(seeker.profile_picture): null;
 
             var updateSeekerDto = new UpdateSeekerDto
             {
@@ -68,7 +70,7 @@ namespace FirstStep.Services
                 description = seeker.description,
                 university = seeker.university,
                 CVurl = cvUrl, // Updated to fetch URL from file service
-                profile_picture = seeker.profile_picture,
+                profile_picture = profilePictureUrl, // Updated to fetch URL from file service
                 linkedin = seeker.linkedin,
                 field_id = seeker.field_id,
                 seekerSkills = seeker.skills?.Select(s => s.skill_name).ToList()
@@ -166,6 +168,11 @@ namespace FirstStep.Services
             if (updateDto.cvFile != null)
             {
                 dbSeeker.CVurl = await _fileService.UploadFile(updateDto.cvFile);
+            }
+
+            if (updateDto.profilePictureFile != null)
+            {
+                dbSeeker.profile_picture = await _fileService.UploadFile(updateDto.profilePictureFile);
             }
 
             await _context.SaveChangesAsync();

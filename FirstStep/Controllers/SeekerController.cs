@@ -92,10 +92,10 @@ namespace FirstStep.Controllers
         [Route("UpdateSeeker/{seekerId:int}")]
         public async Task<IActionResult> UpdateSeeker(int seekerId, UpdateSeekerDto updateDto)
         {
-            await _service.Update(seekerId, updateDto);
-
             try
             {
+                await _service.Update(seekerId, updateDto);
+
                 return Ok();
             }
             catch (Exception e)
