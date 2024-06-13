@@ -911,7 +911,7 @@ namespace FirstStep.Services
 
             foreach (var ad in filteredAds)
             {
-                if (!advertisementDistances.ContainsKey(ad.Key))
+                if (!matchingAdvertisements.ContainsKey(ad.Key))
                 {
                     matchingAdvertisements.Add(ad.Key, (ad.Value, advertisementDistances[ad.Key]));
                 }
@@ -947,8 +947,15 @@ namespace FirstStep.Services
                 tree.Add(key, ad.Key);
             }
 
-            // find the nearest neighbors with 80% coverage
-            var nearestAds = tree.GetNearestNeighbours(new[] { highestMatchingSkillPercentage, lowestDistance }, (int)(matchingAdvertisements.Count * 0.8));
+            int totalResults = matchingAdvertisements.Count;
+
+            if (totalResults > 10)
+            {
+                // find the nearest neighbors with 80% coverage
+                totalResults = (int)(matchingAdvertisements.Count * 0.8);
+            }
+
+            var nearestAds = tree.GetNearestNeighbours(new[] { highestMatchingSkillPercentage, lowestDistance }, totalResults);
 
             return nearestAds.Select(e => e.Value).ToList();
         }
@@ -1024,7 +1031,7 @@ namespace FirstStep.Services
                 float matchingSkillsPercentage = (float)matchingSkills / ad.skills.Count();
 
                 // select only when matching skills percentage is greater than 50%
-                if (matchingSkillsPercentage > 50)
+                if (matchingSkillsPercentage > 0.5)
                 {
                     matchingAdvertisements.Add(ad, matchingSkillsPercentage);
                 }
