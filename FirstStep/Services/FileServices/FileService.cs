@@ -81,7 +81,7 @@ namespace FirstStep.Services
             return await Task.FromResult(sasToken);
         }
 
-        public async Task<string?> GetBlobUrl(string blobName)
+        public async Task<string> GetBlobUrl(string blobName)
         {
             var blobClient = _blobcontainerClient.GetBlobClient(blobName);
 
@@ -89,7 +89,7 @@ namespace FirstStep.Services
             bool exists = await blobClient.ExistsAsync();
             if (!exists)
             {
-                return null; // or throw an exception, or handle it as per your requirement
+                return "";
             }
 
             var sasToken = await GenerateSasTokenAsync(blobName);

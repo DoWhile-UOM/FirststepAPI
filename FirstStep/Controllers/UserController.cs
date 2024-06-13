@@ -114,6 +114,5 @@ namespace FirstStep.Controllers
             await _userService.UpdateUser(user);
             return Ok();
         }
-
     }
 }

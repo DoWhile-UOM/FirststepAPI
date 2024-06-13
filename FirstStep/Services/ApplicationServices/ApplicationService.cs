@@ -249,8 +249,8 @@ namespace FirstStep.Services
             //applicationDto.cVurl = application.CVurl!; // when this is defualt cv, get from the seeker's profile
            
             // Fetch CV URL and profile picture URL from the file service
-            var cvUrl = application.CVurl != null ? await _fileService.GetBlobUrl(application.CVurl) : await _fileService.GetBlobUrl(application.seeker.CVurl);
-            var profilePictureUrl = application.seeker.profile_picture != null ? await _fileService.GetBlobUrl(application.seeker.profile_picture) : null;
+            var cvUrl = application.CVurl != null ? await _fileService.GetBlobUrl(application.CVurl) : await _fileService.GetBlobUrl(application.seeker!.CVurl);
+            var profilePictureUrl = application.seeker!.profile_picture != null ? await _fileService.GetBlobUrl(application.seeker.profile_picture) : null;
 
             applicationDto.cVurl = cvUrl;
             applicationDto.profile_picture = profilePictureUrl;
