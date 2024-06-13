@@ -640,7 +640,15 @@ namespace FirstStep.Services
 
             foreach (var ad in dbAds)
             {
+                // skip the advertisements that are not in the requested status
                 if (status != "all" && ad.current_status != status)
+                {
+                    continue;
+                }
+
+                // skip the advertisements that are not belong to the employee
+                // ca has permission to see all advertisements
+                if (employee.user_type != User.UserType.ca.ToString() && ad.hrManager_id != employee.user_id)
                 {
                     continue;
                 }
@@ -648,16 +656,6 @@ namespace FirstStep.Services
                 var jobOfferDto = _mapper.Map<AdvertisementTableRowDto>(ad);
 
                 jobOfferDto.field_name = ad.job_Field!.field_name;
-
-                if (employee.user_type != User.UserType.ca.ToString() 
-                    && ad.hrManager_id != employee.user_id)
-                {
-                    jobOfferDto.has_permision_for_handling = false;
-                }
-                else
-                {
-                    jobOfferDto.has_permision_for_handling = true;
-                }
 
                 jobOfferDto.no_of_applications = ad.applications!.Count();
 

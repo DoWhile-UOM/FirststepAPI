@@ -12,7 +12,11 @@ namespace FirstStep.MapperProfile
 
             CreateMap<AddAdvertisementDto, Advertisement>();
 
-            CreateMap<Advertisement, UpdateAdvertisementDto>();
+            CreateMap<Advertisement, UpdateAdvertisementDto>()
+                .ForMember(
+                    des => des.company_id,
+                    opt => opt.MapFrom(src => src.hrManager!.company_id));
+
             CreateMap<UpdateAdvertisementDto, Advertisement>()
                 .ForMember(ad => ad.advertisement_id, act => act.Ignore());
 
@@ -67,17 +71,14 @@ namespace FirstStep.MapperProfile
 
             CreateMap<Advertisement, ApplicationListingPageDto>()
                 .ForMember(
+                    des => des.company_id,
+                    opt => opt.MapFrom(src => src.hrManager!.company_id))
+                .ForMember(
                     des => des.field_name,
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
-
-            //map application with ApplicationStatusDto to get application status by application id to show in the seeker dashboard in stepper which shows submission,screening and finalize with dates
-            CreateMap<Application, ApplicationStatusDto>();
                 
 
-
-
-
-
+            CreateMap<Application, ApplicationStatusDto>();
         }
     }
 }
