@@ -75,7 +75,7 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("AddCompany")] // Company Admin
-        public async Task<IActionResult> AddCompany(AddCompanyDto newCompany)
+        public async Task<IActionResult> AddCompany([FromForm] AddCompanyDto newCompany)
         {
             try
             {
