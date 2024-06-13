@@ -4,7 +4,7 @@
     {
         public required string first_name { get; set; }
 
-        public  required string last_name { get; set; }
+        public required string last_name { get; set; }
 
         public required string password { get; set; }
 
@@ -24,14 +24,12 @@
 
         public string? profile_picture { get; set; }
 
-        public string description { get; set; }
+        public string? description { get; set; }
 
         public virtual List<string>? seekerSkills { get; set; }
 
-        public IFormFile? cvFile { get; set; } // Added for CV file upload
+        public IFormFile? cvFile { get; set; }
 
-        public IFormFile? profilePictureFile { get; set; } // Added for profile picture file upload
-
-
+        public IFormFile? profilePictureFile { get; set; }
     }
 }

@@ -3,9 +3,10 @@ using Azure.Communication.Email;
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Template;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
-using System.Threading;
+using System.Resources;
 
 namespace FirstStep.Services
 {
@@ -66,7 +67,7 @@ namespace FirstStep.Services
                 
                 EmailDto request = new();
                 var builder = new BodyBuilder();
-                using (StreamReader SourceReader = System.IO.File.OpenText("Template/CompanyRegustrationSuccessfulTemplate.html"))
+                using (StreamReader SourceReader = System.IO.File.OpenText("././Template/CompanyRegustrationSuccessfulTemplate.html"))
                 {
                     builder.HtmlBody = SourceReader.ReadToEnd();
                 }
@@ -101,28 +102,29 @@ namespace FirstStep.Services
                 _context.OTPRequests.Add(OTPrequest);
             }
 
-            await _context.SaveChangesAsync();
-
-            var builder = new BodyBuilder();
             EmailDto otpBody = new EmailDto();
 
-            using (StreamReader SourceReader = File.OpenText("Template/CommonOTPEmailTemplate.html"))
+            try
             {
-                builder.HtmlBody = SourceReader.ReadToEnd();
+                var builder = new BodyBuilder();
+
+                builder.HtmlBody = EmailTemplates.CommonOTP;
+                otpBody.To = request.email;
+                otpBody.Subject = "FirstStep Verification OTP";
+                builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", OTPrequest.otp.ToString());
+                builder.HtmlBody = builder.HtmlBody.Replace("{name}", "Test");//reciever= seeker's firstName / company name / Employee firstName
+                builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
+                otpBody.Body = builder.HtmlBody;
+            }
+            catch (Exception ex)
+            {
+                return "Error in File Reader: " + ex.Message;
             }
 
-            otpBody.To = request.email;
-            otpBody.Subject = "FirstStep Verification OTP";
-            builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", OTPrequest.otp.ToString());
-            builder.HtmlBody = builder.HtmlBody.Replace("{name}", "Test");//reciever= seeker's firstName / company name / Employee firstName
-            builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
-            otpBody.Body = builder.HtmlBody;
+            await _context.SaveChangesAsync();
 
             return await SendEmail(otpBody);
-
-
         }
-
 
         public async Task<string> VerifyOTP(OTPRequest request)
         {
@@ -149,7 +151,7 @@ namespace FirstStep.Services
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
            
-            using (StreamReader SourceReader = File.OpenText("Template/JobApplicationSuccessfullySent.html"))
+            using (StreamReader SourceReader = File.OpenText("././Template/JobApplicationSuccessfullySent.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
@@ -170,7 +172,7 @@ namespace FirstStep.Services
       
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
-            using (StreamReader SourceReader = File.OpenText("Template/EvaluatedCompanyRegistrationApplicationTemplate.html"))
+            using (StreamReader SourceReader = File.OpenText("././Template/EvaluatedCompanyRegistrationApplicationTemplate.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
@@ -204,7 +206,7 @@ namespace FirstStep.Services
         {
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
-            using (StreamReader SourceReader = File.OpenText("Template/CARegSuccessfull.html"))
+            using (StreamReader SourceReader = File.OpenText("././Template/CARegSuccessfull.html"))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }

@@ -22,7 +22,6 @@ namespace FirstStep.Services
             _seekerSkillService = seekerSkillService;
             _fileService = fileService;
         }
-        
 
         public async Task<IEnumerable<Seeker>> GetAll()
         {
@@ -83,6 +82,9 @@ namespace FirstStep.Services
         {
             Seeker seeker = await GetById(id);
             SeekerApplicationDto seekerdto = _mapper.Map<SeekerApplicationDto>(seeker);
+            //assign GetBlobUrl to seekerApplicationDto default_cv_url 
+            seekerdto.defualt_cv_url = await _fileService.GetBlobUrl(seekerdto.cVurl);
+
             return seekerdto;
         }
 
