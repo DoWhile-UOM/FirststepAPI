@@ -303,7 +303,6 @@ namespace FirstStep.Services
             dbCompany.company_email = company.company_email;
             dbCompany.company_website = company.company_website;
             dbCompany.company_phone_number = company.company_phone_number;
-            dbCompany.company_logo = company.company_logo;
             dbCompany.company_description = company.company_description;
             dbCompany.company_business_scale = company.company_business_scale;
 

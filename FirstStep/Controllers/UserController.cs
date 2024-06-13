@@ -6,26 +6,9 @@ using FirstStep.Data;
 using FirstStep.Models.DTOs;
 using FirstStep.Models;
 using FirstStep.Services;
-using Org.BouncyCastle.Security;
-using AutoMapper;
 
 namespace FirstStep.Controllers
 {
-    public class UserRegRequest
-    {
-        public required string email { get; set; }
-
-        public required string password_hash { get; set; }
-
-        public required string first_name { get; set; }
-
-        public required string last_name { get; set; }
-
-        public string? type { get; set; }
-
-        public string? company_id { get; set; }
-    }
-
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -70,7 +53,8 @@ namespace FirstStep.Controllers
             return Ok(users);
         }
 
-        [HttpPost("refresh")]
+        [HttpPost]
+        [Route("refresh")]
         public async Task<IActionResult> Refresh([FromBody] TokenApiDto tokenApiDto)
         {
             try
