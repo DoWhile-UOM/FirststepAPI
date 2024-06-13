@@ -21,7 +21,6 @@ namespace FirstStep.Services
             _mapper = mapper;
             _seekerSkillService = seekerSkillService;
             _fileService = fileService;
-
         }
 
         public async Task<IEnumerable<Seeker>> GetAll()
@@ -56,19 +55,21 @@ namespace FirstStep.Services
                 return null;
             }
 
-            // Manually map Seeker to UpdateSeekerDto
+            var cvUrl = await _fileService.GetBlobUrl(seeker.CVurl);
+            // Generate the full URL for the profile picture
+            var profilePictureUrl = seeker.profile_picture != null? await _fileService.GetBlobUrl(seeker.profile_picture): null;
+
             var updateSeekerDto = new UpdateSeekerDto
             {
                 email = seeker.email,
-                // Password is not mapped for security reasons
                 first_name = seeker.first_name,
                 last_name = seeker.last_name,
                 phone_number = seeker.phone_number,
                 bio = seeker.bio,
                 description = seeker.description,
                 university = seeker.university,
-                CVurl = seeker.CVurl,
-                profile_picture = seeker.profile_picture,
+                CVurl = cvUrl, // Updated to fetch URL from file service
+                profile_picture = profilePictureUrl, // Updated to fetch URL from file service
                 linkedin = seeker.linkedin,
                 field_id = seeker.field_id,
                 seekerSkills = seeker.skills?.Select(s => s.skill_name).ToList()
@@ -76,6 +77,7 @@ namespace FirstStep.Services
 
             return updateSeekerDto;
         }
+
         public async Task<SeekerApplicationDto> GetSeekerDetails(int id)
         {
             Seeker seeker = await GetById(id);
@@ -130,6 +132,18 @@ namespace FirstStep.Services
             // Add skills to seeker
             seeker.skills = await IncludeSkillsToSeeker(newSeeker.seekerSkills);
 
+            // Upload CV file and get the URL
+            if (newSeeker.cvFile != null)
+            {
+                seeker.CVurl = await _fileService.UploadFile(newSeeker.cvFile);
+            }
+
+            // Upload profile picture file and get the URL
+            if (newSeeker.profilePictureFile != null)
+            {
+                seeker.profile_picture = await _fileService.UploadFile(newSeeker.profilePictureFile);
+            }
+
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
         }
@@ -153,23 +167,30 @@ namespace FirstStep.Services
                 }
                 dbSeeker.password_hash = PasswordHasher.Hasher(updateDto.password);
             }
-
+            dbSeeker.email = updateDto.email;
             dbSeeker.first_name = updateDto.first_name;
             dbSeeker.last_name = updateDto.last_name;
             dbSeeker.phone_number = updateDto.phone_number;
             dbSeeker.bio = updateDto.bio;
             dbSeeker.description = updateDto.description;
             dbSeeker.university = updateDto.university;
-            dbSeeker.CVurl = updateDto.CVurl;
-            dbSeeker.profile_picture = updateDto.profile_picture;
             dbSeeker.linkedin = updateDto.linkedin;
             dbSeeker.field_id = updateDto.field_id;
 
             dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
 
+            if (updateDto.cvFile != null)
+            {
+                dbSeeker.CVurl = await _fileService.UploadFile(updateDto.cvFile);
+            }
+
+            if (updateDto.profilePictureFile != null)
+            {
+                dbSeeker.profile_picture = await _fileService.UploadFile(updateDto.profilePictureFile);
+            }
+
             await _context.SaveChangesAsync();
         }
-
         private async Task<ICollection<Skill>?> IncludeSkillsToSeeker(ICollection<string>? newSkills)
         {
             var skills = new List<Skill>();
@@ -201,11 +222,18 @@ namespace FirstStep.Services
 
         public async Task<SeekerProfileViewDto> GetSeekerDetailsForSeekerProfileView(int id)
         {
-            var seeker = await _context.Seekers.FindAsync(id);
+            var seeker = await _context.Seekers
+                .Include(s => s.skills)
+                .FirstOrDefaultAsync(s => s.user_id == id);
+
             if (seeker == null)
             {
                 throw new NullReferenceException("Seeker not found.");
             }
+
+            // Generate the full URL for the CV and profile picture
+            var cvUrl = await _fileService.GetBlobUrl(seeker.CVurl);
+            var profilePictureUrl = seeker.profile_picture != null ? await _fileService.GetBlobUrl(seeker.profile_picture) : null;
 
             return new SeekerProfileViewDto
             {
@@ -216,11 +244,12 @@ namespace FirstStep.Services
                 bio = seeker.bio,
                 description = seeker.description,
                 university = seeker.university,
-                profile_picture = seeker.profile_picture,
+                profile_picture = profilePictureUrl,
                 linkedin = seeker.linkedin,
                 field_id = seeker.field_id,
-                user_id = seeker.user_id
-
+                user_id = seeker.user_id,
+                cVurl = cvUrl,
+                seekerSkills = seeker.skills?.Select(s => s.skill_name).ToList()
             };
         }
 

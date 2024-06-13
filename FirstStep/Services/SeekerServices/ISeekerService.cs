@@ -22,6 +22,7 @@ namespace FirstStep.Services
 
         public Task Update(int seekerId, UpdateSeekerDto updateDto);
 
+
         public Task Delete(int id);
 
         public Task<bool> IsValidSeeker(int seekerId);

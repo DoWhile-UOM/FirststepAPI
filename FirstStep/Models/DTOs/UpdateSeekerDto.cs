@@ -2,7 +2,7 @@
 
 namespace FirstStep.Models.DTOs
 {
-    public struct UpdateSeekerDto
+    public class UpdateSeekerDto
     {
         [Required]
         public string email { get; set; }
@@ -37,5 +37,11 @@ namespace FirstStep.Models.DTOs
         public int field_id { get; set; }
 
         public List<string>? seekerSkills { get; set; }
+
+        public IFormFile? cvFile { get; set; }
+
+        public IFormFile? profilePictureFile { get; set; } 
+
+
     }
 }
