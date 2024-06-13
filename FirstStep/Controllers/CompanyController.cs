@@ -84,11 +84,8 @@ namespace FirstStep.Controllers
             }
             catch (Exception ex)//Handle other errors
             {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
                 return BadRequest(ex.Message);
             }
-
         }
 
         [HttpPut]
