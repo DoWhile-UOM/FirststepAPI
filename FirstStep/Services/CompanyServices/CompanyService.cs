@@ -2,6 +2,7 @@
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -130,6 +131,18 @@ namespace FirstStep.Services
             if (await CheckCompnayRegNo(company.business_reg_no.ToString()))
             {
                 throw new Exception("Company registration number already exists");
+            }
+            if (newCompanyDto.company_logo != null)
+            {
+                company.company_logo = await _fileService.UploadFile(newCompanyDto.company_logo);
+            }
+            if (newCompanyDto.certificate_of_incorporation != null)
+            {
+                company.certificate_of_incorporation = await _fileService.UploadFile(newCompanyDto.certificate_of_incorporation);
+            }
+            if (newCompanyDto.business_reg_certificate != null)
+            {
+                company.business_reg_certificate = await _fileService.UploadFile(newCompanyDto.business_reg_certificate);
             }
 
             company.verification_status = false;
