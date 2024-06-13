@@ -2,6 +2,9 @@
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OpenAI_API;
+using OpenAI_API.Completions;
+using OpenAI_API.Models;
 
 namespace FirstStep.Controllers
 {
@@ -14,6 +17,60 @@ namespace FirstStep.Controllers
         public AdvertisementController(IAdvertisementService service)
         {
             _service = service;
+        }
+
+        [HttpGet]
+        [Route("GetKeywords")]
+        public async Task<ActionResult> GetKeywords(string prompt)
+        {
+            return Ok(await GetOpenAIResponseAsync(prompt));
+
+        }
+
+        private async Task<string> GetOpenAIResponseWithRetryAsync(string prompt, int maxRetries = 5)
+        {
+            int retryCount = 0;
+            TimeSpan delay = TimeSpan.FromSeconds(1);
+
+            while (retryCount < maxRetries)
+            {
+                try
+                {
+                    // Your API call logic here
+                    var response = await GetOpenAIResponseAsync(prompt);  // Replace with your actual API call method
+                    return response;
+                }
+                catch (HttpRequestException ex) when (ex.Message.Contains("TooManyRequests"))
+                {
+                    retryCount++;
+                    await Task.Delay(delay);
+                    delay = TimeSpan.FromSeconds(Math.Pow(2, retryCount)); // Exponential backoff
+                }
+            }
+
+            throw new Exception("Max retry attempts exceeded.");
+        }
+
+        private async Task<string> GetOpenAIResponseAsync(string prompt)
+        {
+            string outputResult = "";
+            var openai = new OpenAIAPI("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");
+
+            CompletionRequest completionRequest = new CompletionRequest
+            {
+                Prompt = prompt,
+                Model = "gpt-3.5-turbo",  // Adjust to a lighter model suitable for the free plan
+                MaxTokens = 1024
+            };
+
+            var completions = await openai.Completions.CreateCompletionAsync(completionRequest);
+
+            foreach (var completion in completions.Completions)
+            {
+                outputResult += completion.Text;
+            }
+
+            return outputResult;
         }
 
         [HttpGet]
