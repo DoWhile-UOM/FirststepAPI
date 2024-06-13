@@ -229,6 +229,10 @@ namespace FirstStep.Services
                 throw new NullReferenceException("Seeker not found.");
             }
 
+            // Generate the full URL for the CV and profile picture
+            var cvUrl = await _fileService.GetBlobUrl(seeker.CVurl);
+            var profilePictureUrl = seeker.profile_picture != null ? await _fileService.GetBlobUrl(seeker.profile_picture) : null;
+
             return new SeekerProfileViewDto
             {
                 first_name = seeker.first_name,
@@ -238,11 +242,11 @@ namespace FirstStep.Services
                 bio = seeker.bio,
                 description = seeker.description,
                 university = seeker.university,
-                profile_picture = seeker.profile_picture,
+                profile_picture = profilePictureUrl,
                 linkedin = seeker.linkedin,
                 field_id = seeker.field_id,
                 user_id = seeker.user_id,
-                cVurl = seeker.CVurl,
+                cVurl = cvUrl,
                 seekerSkills = seeker.skills?.Select(s => s.skill_name).ToList()
             };
         }
