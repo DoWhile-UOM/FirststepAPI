@@ -114,6 +114,11 @@ namespace FirstStep.Services
             {
                 companydto.certificate_of_incorporation = await _fileService.GetBlobUrl(companydto.certificate_of_incorporation);
             }
+            if (company.company_logo != null)
+            {
+                companydto.company_logo = await _fileService.GetBlobUrl(company.company_logo);
+            }
+            
             return companydto;
         }
         
