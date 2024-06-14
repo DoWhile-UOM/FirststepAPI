@@ -275,11 +275,21 @@ namespace FirstStep.Services
             dbCompany.company_phone_number = company.company_phone_number;
             dbCompany.company_business_scale = company.company_business_scale;
             dbCompany.verification_status = false;
-            dbCompany.business_reg_certificate = company.business_reg_certificate;
-            dbCompany.certificate_of_incorporation = company.certificate_of_incorporation;
             dbCompany.company_applied_date = company.company_applied_date;
             dbCompany.comment = null;
             dbCompany.verified_system_admin_id = null;
+            if (company.company_logo != null)
+            {
+                dbCompany.company_logo = await _fileService.UploadFile(company.company_logo);
+            }
+            if (company.certificate_of_incorporation != null)
+            {
+                dbCompany.certificate_of_incorporation = await _fileService.UploadFile(company.certificate_of_incorporation);
+            }
+            if (company.business_reg_certificate != null)
+            {
+                dbCompany.business_reg_certificate = await _fileService.UploadFile(company.business_reg_certificate);
+            }
 
             await _context.SaveChangesAsync();
         }
