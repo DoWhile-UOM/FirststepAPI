@@ -4,6 +4,7 @@
     {
         public int advertisement_id { get; set; }
         public int job_number { get; set; }
+        public int company_id { get; set; }
         public required string title { get; set; }
         public required string country { get; set; }
         public required string city { get; set; }

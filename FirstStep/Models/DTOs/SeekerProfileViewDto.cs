@@ -24,6 +24,8 @@
 
         public int user_id { get; set; }
 
-        //public virtual List<string>? seekerSkills { get; set; }
+        public required string cVurl { get; set; }
+
+        public virtual List<string>? seekerSkills { get; set; }
     }
 }

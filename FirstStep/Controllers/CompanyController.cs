@@ -75,7 +75,7 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("AddCompany")] // Company Admin
-        public async Task<IActionResult> AddCompany(AddCompanyDto newCompany)
+        public async Task<IActionResult> AddCompany([FromForm] AddCompanyDto newCompany)
         {
             try
             {
@@ -84,11 +84,8 @@ namespace FirstStep.Controllers
             }
             catch (Exception ex)//Handle other errors
             {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
                 return BadRequest(ex.Message);
             }
-
         }
 
         [HttpPut]
@@ -151,12 +148,16 @@ namespace FirstStep.Controllers
             {
                 return BadRequest("No file uploaded.");
             }
-            var result = await _service.SaveCompanyLogo(file, companyId);
-            if (!result)
+
+            try
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error uploading the file.");
+                await _service.SaveCompanyLogo(file, companyId);
+                return Ok("File uploaded successfully.");
             }
-            return Ok("File uploaded successfully.");
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
 
         [HttpDelete]

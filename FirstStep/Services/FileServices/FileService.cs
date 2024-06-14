@@ -79,15 +79,22 @@ namespace FirstStep.Services
             var sasToken = sasQueryParamas.ToString();
 
             return await Task.FromResult(sasToken);
-
         }
 
         public async Task<string> GetBlobUrl(string blobName)
         {
-            var sasToken = await GenerateSasTokenAsync(blobName);
             var blobClient = _blobcontainerClient.GetBlobClient(blobName);
 
-            //set the content disposition header to inline
+            // Check if the blob exists
+            bool exists = await blobClient.ExistsAsync();
+            if (!exists)
+            {
+                return "";
+            }
+
+            var sasToken = await GenerateSasTokenAsync(blobName);
+
+            // Set the content disposition header to inline
             var headers = new BlobHttpHeaders
             {
                 ContentDisposition = "inline"

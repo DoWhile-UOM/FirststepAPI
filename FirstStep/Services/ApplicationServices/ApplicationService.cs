@@ -5,7 +5,6 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static FirstStep.Services.ApplicationService;
 
 namespace FirstStep.Services
 {
@@ -150,7 +149,9 @@ namespace FirstStep.Services
 
         public async Task<ApplicationListingPageDto> GetApplicationList(int jobID, string status)
         {
-            var advertisement = await _context.Advertisements.Include("job_Field").FirstOrDefaultAsync(x => x.advertisement_id == jobID);
+            var advertisement = await _context.Advertisements
+                .Include("job_Field").Include("hrManager")
+                .FirstOrDefaultAsync(x => x.advertisement_id == jobID);
 
             if (advertisement is null)
             {
@@ -243,7 +244,15 @@ namespace FirstStep.Services
             applicationDto.application_Id = application.application_Id;
             applicationDto.submitted_date = application.submitted_date;
             applicationDto.seeker_id = application.seeker_id;
-            applicationDto.cVurl = application.CVurl!; // when this is defualt cv, get from the seeker's profile
+
+            //applicationDto.cVurl = application.CVurl!; // when this is defualt cv, get from the seeker's profile
+           
+            // Fetch CV URL and profile picture URL from the file service
+            var cvUrl = application.CVurl != null ? await _fileService.GetBlobUrl(application.CVurl) : await _fileService.GetBlobUrl(application.seeker!.CVurl);
+            var profilePictureUrl = application.seeker!.profile_picture != null ? await _fileService.GetBlobUrl(application.seeker.profile_picture) : null;
+
+            applicationDto.cVurl = cvUrl;
+            applicationDto.profile_picture = profilePictureUrl;
 
             applicationDto.is_evaluated = lastRevision != null && lastRevision.status != ApplicationStatus.NotEvaluated.ToString();
             applicationDto.current_status = application.status;

@@ -1,3 +1,4 @@
+using Azure.Communication.Email;
 using Azure.Storage.Blobs;
 using FirstStep.Data;
 using FirstStep.Services;
@@ -54,6 +55,12 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddScoped(options =>
 {
     return new BlobServiceClient(builder.Configuration.GetConnectionString("AzureBlobStorageConnection"));
+});
+
+// Email Client Configuration
+builder.Services.AddScoped(options =>
+{
+    return new EmailClient(builder.Configuration.GetConnectionString("AzureEmailConnection"));
 });
 
 // Services Configuration

@@ -2,8 +2,8 @@
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace FirstStep.Services
 {
@@ -114,6 +114,11 @@ namespace FirstStep.Services
             {
                 companydto.certificate_of_incorporation = await _fileService.GetBlobUrl(companydto.certificate_of_incorporation);
             }
+            if (company.company_logo != null)
+            {
+                companydto.company_logo = await _fileService.GetBlobUrl(company.company_logo);
+            }
+            
             return companydto;
         }
         
@@ -131,6 +136,18 @@ namespace FirstStep.Services
             {
                 throw new Exception("Company registration number already exists");
             }
+            if (newCompanyDto.company_logo != null)
+            {
+                company.company_logo = await _fileService.UploadFile(newCompanyDto.company_logo);
+            }
+            if (newCompanyDto.certificate_of_incorporation != null)
+            {
+                company.certificate_of_incorporation = await _fileService.UploadFile(newCompanyDto.certificate_of_incorporation);
+            }
+            if (newCompanyDto.business_reg_certificate != null)
+            {
+                company.business_reg_certificate = await _fileService.UploadFile(newCompanyDto.business_reg_certificate);
+            }
 
             company.verification_status = false;
             company.registration_url= GenerateUniqueStringId(company.business_reg_no);
@@ -141,7 +158,7 @@ namespace FirstStep.Services
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
 
-            _emailService.SendEmailCompanyRegistration(company.company_email, company.company_name,company.registration_url); //Send Company Registration Email
+            await _emailService.SendEmailCompanyRegistration(company.company_email, company.company_name,company.registration_url); //Send Company Registration Email
             //return(company.registration_url); //Return Company Registration URL (Unique ID 
         }
 
@@ -172,16 +189,6 @@ namespace FirstStep.Services
 
         //Company Resgistration State Check ID Generation Ends here
 
-
-        public class EmailAlreadyExistsException : Exception
-        {
-            public EmailAlreadyExistsException(string message) : base(message) { }
-        }
-
-        public class RegistrationNumberAlreadyExistsException : Exception
-        {
-            public RegistrationNumberAlreadyExistsException(string message) : base(message) { }
-        }
 
         private async Task<bool> CheckCompnayEmailExist(string Email) //Function to check company email exist
         {
@@ -290,7 +297,6 @@ namespace FirstStep.Services
             dbCompany.company_email = company.company_email;
             dbCompany.company_website = company.company_website;
             dbCompany.company_phone_number = company.company_phone_number;
-            dbCompany.company_logo = company.company_logo;
             dbCompany.company_description = company.company_description;
             dbCompany.company_business_scale = company.company_business_scale;
 
@@ -303,50 +309,25 @@ namespace FirstStep.Services
 
             return company.verification_status;
         }
-        /*  public async Task<bool> SaveCompanyLogo(IFormFile file, int companyId)
-          {
-              var response = await _fileService.UploadFiles(new List<IFormFile> { file });
-              if(response == null || response.Count == 0)
-              {
-                  return false;
-              }
-              // Get the URL of the uploaded file
-              var blobName = file.FileName;
-              var fileUrl = await _fileService.GetBlobUrl(blobName);
 
-              // Save the file information in the database
-              var company = await FindByID(companyId);
-              if(company == null)
-              {
-                  return false;
-              }
-              company.company_logo= fileUrl;
-
-              await _context.SaveChangesAsync();
-
-              return true;
-
-          }*/
-        public async Task<bool> SaveCompanyLogo(IFormFile file, int companyId)
+        public async Task SaveCompanyLogo(IFormFile file, int companyId)
         {
             var logoBlobName = await _fileService.UploadFile(file);
             if (logoBlobName == null)
             {
-                return false;
+                throw new NullReferenceException("Failed to upload the file.");
             }
             
             // Save the file information in the database
             var company = await FindByID(companyId);
+
             if (company == null)
             {
-                return false;
+                throw new NullReferenceException("Company not found.");
             }
             company.company_logo = logoBlobName;
 
             await _context.SaveChangesAsync();
-
-            return true;
-
         }
     }
 }

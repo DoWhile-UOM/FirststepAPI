@@ -6,17 +6,18 @@ using FirstStep.Models.DTOs;
 using FirstStep.Template;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
-using System.Resources;
 
 namespace FirstStep.Services
 {
     public class EmailService : IEmailService
     {
         private readonly DataContext _context;
+        private readonly EmailClient _emailClient;
 
-        public EmailService(DataContext context)
+        public EmailService(DataContext context, EmailClient emailClient)
         {
             _context = context;
+            _emailClient = emailClient;
         }
 
         public async Task<string> SendEmail(EmailDto request)
@@ -29,11 +30,8 @@ namespace FirstStep.Services
 
             try
             {
-                EmailClient emailClient = new EmailClient("endpoint=https://firsstepcom.unitedstates.communication.azure.com/;accesskey=BBgT2UTVnfRfWet5z9if14CDBjoKJdjA1VWjvRWi4jbAC6y46gZaBA0mZHbtrRDAodhVPXjWZ+yd2G119BuQzA==");
-
-
                 Console.WriteLine("Sending email...");
-                EmailSendOperation emailSendOperation = await emailClient.SendAsync(
+                EmailSendOperation emailSendOperation = await _emailClient.SendAsync(
                     Azure.WaitUntil.Completed,
                     sender,
                     recipient,
@@ -59,25 +57,22 @@ namespace FirstStep.Services
         }
 
         // sending email in company registration process 
-        public void SendEmailCompanyRegistration(string email,string company_name, string applicationEvaluationStatusLink)
+        public async Task SendEmailCompanyRegistration(string email,string company_name, string applicationEvaluationStatusLink)
         {
-            
-                // Registration Email
-                applicationEvaluationStatusLink= "http://localhost:4200/RegCheck?id="+applicationEvaluationStatusLink;// this link will direct company to a page where the company can see its regirataion application evaluation status.
+            // Registration Email
+            applicationEvaluationStatusLink= " https://polite-forest-041105700.5.azurestaticapps.net/RegCheck?id=" + applicationEvaluationStatusLink;// this link will direct company to a page where the company can see its regirataion application evaluation status.
                 
-                EmailDto request = new();
-                var builder = new BodyBuilder();
-                using (StreamReader SourceReader = System.IO.File.OpenText("././Template/CompanyRegustrationSuccessfulTemplate.html"))
-                {
-                    builder.HtmlBody = SourceReader.ReadToEnd();
-                }
-                request.To = email;
-                request.Subject = "Application was successfully sent";
-                builder.HtmlBody = builder.HtmlBody.Replace("{Company Name}", company_name);
-                builder.HtmlBody = builder.HtmlBody.Replace("{evaluation_link}", applicationEvaluationStatusLink); // here this applicationEvaluationStautsLink will direct company to a page where the company can see its regirataion application evaluation status.
-                request.Body = builder.HtmlBody;
-            _ = this.SendEmail(request);
-           
+            EmailDto request = new();
+            var builder = new BodyBuilder();
+
+            builder.HtmlBody = EmailTemplates.CompanyRegustrationSuccessful;
+            request.To = email;
+            request.Subject = "Application was successfully sent";
+            builder.HtmlBody = builder.HtmlBody.Replace("{Company Name}", company_name);
+            builder.HtmlBody = builder.HtmlBody.Replace("{evaluation_link}", applicationEvaluationStatusLink); // here this applicationEvaluationStautsLink will direct company to a page where the company can see its regirataion application evaluation status.
+            request.Body = builder.HtmlBody;
+            
+            await SendEmail(request);
         }
 
         public async Task<string> SendOTPEmail(VerifyEmailDto request) //Send OTP to the email
@@ -94,34 +89,27 @@ namespace FirstStep.Services
 
             if (dbOtpRequest is not null)
             {
-                // update the OTP
                 dbOtpRequest.otp = OTPrequest.otp;
+                dbOtpRequest.expiry_date_time = OTPrequest.expiry_date_time;
             }
             else
             {
                 _context.OTPRequests.Add(OTPrequest);
             }
 
+            await _context.SaveChangesAsync();
+
             EmailDto otpBody = new EmailDto();
 
-            try
-            {
-                var builder = new BodyBuilder();
+            var builder = new BodyBuilder();
 
-                builder.HtmlBody = EmailTemplates.CommonOTP;
-                otpBody.To = request.email;
-                otpBody.Subject = "FirstStep Verification OTP";
-                builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", OTPrequest.otp.ToString());
-                builder.HtmlBody = builder.HtmlBody.Replace("{name}", "Test");//reciever= seeker's firstName / company name / Employee firstName
-                builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
-                otpBody.Body = builder.HtmlBody;
-            }
-            catch (Exception ex)
-            {
-                return "Error in File Reader: " + ex.Message;
-            }
-
-            await _context.SaveChangesAsync();
+            builder.HtmlBody = EmailTemplates.CommonOTP;
+            otpBody.To = request.email;
+            otpBody.Subject = "FirstStep Verification OTP";
+            builder.HtmlBody = builder.HtmlBody.Replace("{OTP}", OTPrequest.otp.ToString());
+            builder.HtmlBody = builder.HtmlBody.Replace("{name}", "Test");//reciever= seeker's firstName / company name / Employee firstName
+            builder.HtmlBody = builder.HtmlBody.Replace("{message}", "This is the OTP to verfiy you Email");//message = "to proceed with the registration." / "to proceed with the changing password process"
+            otpBody.Body = builder.HtmlBody;
 
             return await SendEmail(otpBody);
         }
@@ -150,12 +138,8 @@ namespace FirstStep.Services
         {
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
-           
-            using (StreamReader SourceReader = File.OpenText("././Template/JobApplicationSuccessfullySent.html"))
-            {
-                builder.HtmlBody = SourceReader.ReadToEnd();
-            }
 
+            builder.HtmlBody = EmailTemplates.JobApplicationSuccessfullySent;
             emailBody.To = email;
             emailBody.Subject = "Job Application was successfully sent";
             builder.HtmlBody = builder.HtmlBody.Replace("{jobseeker}", jobseekerFName);//jobseekerFName= job seeker's first name
@@ -172,10 +156,8 @@ namespace FirstStep.Services
       
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
-            using (StreamReader SourceReader = File.OpenText("././Template/EvaluatedCompanyRegistrationApplicationTemplate.html"))
-            {
-                builder.HtmlBody = SourceReader.ReadToEnd();
-            }
+
+            builder.HtmlBody = EmailTemplates.EvaluatedCompanyRegistrationApplication;
             emailBody.To = email;
             builder.HtmlBody = builder.HtmlBody.Replace("{company}", company_name);
             if (HasAccepted == true)
@@ -206,10 +188,8 @@ namespace FirstStep.Services
         {
             EmailDto emailBody = new();
             var builder = new BodyBuilder();
-            using (StreamReader SourceReader = File.OpenText("././Template/CARegSuccessfull.html"))
-            {
-                builder.HtmlBody = SourceReader.ReadToEnd();
-            }
+
+            builder.HtmlBody = EmailTemplates.CARegSucessfull;
             emailBody.To = email;
             emailBody.Subject = "Company Admin Registration Sucess";
             builder.HtmlBody = builder.HtmlBody.Replace("{first name}", firstName);

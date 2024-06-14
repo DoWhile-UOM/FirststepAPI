@@ -95,6 +95,7 @@ namespace FirstStep.Controllers
             try
             {
                 await _service.Update(seekerId, updateDto);
+
                 return Ok();
             }
             catch (Exception e)

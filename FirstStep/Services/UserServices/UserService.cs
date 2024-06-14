@@ -16,24 +16,14 @@ namespace FirstStep.Services
     public class UserService: IUserService
     {
         private readonly DataContext _context;
-        private readonly ICompanyService _companyService;
-        private readonly IEmployeeService _employeeService;
-        private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
 
-        public UserService(DataContext context, 
-            ICompanyService companyService, 
-            IEmployeeService employeeService, 
-            IEmailService emailService, IMapper mapper)
+        public UserService(DataContext context, IMapper mapper)
         {
             _context = context;
-            _companyService = companyService;
-            _employeeService = employeeService;
-            _emailService = emailService;
             _mapper = mapper;
         }
 
-        //User Authentication
         public async Task<AuthenticationResult> Authenticate(LoginRequestDto userObj)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.email == userObj.email);
@@ -54,7 +44,6 @@ namespace FirstStep.Services
             return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken } };
         }
 
-        //Refresh Token
         public async Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto)
         {
             if (tokenApiDto is null)
@@ -76,27 +65,6 @@ namespace FirstStep.Services
             return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = await newAccessToken, RefreshToken = newRefreshToken } };
         }
 
-        
-        //Check if email already exists
-        public async Task<bool> CheckEmailExist(string Email)
-        {
-            return await _context.Users.AnyAsync(x => x.email == Email);
-        }
-
-        ///Password Strength Checker
-        private static string PasswordStrengthCheck(string pass)
-        {
-            StringBuilder sb = new StringBuilder();
-            if (pass.Length < 9)
-                sb.Append("Minimum password length should be 8" + Environment.NewLine);
-            if (!(Regex.IsMatch(pass, "[a-z]") && Regex.IsMatch(pass, "[A-Z]") && Regex.IsMatch(pass, "[0-9]")))
-                sb.Append("Password should be AlphaNumeric" + Environment.NewLine);
-            if (!Regex.IsMatch(pass, "[<,>,@,!,#,$,%,^,&,*,(,),_,+,\\[,\\],{,},?,:,;,|,',\\,.,/,~,`,-,=]"))
-                sb.Append("Password should contain special charcter" + Environment.NewLine);
-            return sb.ToString();
-        }
-
-        //Create JWT Token
         private async Task<string> CreateJwt(User user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -146,7 +114,6 @@ namespace FirstStep.Services
             return jwtTokenHandler.WriteToken(token);
         }
 
-        //Refresh token generator
         private string CreateRefreshToken()
         {
             var tokenBytes = RandomNumberGenerator.GetBytes(64);
@@ -161,7 +128,6 @@ namespace FirstStep.Services
             return refreshToken;
         }
 
-        //Fetch user prinicipals from the expired access token
         private ClaimsPrincipal GetPrincipleFromExpiredToken(string token)
         {
             var key = Encoding.ASCII.GetBytes("AshanMatheeshaSecretKeythisisSecret");
@@ -181,7 +147,7 @@ namespace FirstStep.Services
                 throw new SecurityTokenException("This is Invalid Token");
             return principal;
         }
-        //get user by id
+
         public async Task<UpdateEmployeeDto> GetUserById(int user_id)
         {
             User? user = await _context.Users.FindAsync(user_id);
@@ -189,16 +155,15 @@ namespace FirstStep.Services
             return employeeDto;
         }
 
-        //update user by id
         public async Task UpdateUser(UpdateUserDto user)
         {
             var toBeUpdatedUser = await _context.Users.FindAsync(user.user_id);
-            //validation
-           if (toBeUpdatedUser is null)
+            
+            if (toBeUpdatedUser is null)
             {
                 throw new Exception("User doesn't exist");
             }
-           //handling changing password
+
             if(user.password_hash.Length != 0)
             {
                 //password strength check

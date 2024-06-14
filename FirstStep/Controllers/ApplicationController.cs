@@ -50,8 +50,6 @@ namespace FirstStep.Controllers
             return Ok(applicationViewDto);
         }
 
-
-
         [HttpGet]
         [Route("GetRevisionHistory/{applicationId:int}")]
         public async Task<ActionResult<IEnumerable<RevisionHistoryDto>>> GetRevisionHistory(int applicationId)

@@ -640,7 +640,15 @@ namespace FirstStep.Services
 
             foreach (var ad in dbAds)
             {
+                // skip the advertisements that are not in the requested status
                 if (status != "all" && ad.current_status != status)
+                {
+                    continue;
+                }
+
+                // skip the advertisements that are not belong to the employee
+                // ca has permission to see all advertisements
+                if (employee.user_type != User.UserType.ca.ToString() && ad.hrManager_id != employee.user_id)
                 {
                     continue;
                 }
@@ -648,16 +656,6 @@ namespace FirstStep.Services
                 var jobOfferDto = _mapper.Map<AdvertisementTableRowDto>(ad);
 
                 jobOfferDto.field_name = ad.job_Field!.field_name;
-
-                if (employee.user_type != User.UserType.ca.ToString() 
-                    && ad.hrManager_id != employee.user_id)
-                {
-                    jobOfferDto.has_permision_for_handling = false;
-                }
-                else
-                {
-                    jobOfferDto.has_permision_for_handling = true;
-                }
 
                 jobOfferDto.no_of_applications = ad.applications!.Count();
 
@@ -911,7 +909,7 @@ namespace FirstStep.Services
 
             foreach (var ad in filteredAds)
             {
-                if (!advertisementDistances.ContainsKey(ad.Key))
+                if (!matchingAdvertisements.ContainsKey(ad.Key))
                 {
                     matchingAdvertisements.Add(ad.Key, (ad.Value, advertisementDistances[ad.Key]));
                 }
@@ -947,8 +945,15 @@ namespace FirstStep.Services
                 tree.Add(key, ad.Key);
             }
 
-            // find the nearest neighbors with 80% coverage
-            var nearestAds = tree.GetNearestNeighbours(new[] { highestMatchingSkillPercentage, lowestDistance }, (int)(matchingAdvertisements.Count * 0.8));
+            int totalResults = matchingAdvertisements.Count;
+
+            if (totalResults > 10)
+            {
+                // find the nearest neighbors with 80% coverage
+                totalResults = (int)(matchingAdvertisements.Count * 0.8);
+            }
+
+            var nearestAds = tree.GetNearestNeighbours(new[] { highestMatchingSkillPercentage, lowestDistance }, totalResults);
 
             return nearestAds.Select(e => e.Value).ToList();
         }
@@ -1024,7 +1029,7 @@ namespace FirstStep.Services
                 float matchingSkillsPercentage = (float)matchingSkills / ad.skills.Count();
 
                 // select only when matching skills percentage is greater than 50%
-                if (matchingSkillsPercentage > 50)
+                if (matchingSkillsPercentage > 0.5)
                 {
                     matchingAdvertisements.Add(ad, matchingSkillsPercentage);
                 }

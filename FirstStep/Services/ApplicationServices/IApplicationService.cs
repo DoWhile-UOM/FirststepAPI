@@ -37,5 +37,4 @@ namespace FirstStep.Services
 
         public string GetApplicationStatus(Application application);
     }
-
 }
