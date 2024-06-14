@@ -76,11 +76,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("AddNewCompanyAdmin")]
-
-        public async Task<IActionResult> AddCompanyAdmin(AddEmployeeDto newCompanyAdmin)
+        [Route("AddNewCompanyAdmin/company={companyRegUrl}")]
+        public async Task<IActionResult> AddCompanyAdmin(AddEmployeeDto newCompanyAdmin, string companyRegUrl)
         {
-            await _service.CreateCompanyAdmin(newCompanyAdmin);
+            await _service.CreateCompanyAdmin(newCompanyAdmin, companyRegUrl);
             return Ok("Successfully Added");
         }
 
