@@ -248,5 +248,6 @@ namespace FirstStep.Services
                 throw new Exception("Company is not verified");
             }
         }
+
     }
 }

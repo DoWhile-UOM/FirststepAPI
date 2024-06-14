@@ -57,6 +57,7 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetAllEmployees(company_Id));
         }
 
+
         [HttpPost]
         [Route("AddNewHRManager")]
 
@@ -78,10 +79,17 @@ namespace FirstStep.Controllers
         [HttpPost]
         [Route("AddNewCompanyAdmin")]
 
-        public async Task<IActionResult> AddCompanyAdmin(AddEmployeeDto newCompanyAdmin)
+        public async Task<IActionResult> AddCompanyAdmin( AddEmployeeDto newCompanyAdmin)
         {
-            await _service.CreateCompanyAdmin(newCompanyAdmin);
-            return Ok("Successfully Added");
+            try
+            {
+                await _service.CreateCompanyAdmin(newCompanyAdmin);
+                return Ok("Successfully Added");
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut]
