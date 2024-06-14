@@ -37,6 +37,6 @@ namespace FirstStep.Services
 
         public Task<bool> IsRegistered(int companyID);
 
-        public Task<bool> SaveCompanyLogo(IFormFile file, int companyId);
+        public Task SaveCompanyLogo(IFormFile file, int companyId);
     }
 }

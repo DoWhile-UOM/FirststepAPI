@@ -148,12 +148,16 @@ namespace FirstStep.Controllers
             {
                 return BadRequest("No file uploaded.");
             }
-            var result = await _service.SaveCompanyLogo(file, companyId);
-            if (!result)
+
+            try
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error uploading the file.");
+                await _service.SaveCompanyLogo(file, companyId);
+                return Ok("File uploaded successfully.");
             }
-            return Ok("File uploaded successfully.");
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
 
         [HttpDelete]

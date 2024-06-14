@@ -4,7 +4,6 @@ using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace FirstStep.Services
 {
@@ -154,7 +153,7 @@ namespace FirstStep.Services
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
 
-            _emailService.SendEmailCompanyRegistration(company.company_email, company.company_name,company.registration_url); //Send Company Registration Email
+            await _emailService.SendEmailCompanyRegistration(company.company_email, company.company_name,company.registration_url); //Send Company Registration Email
             //return(company.registration_url); //Return Company Registration URL (Unique ID 
         }
 
@@ -185,16 +184,6 @@ namespace FirstStep.Services
 
         //Company Resgistration State Check ID Generation Ends here
 
-
-        public class EmailAlreadyExistsException : Exception
-        {
-            public EmailAlreadyExistsException(string message) : base(message) { }
-        }
-
-        public class RegistrationNumberAlreadyExistsException : Exception
-        {
-            public RegistrationNumberAlreadyExistsException(string message) : base(message) { }
-        }
 
         private async Task<bool> CheckCompnayEmailExist(string Email) //Function to check company email exist
         {
@@ -315,50 +304,25 @@ namespace FirstStep.Services
 
             return company.verification_status;
         }
-        /*  public async Task<bool> SaveCompanyLogo(IFormFile file, int companyId)
-          {
-              var response = await _fileService.UploadFiles(new List<IFormFile> { file });
-              if(response == null || response.Count == 0)
-              {
-                  return false;
-              }
-              // Get the URL of the uploaded file
-              var blobName = file.FileName;
-              var fileUrl = await _fileService.GetBlobUrl(blobName);
 
-              // Save the file information in the database
-              var company = await FindByID(companyId);
-              if(company == null)
-              {
-                  return false;
-              }
-              company.company_logo= fileUrl;
-
-              await _context.SaveChangesAsync();
-
-              return true;
-
-          }*/
-        public async Task<bool> SaveCompanyLogo(IFormFile file, int companyId)
+        public async Task SaveCompanyLogo(IFormFile file, int companyId)
         {
             var logoBlobName = await _fileService.UploadFile(file);
             if (logoBlobName == null)
             {
-                return false;
+                throw new NullReferenceException("Failed to upload the file.");
             }
             
             // Save the file information in the database
             var company = await FindByID(companyId);
+
             if (company == null)
             {
-                return false;
+                throw new NullReferenceException("Company not found.");
             }
             company.company_logo = logoBlobName;
 
             await _context.SaveChangesAsync();
-
-            return true;
-
         }
     }
 }

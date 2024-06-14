@@ -5,7 +5,6 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static FirstStep.Services.ApplicationService;
 
 namespace FirstStep.Services
 {
