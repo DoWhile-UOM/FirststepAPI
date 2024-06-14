@@ -19,7 +19,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllEmployees")]
-
         public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
         {
             return Ok(await _service.GetAll());
@@ -27,7 +26,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetEmployeeById/{id:int}")]
-
         public async Task<ActionResult<Employee>> GetEmployeeById(int id)
         {
             return Ok(await _service.GetById(id));
@@ -35,7 +33,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllHRManagers/{company_Id:int}")]
-        
         public async Task<ActionResult<IEnumerable<Employee>>> GetAllHRManagers(int company_Id)
         {
             return Ok(await _service.GetAllHRManagers(company_Id));
@@ -43,7 +40,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllHRAssistants/{company_Id:int}")]
-
         public async Task<ActionResult<IEnumerable<Employee>>> GetAllHRAssistants(int company_Id)
         {
             return Ok(await _service.GetAllHRAssistants(company_Id));
@@ -51,7 +47,6 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetAllEmployees/{company_Id:int}")]
-
         public async Task<ActionResult<IEnumerable<Employee>>> GetAllEmployees(int company_Id)
         {
             return Ok(await _service.GetAllEmployees(company_Id));
@@ -60,7 +55,6 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("AddNewHRManager")]
-
         public async Task<IActionResult> AddHRManager(AddEmployeeDto newHRManager)
         {
             await _service.CreateHRManager(newHRManager);
@@ -69,7 +63,6 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("AddNewHRAssistant")]
-
         public async Task<IActionResult> AddHRAssistant(AddEmployeeDto newHRAssistant)
         {
             await _service.CreateHRAssistant(newHRAssistant);
@@ -77,24 +70,15 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("AddNewCompanyAdmin")]
-
-        public async Task<IActionResult> AddCompanyAdmin( AddEmployeeDto newCompanyAdmin)
+        [Route("AddNewCompanyAdmin/company={companyRegUrl}")]
+        public async Task<IActionResult> AddCompanyAdmin(AddEmployeeDto newCompanyAdmin, string companyRegUrl)
         {
-            try
-            {
-                await _service.CreateCompanyAdmin(newCompanyAdmin);
-                return Ok("Successfully Added");
-            }
-            catch (Exception ex) 
-            {
-                return BadRequest(ex.Message);
-            }
+            await _service.CreateCompanyAdmin(newCompanyAdmin, companyRegUrl);
+            return Ok("Successfully Added");
         }
 
         [HttpPut]
         [Route("UpdateEmployee/{id:int}")]
-
         public async Task<IActionResult> UpdateEmployee(UpdateEmployeeDto reqEmployee, int id)
         {
             await _service.Update(id, reqEmployee);
@@ -103,7 +87,6 @@ namespace FirstStep.Controllers
 
         [HttpDelete]
         [Route("DeleteEmployee/{id:int}")]
-
         public async Task<IActionResult> DeleteEmployee(int id)
         {
             await _service.Delete(id);

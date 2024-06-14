@@ -20,7 +20,7 @@ namespace FirstStep.Models.DTOs
 
         public string? university { get; set; }
 
-        public required string CVurl { get; set; }
+        public string? CVurl { get; set; }
 
         public string? profile_picture { get; set; }
 

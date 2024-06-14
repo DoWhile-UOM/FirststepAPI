@@ -151,12 +151,10 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task CreateCompanyAdmin(AddEmployeeDto newCompanyAdmin)
+        public async Task CreateCompanyAdmin(AddEmployeeDto newCompanyAdmin, string companyRegUrl)
         {
-            await ValidateCompany(newCompanyAdmin.company_id);
-
             // validate there is no any other company admin in within the company
-            var company = await _context.Companies.FindAsync(newCompanyAdmin.company_id);
+            var company = await _context.Companies.Where(e => e.registration_url == companyRegUrl).FirstOrDefaultAsync();
 
             if (company is null)
             {
