@@ -39,12 +39,20 @@ namespace FirstStep.Services
         {
             string fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             var blobClient = _blobcontainerClient.GetBlobClient(fileName);
-            using (var stream = file.OpenReadStream())
-            {
-                await blobClient.UploadAsync(stream, true);
-            }
 
-            return fileName;
+            try
+            {
+                using (var stream = file.OpenReadStream())
+                {
+                    await blobClient.UploadAsync(stream, true);
+                }
+
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occured while uploading the file.", ex);
+            }
         }
 
         public async Task<List<BlobItem>> GetUploadedBlobs()
@@ -61,7 +69,6 @@ namespace FirstStep.Services
 
         public async Task<string> GenerateSasTokenAsync(string blobName)
         {
-            var blobClient = _blobcontainerClient.GetBlobClient(blobName);
             var sasBuilder = new BlobSasBuilder
             {
                 BlobContainerName = _blobcontainerClient.Name,
@@ -105,10 +112,14 @@ namespace FirstStep.Services
             return blobUrlWithSas;
         }
 
-        public async Task DeleteBlobAsync(string blobName)
+        public async Task DeleteBlob(string blobName)
         {
             var blobClient = _blobcontainerClient.GetBlobClient(blobName);
-            await blobClient.DeleteIfExistsAsync();
+
+            if (await blobClient.ExistsAsync())
+            {
+                await blobClient.DeleteIfExistsAsync();
+            }
         }
     }
  }

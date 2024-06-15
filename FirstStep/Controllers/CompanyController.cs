@@ -116,7 +116,7 @@ namespace FirstStep.Controllers
 
         [HttpPut]
         [Route("UpdateUnregisteredCompany/{companyId:int}")] // Company Admin
-        public async Task<IActionResult> UpdateUnregisteredCompany(UpdateUnRegCompanyDto reqCompany, int companyId)
+        public async Task<IActionResult> UpdateUnregisteredCompany([FromForm] UpdateUnRegCompanyDto reqCompany, int companyId)
         {
             if (companyId != reqCompany.company_id)
             {
@@ -141,7 +141,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPatch]
-        [Route("UpdateCompanyLogo")]
+        [Route("UpdateCompanyLogo/companyId={companyId:int}")]
         public async Task<IActionResult> UpdateCompanyLogo(IFormFile file, int companyId)
         {
             if (file == null || file.Length == 0)

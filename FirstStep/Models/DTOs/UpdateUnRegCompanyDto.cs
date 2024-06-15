@@ -17,13 +17,13 @@ namespace FirstStep.Models.DTOs
         [DataType(DataType.PhoneNumber)]
         public required int company_phone_number { get; set; }
 
-        public string? business_reg_certificate { get; set; }
+        public IFormFile? business_reg_certificate { get; set; }
 
-        public string? certificate_of_incorporation { get; set; }
+        public IFormFile? certificate_of_incorporation { get; set; }
 
         public DateTime company_applied_date { get; set; } = DateTime.Now;
 
-        public string? company_logo { get; set; }
+        public IFormFile? company_logo { get; set; }
 
         public string? company_description { get; set; }
 

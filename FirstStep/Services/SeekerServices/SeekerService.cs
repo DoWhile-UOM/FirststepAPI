@@ -3,7 +3,6 @@ using FirstStep.Data;
 using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
-using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -181,11 +180,22 @@ namespace FirstStep.Services
 
             if (updateDto.cvFile != null)
             {
+                // remove previous CV file
+                await _fileService.DeleteBlob(dbSeeker.CVurl);
+
+                // upload new CV file
                 dbSeeker.CVurl = await _fileService.UploadFile(updateDto.cvFile);
             }
 
             if (updateDto.profilePictureFile != null)
             {
+                if (dbSeeker.profile_picture != null)
+                {
+                    // remove previous profile picture
+                    await _fileService.DeleteBlob(dbSeeker.profile_picture);
+                }
+                
+                // upload new profile picture
                 dbSeeker.profile_picture = await _fileService.UploadFile(updateDto.profilePictureFile);
             }
 
@@ -272,6 +282,5 @@ namespace FirstStep.Services
 
             return true;
         }
-
     }
 }

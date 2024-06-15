@@ -51,7 +51,7 @@ namespace FirstStep.Controllers
         [Route("DeleteBlob/{blobName}")]
         public async Task<IActionResult> DeleteBlob(string blobName)
         {
-            await _azureBlobService.DeleteBlobAsync(blobName);
+            await _azureBlobService.DeleteBlob(blobName);
             return Ok();
         }
     }

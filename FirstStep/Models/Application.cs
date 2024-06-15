@@ -8,11 +8,11 @@ namespace FirstStep.Models
         [Key]
         public int application_Id { get; set; }
 
-        public required string status { get; set; } // need to be removed
+        public required string status { get; set; }
 
         public required DateTime submitted_date { get; set; } = DateTime.Now;
 
-        public string? CVurl { get; set; }
+        public required string CVurl { get; set; }
 
 
         [JsonIgnore]
