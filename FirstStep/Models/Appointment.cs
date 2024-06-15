@@ -31,5 +31,8 @@ namespace FirstStep.Models
         public virtual Seeker? seeker { get; set; }
 
         public int? seeker_id { get; set; }
+
+
+        public enum Status { Free, Pending, Booked, Missed, Complete }
     }
 }

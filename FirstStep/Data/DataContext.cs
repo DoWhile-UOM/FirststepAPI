@@ -34,6 +34,8 @@ namespace FirstStep.Data
 
         public DbSet<Revision> Revisions { get; set; } = null!;
 
+        public DbSet<Appointment> Appointments { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

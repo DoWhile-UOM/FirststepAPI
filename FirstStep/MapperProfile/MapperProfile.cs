@@ -85,6 +85,8 @@ namespace FirstStep.MapperProfile
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
 
             CreateMap<Application, ApplicationStatusDto>();
+
+            CreateMap<AddAppointmentDto, Appointment>();
         }
     }
 }
