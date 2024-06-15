@@ -24,6 +24,8 @@ namespace FirstStep.Models
 
         public DateTime refresh_token_expiry { get; set; }
 
+        public DateTime last_login_date { get; set; }
+
         public enum UserType { seeker, ca, hrm, hra, sa }
     }
 }
