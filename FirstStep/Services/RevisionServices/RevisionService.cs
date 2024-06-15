@@ -1,6 +1,5 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
-using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -22,6 +21,7 @@ namespace FirstStep.Services
         public async Task<Revision> GetById(int id)
         {
             Revision? revision = await _context.Revisions.FindAsync(id);
+
             if (revision is null)
             {
                 throw new Exception("Revision not found.");
@@ -86,35 +86,36 @@ namespace FirstStep.Services
         {
             revision.revision_id = 0;
 
-            _context.Revisions.Add(revision);
-            await _context.SaveChangesAsync();
-
-            // Update application status
             var application = await _context.Applications.FindAsync(revision.application_id);
-            if (application != null)
+            
+            if (application == null)
             {
-                application.status = revision.status;
-                await _context.SaveChangesAsync();
+                throw new Exception("Application not found.");
             }
+
+            application.status = revision.status;
+            _context.Revisions.Add(revision);
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task Update(Revision revision)
         {
             Revision dbRevision = await GetById(revision.revision_id);
 
+            var application = await _context.Applications.FindAsync(revision.application_id);
+            
+            if (application == null)
+            {
+                throw new Exception("Application not found.");
+            }
+
             dbRevision.comment = revision.comment;
             dbRevision.date = revision.date;
             dbRevision.status = revision.status;
+            application.status = revision.status;
 
             await _context.SaveChangesAsync();
-
-            // Update application status
-            var application = await _context.Applications.FindAsync(revision.application_id);
-            if (application != null)
-            {
-                application.status = revision.status;
-                await _context.SaveChangesAsync();
-            }
         }
 
         public async Task Delete(int id)
