@@ -141,7 +141,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPatch]
-        [Route("UpdateCompanyLogo")]
+        [Route("UpdateCompanyLogo/companyId={companyId:int}")]
         public async Task<IActionResult> UpdateCompanyLogo(IFormFile file, int companyId)
         {
             if (file == null || file.Length == 0)
