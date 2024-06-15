@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Validation
 {
@@ -42,6 +43,23 @@ namespace FirstStep.Validation
             }
 
             return true;
+        }
+
+        public static void IsSutableForApply(Advertisement? advertisement)
+        {
+            // validate advertisement
+            if (advertisement is null)
+            {
+                throw new InvalidDataException("Advertisement not found.");
+            }
+            else if (IsExpired(advertisement))
+            {
+                throw new InvalidDataException("Advertisement is expired.");
+            }
+            else if (!IsActive(advertisement))
+            {
+                throw new InvalidDataException("Advertisement is not active.");
+            }
         }
 
         public static void CheckStatus(string status)

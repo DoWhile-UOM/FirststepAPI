@@ -30,24 +30,13 @@ namespace FirstStep.Services
             _employeeService = employeeService;
         }
 
-        public async Task Create(AddApplicationDto newApplicationDto)
+        public async Task SubmitApplication(AddApplicationDto newApplicationDto)
         {
             // get advertisement by id
             var advertisement = await _context.Advertisements.FindAsync(newApplicationDto.advertisement_id);
 
             // validate advertisement
-            if (advertisement is null)
-            {
-                throw new InvalidDataException("Advertisement not found.");
-            }
-            else if (AdvertisementValidation.IsExpired(advertisement))
-            {
-                throw new InvalidDataException("Advertisement is expired.");
-            }
-            else if (!AdvertisementValidation.IsActive(advertisement))
-            {
-                throw new InvalidDataException("Advertisement is not active.");
-            }
+            AdvertisementValidation.IsSutableForApply(advertisement);
 
             // get applications by seeker id
             var applications = await GetBySeekerId(newApplicationDto.seeker_id);
@@ -58,11 +47,76 @@ namespace FirstStep.Services
                     && application.seeker_id == newApplicationDto.seeker_id
                     && application.status == Application.ApplicationStatus.NotEvaluated.ToString())
                 {
-                    throw new InvalidDataException("Can't apply for an advertisement that is already applied and in the waiting list");
+                    throw new InvalidDataException("Can't apply! another application is in the waiting list");
                 }
             }
 
-            //create new application
+            await Create(newApplicationDto);
+        }
+
+        public async Task ResubmitApplication(AddApplicationDto newApplicationDto)
+        {
+            // get advertisement by id
+            var advertisement = await _context.Advertisements.FindAsync(newApplicationDto.advertisement_id);
+
+            // validate advertisement
+            AdvertisementValidation.IsSutableForApply(advertisement);
+
+            // get the seeker's default cv
+            var seeker = await _context.Seekers.FindAsync(newApplicationDto.seeker_id);
+
+            if (seeker == null)
+            {
+                throw new InvalidDataException("Seeker not found.");
+            }
+
+            // get application by seeker and advertisement
+            var application = await _context.Applications
+                .Include(a => a.revisions)
+                .Where(a => a.advertisement_id == newApplicationDto.advertisement_id && a.seeker_id == newApplicationDto.seeker_id)
+                .FirstOrDefaultAsync();
+
+            if (application == null)
+            {
+                await Create(newApplicationDto);
+            }
+            else
+            {
+                // update the application
+                application.status = Application.ApplicationStatus.NotEvaluated.ToString();
+                application.submitted_date = DateTime.Now;
+
+                // remove the cv when it does not the seeker's defualt cv
+                if (application.CVurl != seeker.CVurl)
+                {
+                    await _fileService.DeleteBlob(application.CVurl);
+                }
+
+                if (newApplicationDto.UseDefaultCv)
+                {
+                    // asign seeker's defualt cv
+                    application.CVurl = seeker.CVurl;
+                }
+                else
+                {
+                    if (newApplicationDto.cv == null)
+                    {
+                        throw new InvalidDataException("cv file is required if not using the default cv");
+                    }
+
+                    // upload new cv
+                    application.CVurl = await _fileService.UploadFile(newApplicationDto.cv);
+                }
+
+                // remove all revisions
+                _context.Revisions.RemoveRange(application.revisions!);
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        private async Task Create(AddApplicationDto newApplicationDto)
+        {
             Application newApplication = _mapper.Map<Application>(newApplicationDto);
             newApplication.status = Application.ApplicationStatus.NotEvaluated.ToString();
 
@@ -72,7 +126,7 @@ namespace FirstStep.Services
                 {
                     throw new InvalidDataException("cv file is required if not using the default cv");
                 }
-                
+
                 // assign new cv
                 newApplication.CVurl = await _fileService.UploadFile(newApplicationDto.cv);
             }
@@ -80,11 +134,13 @@ namespace FirstStep.Services
             {
                 //use default cv use in the seeker profile
                 var seeker = await _context.Seekers.FindAsync(newApplicationDto.seeker_id);
+                
                 //handle the case where the seeker is not found
                 if (seeker == null)
                 {
                     throw new InvalidDataException("Seeker not found.");
                 }
+                
                 newApplication.CVurl = seeker.CVurl;
             }
 
@@ -438,28 +494,7 @@ namespace FirstStep.Services
                 seeker_id = seekerId
             };
 
-            if (AdvertisementValidation.IsActive(application.advertisement))
-            {
-                applicationStatus.status = "Submitted";
-            }
-            else if (AdvertisementValidation.IsHold(application.advertisement) &&
-                (application.status == Application.ApplicationStatus.Pass.ToString() ||
-                application.status == Application.ApplicationStatus.NotEvaluated.ToString()))
-            {
-                applicationStatus.status = "Screening";
-            }
-            else if (application.status == Application.ApplicationStatus.Accepted.ToString() ||
-                (AdvertisementValidation.IsHold(application.advertisement) &&
-                application.status == Application.ApplicationStatus.Rejected.ToString()))
-            {
-                // Show a message on frontend as "You will receive an email on the next steps"
-                applicationStatus.status = "Finalized";
-            }
-            else
-            {
-                // When advertisement is closed even if the application is not evaluated, passed or rejected
-                applicationStatus.status = "Rejected";
-            }
+            applicationStatus.status = GetApplicationStatus(application);
 
             return applicationStatus;
         }

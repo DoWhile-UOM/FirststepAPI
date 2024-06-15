@@ -454,6 +454,10 @@ namespace FirstStep.Services
             foreach (var submitApplication in submittedApplications)
             {
                 var dbAdvertisement = await FindById(submitApplication.advertisement_id);
+
+                // skip the closed advertisements
+                if (dbAdvertisement.current_status == Advertisement.Status.closed.ToString()) continue;
+
                 var appliedAdvertisement = _mapper.Map<AppliedAdvertisementShortDto>(dbAdvertisement);
 
                 // find the current application status by checking the last revision for the application
