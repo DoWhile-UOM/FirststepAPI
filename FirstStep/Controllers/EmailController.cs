@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using FirstStep.Services;
-using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Models.ServiceModels;
 
 namespace FirstStep.Controllers
 {
@@ -30,25 +30,20 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("VerifyEmail")]
-        public async Task<IActionResult> OTPCheck(OTPRequest request)
+        public IActionResult OTPCheck(OTPRequest request)
         {
             try
             {
-                var response = await _emailService.VerifyOTP(request);
-                switch(response)
+                if (_emailService.VerifyOTP(request))
                 {
-                    case "Verification Successful":
-                        return Ok(response);
-                    case "OTP Expired":
-                        return BadRequest(response);
-                    default:
-                        return BadRequest(response);
+                    return Ok("Email Verified");
                 }
 
+                return StatusCode(StatusCodes.Status406NotAcceptable, "Invalid OTP");
             }
             catch (Exception e)
             {
-                return BadRequest(e.Message);
+                return StatusCode(StatusCodes.Status406NotAcceptable, e.Message);
             }
         }
     }

@@ -1,26 +1,24 @@
 ﻿using Azure;
 using Azure.Communication.Email;
-using FirstStep.Data;
-using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Models.ServiceModels;
 using FirstStep.Template;
-using Microsoft.EntityFrameworkCore;
 using MimeKit;
 
 namespace FirstStep.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly DataContext _context;
         private readonly EmailClient _emailClient;
 
-        public EmailService(DataContext context, EmailClient emailClient)
+        private static HashSet<OTPRequest> OTPRequests = new HashSet<OTPRequest>();
+
+        public EmailService(EmailClient emailClient)
         {
-            _context = context;
             _emailClient = emailClient;
         }
 
-        public async Task<string> SendEmail(EmailDto request)
+        public async Task<string> SendEmail(EmailModel request)
         {
             //Email details
             var subject = request.Subject;
@@ -62,7 +60,7 @@ namespace FirstStep.Services
             // Registration Email
             applicationEvaluationStatusLink= " https://polite-forest-041105700.5.azurestaticapps.net/RegCheck?id=" + applicationEvaluationStatusLink;// this link will direct company to a page where the company can see its regirataion application evaluation status.
                 
-            EmailDto request = new();
+            EmailModel request = new();
             var builder = new BodyBuilder();
 
             builder.HtmlBody = EmailTemplates.CompanyRegustrationSuccessful;
@@ -85,7 +83,7 @@ namespace FirstStep.Services
             };
 
             // check whether the email is already request an OTP
-            var dbOtpRequest = await _context.OTPRequests.FirstOrDefaultAsync(x => x.email == OTPrequest.email);
+            var dbOtpRequest = OTPRequests.FirstOrDefault(x => x.email == OTPrequest.email);
 
             if (dbOtpRequest is not null)
             {
@@ -94,12 +92,10 @@ namespace FirstStep.Services
             }
             else
             {
-                _context.OTPRequests.Add(OTPrequest);
+                OTPRequests.Add(OTPrequest);
             }
 
-            await _context.SaveChangesAsync();
-
-            EmailDto otpBody = new EmailDto();
+            EmailModel otpBody = new EmailModel();
 
             var builder = new BodyBuilder();
 
@@ -114,29 +110,34 @@ namespace FirstStep.Services
             return await SendEmail(otpBody);
         }
 
-        public async Task<string> VerifyOTP(OTPRequest request)
+        public bool VerifyOTP(OTPRequest request)
         {
-            var otpRequest = await _context.OTPRequests.FirstOrDefaultAsync(e => e.email == request.email && e.otp == request.otp);
+            var otpRequest = OTPRequests.FirstOrDefault(e => e.email == request.email && e.otp == request.otp);
 
             if (otpRequest is not null)
             {
-                _context.OTPRequests.Remove(otpRequest);
-                await _context.SaveChangesAsync();
+                OTPRequests.FirstOrDefault(otpRequest);
 
                 if (otpRequest.expiry_date_time < DateTime.Now)
                 {
-                    return "OTP Expired";
+                    throw new InvalidDataException("OTP Expired");
                 }
 
-                return "Verification Successful";
+                OTPRequests.Remove(otpRequest);
+                return true;
             };
 
-            return "Invalid Request";
+            throw new InvalidDataException("OTP is invalid");
         }
 
-        public void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName, string jobAdvertisementTitle, string jobApplicationEvaluationStatusLink)
+        public void RemoveExpiredOTP()
         {
-            EmailDto emailBody = new();
+            OTPRequests.RemoveWhere(e => e.expiry_date_time < DateTime.Now);
+        }
+
+        public void JobApplicationSuccessfullySentEmail(EmailModel request, string email, string jobseekerFName, string companyName, string jobAdvertisementTitle, string jobApplicationEvaluationStatusLink)
+        {
+            EmailModel emailBody = new();
             var builder = new BodyBuilder();
 
             builder.HtmlBody = EmailTemplates.JobApplicationSuccessfullySent;
@@ -154,7 +155,7 @@ namespace FirstStep.Services
         public void EvaluatedCompanyRegistraionApplicationEmail(string email, bool HasAccepted, string? comment, string link, string company_name)
         {
       
-            EmailDto emailBody = new();
+            EmailModel emailBody = new();
             var builder = new BodyBuilder();
 
             builder.HtmlBody = EmailTemplates.EvaluatedCompanyRegistrationApplication;
@@ -186,7 +187,7 @@ namespace FirstStep.Services
 
         public async Task<string> CARegIsSuccessfull(string email, string firstName, string lastName)
         {
-            EmailDto emailBody = new();
+            EmailModel emailBody = new();
             var builder = new BodyBuilder();
 
             builder.HtmlBody = EmailTemplates.CARegSucessfull;

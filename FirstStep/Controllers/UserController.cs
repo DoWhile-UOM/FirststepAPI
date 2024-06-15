@@ -22,6 +22,27 @@ namespace FirstStep.Controllers
             _userService = userservice; 
         }
 
+        [Authorize]
+        [HttpGet]
+        [Route("GetAllUsers")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _context.Users.ToListAsync();
+            return Ok(users);
+        }
+
+        [HttpGet]
+        [Route("GetUser/{userId:int}")]
+        public async Task<IActionResult> GetUserById(int user_id)
+        {
+            UpdateEmployeeDto? employee = await _userService.GetUserById(user_id);
+            if (employee is null)
+            {
+                return NoContent();
+            }
+            return Ok(employee);
+        }
+
         [HttpPost]
         [Route("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] LoginRequestDto userObj)
@@ -44,15 +65,6 @@ namespace FirstStep.Controllers
             }
         }
 
-        [Authorize]
-        [HttpGet]
-        [Route("GetAllUsers")]
-        public async Task<IActionResult> GetAllUsers()
-        {
-            var users = await _context.Users.ToListAsync();
-            return Ok(users);
-        }
-
         [HttpPost]
         [Route("refresh")]
         public async Task<IActionResult> Refresh([FromBody] TokenApiDto tokenApiDto)
@@ -73,18 +85,6 @@ namespace FirstStep.Controllers
             {
                 return BadRequest(e.Message);
             }
-        }
-
-        [HttpGet]
-        [Route("GetUser/userId:int")]
-        public async Task<IActionResult> GetUserById(int user_id)
-        {
-            UpdateEmployeeDto? employee = await _userService.GetUserById(user_id);
-            if(employee is null)
-            {
-                return NoContent();
-            }
-            return Ok(employee);
         }
 
         [HttpPut]
