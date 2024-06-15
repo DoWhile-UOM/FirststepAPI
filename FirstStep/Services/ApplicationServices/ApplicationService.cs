@@ -150,7 +150,8 @@ namespace FirstStep.Services
         public async Task<ApplicationListingPageDto> GetApplicationList(int jobID, string status)
         {
             var advertisement = await _context.Advertisements
-                .Include("job_Field").Include("hrManager")
+                .Include("job_Field")
+                .Include("hrManager")
                 .FirstOrDefaultAsync(x => x.advertisement_id == jobID);
 
             if (advertisement is null)
@@ -170,6 +171,7 @@ namespace FirstStep.Services
             var advertisement = await _context.Advertisements
                 .Include("job_Field")
                 .Include("applications")
+                .Include("hrManager")
                 .FirstOrDefaultAsync(x => x.advertisement_id == jobID);
 
             if (advertisement is null)
