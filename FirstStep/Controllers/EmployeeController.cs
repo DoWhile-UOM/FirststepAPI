@@ -70,7 +70,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("AddNewCompanyAdmin/company={companyRegUrl}")]
+        [Route("AddNewCompanyAdmin/{companyRegUrl}")]
         public async Task<IActionResult> AddCompanyAdmin(AddCADto newCompanyAdmin, string companyRegUrl)
         {
             await _service.CreateCompanyAdmin(newCompanyAdmin, companyRegUrl);

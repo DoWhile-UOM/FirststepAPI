@@ -183,6 +183,9 @@ namespace FirstStep.Services
 
             companyAdmin.user_type = User.UserType.ca.ToString();
             companyAdmin.admin_company = company;
+            companyAdmin.company_id = company.company_id;
+
+            Console.WriteLine("Company Id is "+company.company_id);
 
             _context.HRManagers.Add(companyAdmin);
             await _context.SaveChangesAsync();
