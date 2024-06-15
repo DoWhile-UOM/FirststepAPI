@@ -70,6 +70,9 @@ namespace FirstStep.Models
         [JsonIgnore]
         public virtual ICollection<Skill>? skills { get; set; }
 
+        [JsonIgnore]
+        public virtual ICollection<Appointment>? appointments { get; set; }
+
 
         public enum Status { active, hold, closed, interview }
     }

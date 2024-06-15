@@ -140,6 +140,24 @@ namespace FirstStep.Data
                     .HasForeignKey(e => e.employee_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
+
+            modelBuilder.Entity<Appointment>(entity =>
+            {
+                entity.HasOne(e => e.company)
+                    .WithMany(e => e.appointments)
+                    .HasForeignKey(e => e.company_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.advertisement)
+                    .WithMany(e => e.appointments)
+                    .HasForeignKey(e => e.advertisement_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.seeker)
+                    .WithMany(e => e.appointments)
+                    .HasForeignKey(e => e.seeker_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+            });
         }
     }
 }
