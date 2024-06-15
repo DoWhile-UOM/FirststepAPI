@@ -14,6 +14,6 @@ namespace FirstStep.Services
 
         public Task<string> GetBlobUrl(string blobName);
 
-        public Task DeleteBlobAsync(string blobName);
+        public Task DeleteBlob(string blobName);
     }
 }

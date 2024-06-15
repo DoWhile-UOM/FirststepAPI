@@ -1,15 +1,14 @@
-﻿using FirstStep.Data;
-using System.Text.RegularExpressions;
-using System.Text;
-using FirstStep.Models.DTOs;
+﻿using AutoMapper;
+using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using FirstStep.Helper;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using AutoMapper;
+using System.Text;
 
 namespace FirstStep.Services
 {

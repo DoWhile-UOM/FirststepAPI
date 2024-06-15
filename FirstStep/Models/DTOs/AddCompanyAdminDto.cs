@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public class AddCADto
+    public class AddCompanyAdminDto
     {
         public required string email { get; set; }
 
@@ -10,5 +10,6 @@
 
         public required string last_name { get; set; }
 
+        public required string company_registration_url { get; set; }
     }
 }

@@ -151,10 +151,10 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task CreateCompanyAdmin(AddCADto newCompanyAdmin, string companyRegUrl)
+        public async Task CreateCompanyAdmin(AddCompanyAdminDto newCompanyAdmin)
         {
             // validate there is no any other company admin in within the company
-            var company = await _context.Companies.Where(e => e.registration_url == companyRegUrl).FirstOrDefaultAsync();
+            var company = await _context.Companies.Where(e => e.registration_url == newCompanyAdmin.company_registration_url).FirstOrDefaultAsync();
 
             if (company is null)
             {
@@ -197,7 +197,6 @@ namespace FirstStep.Services
             dbEmployee.first_name = employee.first_name;
             dbEmployee.last_name = employee.last_name;
             dbEmployee.email = employee.email;
-            //dbEmployee.password_hash = employee.password_hash;
             dbEmployee.user_type = employee.user_type;
 
             await _context.SaveChangesAsync();
@@ -247,6 +246,5 @@ namespace FirstStep.Services
                 throw new Exception("Company is not verified");
             }
         }
-
     }
 }

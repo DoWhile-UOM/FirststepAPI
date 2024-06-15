@@ -98,6 +98,12 @@ namespace FirstStep.Services
         {
             Application application = await FindById(id);
 
+            // remove the cv from the blob storage when it does not match the seeker's default cv
+            if (application.seeker!.CVurl != application.CVurl)
+            {
+                await _fileService.DeleteBlob(application.CVurl);
+            }
+
             _context.Applications.Remove(application);
             await _context.SaveChangesAsync();
         }
@@ -407,7 +413,6 @@ namespace FirstStep.Services
         }
         //tasks delegation ends here
 
-        //implement service to get application status by advertisment id and seeker id
         public async Task<ApplicationStatusDto> GetApplicationStatus(int advertisementId, int seekerId)
         {
             var application = await _context.Applications
@@ -509,31 +514,4 @@ namespace FirstStep.Services
             }
         }
     }
-
 }
- 
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-

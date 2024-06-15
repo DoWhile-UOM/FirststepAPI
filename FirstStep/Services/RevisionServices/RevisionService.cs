@@ -48,11 +48,6 @@ namespace FirstStep.Services
                 .OrderByDescending(r => r.date)
                 .FirstOrDefaultAsync();
 
-            // need to check whether the latest revision is added by a HR manager or HR assistant
-            // when it added by HR manager, the status is valid
-            // when it added by HR assistant, need to check again any hr manager is added a revision before that
-
-
             if (last_revision is null)
             {
                 return ApplicationStatus.NotEvaluated.ToString();

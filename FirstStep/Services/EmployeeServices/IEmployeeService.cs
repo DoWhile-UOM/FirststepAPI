@@ -25,7 +25,7 @@ namespace FirstStep.Services
 
         public Task CreateHRAssistant(AddEmployeeDto newHRAssistant);
 
-        public Task CreateCompanyAdmin(AddCADto newCompanyAdmin, string companyRegUrl);
+        public Task CreateCompanyAdmin(AddCompanyAdminDto newCompanyAdmin);
 
         public Task Update(int id, UpdateEmployeeDto employee);
 
