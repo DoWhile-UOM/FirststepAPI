@@ -30,8 +30,6 @@ namespace FirstStep.Services
             _employeeService = employeeService;
         }
 
-        public enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected, Done }
-
         public async Task Create(AddApplicationDto newApplicationDto)
         {
             // get advertisement by id
@@ -58,7 +56,7 @@ namespace FirstStep.Services
             {
                 if (application.advertisement_id == newApplicationDto.advertisement_id
                     && application.seeker_id == newApplicationDto.seeker_id
-                    && application.status == ApplicationStatus.NotEvaluated.ToString())
+                    && application.status == Application.ApplicationStatus.NotEvaluated.ToString())
                 {
                     throw new InvalidDataException("Can't apply for an advertisement that is already applied and in the waiting list");
                 }
@@ -66,7 +64,7 @@ namespace FirstStep.Services
 
             //create new application
             Application newApplication = _mapper.Map<Application>(newApplicationDto);
-            newApplication.status = ApplicationStatus.NotEvaluated.ToString();
+            newApplication.status = Application.ApplicationStatus.NotEvaluated.ToString();
 
             if (!newApplicationDto.UseDefaultCv)
             {
@@ -223,7 +221,7 @@ namespace FirstStep.Services
 
                 var application = _mapper.Map<ApplicationListDto>(dbApplication);
 
-                if (application.status != ApplicationStatus.NotEvaluated.ToString())
+                if (application.status != Application.ApplicationStatus.NotEvaluated.ToString())
                 {
                     application.is_evaluated = true;
                 }
@@ -262,7 +260,7 @@ namespace FirstStep.Services
             applicationDto.cVurl = cvUrl;
             applicationDto.profile_picture = profilePictureUrl;
 
-            applicationDto.is_evaluated = lastRevision != null && lastRevision.status != ApplicationStatus.NotEvaluated.ToString();
+            applicationDto.is_evaluated = lastRevision != null && lastRevision.status != Application.ApplicationStatus.NotEvaluated.ToString();
             applicationDto.current_status = application.status;
 
             if (lastRevision is not null)
@@ -287,7 +285,7 @@ namespace FirstStep.Services
             // get all applications that send by the seeker and not completed
             var applications = await _context.Applications
                 .Include("advertisement")
-                .Where(a => a.seeker_id == id && a.status != ApplicationStatus.Done.ToString()).ToListAsync();
+                .Where(a => a.seeker_id == id && a.status != Application.ApplicationStatus.Done.ToString()).ToListAsync();
 
             return applications;
         }
@@ -324,7 +322,7 @@ namespace FirstStep.Services
 
             var stauts = advertisement.current_status;
 
-            if (stauts == AdvertisementValidation.Status.hold.ToString() && AdvertisementValidation.IsExpired(advertisement))
+            if (stauts == Advertisement.Status.hold.ToString() && AdvertisementValidation.IsExpired(advertisement))
             {
                 applicationsOfTheAdvertisement = (await FindByAdvertisementId(advertisement.advertisement_id)).Where(a => a.assigned_hrAssistant_id == null).ToList();
 
@@ -445,14 +443,14 @@ namespace FirstStep.Services
                 applicationStatus.status = "Submitted";
             }
             else if (AdvertisementValidation.IsHold(application.advertisement) &&
-                               (application.status == ApplicationStatus.Pass.ToString() ||
-                                              application.status == ApplicationStatus.NotEvaluated.ToString()))
+                (application.status == Application.ApplicationStatus.Pass.ToString() ||
+                application.status == Application.ApplicationStatus.NotEvaluated.ToString()))
             {
                 applicationStatus.status = "Screening";
             }
-            else if (application.status == ApplicationStatus.Accepted.ToString() ||
-                               (AdvertisementValidation.IsHold(application.advertisement) &&
-                                              application.status == ApplicationStatus.Rejected.ToString()))
+            else if (application.status == Application.ApplicationStatus.Accepted.ToString() ||
+                (AdvertisementValidation.IsHold(application.advertisement) &&
+                application.status == Application.ApplicationStatus.Rejected.ToString()))
             {
                 // Show a message on frontend as "You will receive an email on the next steps"
                 applicationStatus.status = "Finalized";
@@ -496,15 +494,15 @@ namespace FirstStep.Services
             {
                 return "Submitted";
             }
-            else if (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
-                (application.status == ApplicationStatus.Pass.ToString() ||
-                application.status == ApplicationStatus.NotEvaluated.ToString()))
+            else if (application.advertisement.current_status == Advertisement.Status.hold.ToString() &&
+                (application.status == Application.ApplicationStatus.Pass.ToString() ||
+                application.status == Application.ApplicationStatus.NotEvaluated.ToString()))
             {
                 return "Screening";
             }
-            else if (application.status == ApplicationStatus.Accepted.ToString() ||
-                (application.advertisement.current_status == AdvertisementValidation.Status.hold.ToString() &&
-                application.status == ApplicationStatus.Rejected.ToString()))
+            else if (application.status == Application.ApplicationStatus.Accepted.ToString() ||
+                (application.advertisement.current_status == Advertisement.Status.hold.ToString() &&
+                application.status == Application.ApplicationStatus.Rejected.ToString()))
             {
                 return "Finalized";
             }

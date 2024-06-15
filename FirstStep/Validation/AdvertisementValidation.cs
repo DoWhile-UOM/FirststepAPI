@@ -4,8 +4,6 @@ namespace FirstStep.Validation
 {
     public static class AdvertisementValidation
     {
-        public enum Status { active, hold, closed, interview }
-
         public static bool IsExpired(Advertisement advertisement)
         {
             if (advertisement.submission_deadline == null)
@@ -18,7 +16,7 @@ namespace FirstStep.Validation
 
         public static bool IsActive(Advertisement advertisement)
         {
-            if (advertisement.current_status != Status.active.ToString())
+            if (advertisement.current_status != Advertisement.Status.active.ToString())
             {
                 return false;
             }
@@ -28,7 +26,7 @@ namespace FirstStep.Validation
 
         public static bool IsHold(Advertisement advertisement)
         {
-            if (advertisement.current_status != Status.hold.ToString())
+            if (advertisement.current_status != Advertisement.Status.hold.ToString())
             {
                 return false;
             }
@@ -52,7 +50,7 @@ namespace FirstStep.Validation
             {
                 return;
             }
-            if (!Enum.TryParse<Status>(status, out _))
+            if (!Enum.TryParse<Advertisement.Status>(status, out _))
             {
                 throw new InvalidDataException("Invalid status.");
             }

@@ -69,5 +69,8 @@ namespace FirstStep.Models
 
         [JsonIgnore]
         public virtual ICollection<Skill>? skills { get; set; }
+
+
+        public enum Status { active, hold, closed, interview }
     }
 }

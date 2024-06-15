@@ -50,7 +50,7 @@ namespace FirstStep.Services
                     .Include("hrManager")
                     .Include("skills")
                     .Include("savedSeekers")
-                    .Where(x => x.current_status == AdvertisementValidation.Status.active.ToString())
+                    .Where(x => x.current_status == Advertisement.Status.active.ToString())
                     .ToListAsync();
             }
             else
@@ -164,7 +164,7 @@ namespace FirstStep.Services
         {
             var advertisements = await FindByCompanyID(companyID);
 
-            return advertisements.Where(e => e.current_status == AdvertisementValidation.Status.active.ToString()).ToList();
+            return advertisements.Where(e => e.current_status == Advertisement.Status.active.ToString()).ToList();
         }
 
         public async Task<IEnumerable<AdvertisementTableRowDto>> GetCompanyAdvertisementList(int emp_id, string status)
@@ -296,7 +296,7 @@ namespace FirstStep.Services
             // add skills to the advertisement
             newAdvertisement.skills = await IncludeSkillsToAdvertisement(advertisementDto.reqSkills);
 
-            newAdvertisement.current_status = AdvertisementValidation.Status.active.ToString();
+            newAdvertisement.current_status = Advertisement.Status.active.ToString();
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
         }
@@ -316,7 +316,7 @@ namespace FirstStep.Services
                 throw new InvalidDataException("Submission deadline cannot be in the past.");
             }
 
-            advertisement.current_status = AdvertisementValidation.Status.active.ToString();
+            advertisement.current_status = Advertisement.Status.active.ToString();
             advertisement.submission_deadline = submissionDeadline;
             advertisement.expired_date = null;
 
@@ -328,7 +328,7 @@ namespace FirstStep.Services
             AdvertisementValidation.CheckStatus(newStatus);
             var advertisement = await FindById(id);
 
-            if (newStatus == AdvertisementValidation.Status.active.ToString() && AdvertisementValidation.IsExpired(advertisement))
+            if (newStatus == Advertisement.Status.active.ToString() && AdvertisementValidation.IsExpired(advertisement))
             {
                 // can't activate an expired advertisement, therefore first need to update the submission deadline
                 throw new InvalidDataException("Cannot activate an expired advertisement.");
@@ -338,7 +338,7 @@ namespace FirstStep.Services
                 // no need to update the status, because the advertisement is already in the requested status
                 return;
             }
-            else if (newStatus == AdvertisementValidation.Status.closed.ToString() && AdvertisementValidation.IsActive(advertisement))
+            else if (newStatus == Advertisement.Status.closed.ToString() && AdvertisementValidation.IsActive(advertisement))
             {
                 // can't close an active advertisement, therefore first need to update the submission deadline
                 throw new BadHttpRequestException("Cannot close an active advertisement.");
@@ -493,7 +493,7 @@ namespace FirstStep.Services
             {
                 // check the advertisement had any applications
                 if (advertisement.applications!
-                    .Where(a => a.status == ApplicationService.ApplicationStatus.NotEvaluated.ToString())
+                    .Where(a => a.status == Application.ApplicationStatus.NotEvaluated.ToString())
                     .Count() > 0)
                 {
                     throw new InvalidOperationException("Cannot delete an advertisement that has non evaluated applications.");
@@ -660,13 +660,13 @@ namespace FirstStep.Services
                 jobOfferDto.no_of_applications = ad.applications!.Count();
 
                 jobOfferDto.no_of_evaluated_applications = ad.applications!
-                    .Where(a => a.status != ApplicationService.ApplicationStatus.NotEvaluated.ToString()).Count();
+                    .Where(a => a.status != Application.ApplicationStatus.NotEvaluated.ToString()).Count();
 
                 jobOfferDto.no_of_accepted_applications = ad.applications!
-                    .Where(a => a.status == ApplicationService.ApplicationStatus.Accepted.ToString()).Count();
+                    .Where(a => a.status == Application.ApplicationStatus.Accepted.ToString()).Count();
 
                 jobOfferDto.no_of_rejected_applications = ad.applications!
-                    .Where(a => a.status == ApplicationService.ApplicationStatus.Rejected.ToString()).Count();
+                    .Where(a => a.status == Application.ApplicationStatus.Rejected.ToString()).Count();
 
                 jobOfferDtos.Add(jobOfferDto);
             }
@@ -683,7 +683,7 @@ namespace FirstStep.Services
             {
                 // select only advertisements that are in hold status
                 // because only hold advertisements are suitable for evaluating
-                if (ad.current_status != AdvertisementValidation.Status.hold.ToString())
+                if (ad.current_status != Advertisement.Status.hold.ToString())
                 {
                     continue;
                 }
@@ -697,7 +697,7 @@ namespace FirstStep.Services
                 jobOfferDto.no_of_evaluated_applications = hra.applications!
                     .Where(a => 
                         a.advertisement_id == ad.advertisement_id && 
-                        a.status != ApplicationService.ApplicationStatus.NotEvaluated.ToString())
+                        a.status != Application.ApplicationStatus.NotEvaluated.ToString())
                     .Count();
                 jobOfferDto.no_of_nonevaluated_applications = jobOfferDto.no_of_assigned_applications - jobOfferDto.no_of_evaluated_applications;
 
@@ -719,7 +719,7 @@ namespace FirstStep.Services
                 .Include("hrManager")
                 .Include("savedSeekers")
                 .Where(ad =>
-                    ad.current_status == AdvertisementValidation.Status.active.ToString() &&
+                    ad.current_status == Advertisement.Status.active.ToString() &&
                     ad.country == requestAdsDto.country &&
                     ad.field_id == reqField.field_id)
                 .ToListAsync();
@@ -1052,7 +1052,7 @@ namespace FirstStep.Services
 
                 if (DateTime.Now > ad.submission_deadline)
                 {
-                    ad.current_status = AdvertisementValidation.Status.hold.ToString();
+                    ad.current_status = Advertisement.Status.hold.ToString();
                     ad.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
 
                     try

@@ -14,8 +14,6 @@ namespace FirstStep.Services
             _context = context;
         }
 
-        enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected ,Passed }
-
         public async Task<IEnumerable<Revision>> GetAll()
         {
             return await _context.Revisions.ToListAsync();
@@ -50,7 +48,7 @@ namespace FirstStep.Services
 
             if (last_revision is null)
             {
-                return ApplicationStatus.NotEvaluated.ToString();
+                return Application.ApplicationStatus.NotEvaluated.ToString();
             }
 
             return last_revision.status;
@@ -71,14 +69,14 @@ namespace FirstStep.Services
         {
             if (application.revisions is null)
             {
-                return ApplicationStatus.NotEvaluated.ToString();
+                return Application.ApplicationStatus.NotEvaluated.ToString();
             }
 
             Revision? last_revision = application.revisions.OrderByDescending(r => r.date).FirstOrDefault();
 
             if (last_revision is null)
             {
-                return ApplicationStatus.NotEvaluated.ToString();
+                return Application.ApplicationStatus.NotEvaluated.ToString();
             }
 
             return last_revision.status;

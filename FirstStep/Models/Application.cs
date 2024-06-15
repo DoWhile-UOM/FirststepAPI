@@ -35,5 +35,8 @@ namespace FirstStep.Models
 
         [JsonIgnore]
         public virtual ICollection<Revision>? revisions { get; set; }
+
+
+        public enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected, Done }
     }
 }
