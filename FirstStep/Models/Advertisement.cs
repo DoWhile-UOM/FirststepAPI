@@ -45,6 +45,8 @@ namespace FirstStep.Models
         [MaxLength(4000)]
         public string? job_description { get; set; }
 
+        public int interview_duration { get; set; }
+
 
         [JsonIgnore]
         public virtual HRManager? hrManager { get; set; }

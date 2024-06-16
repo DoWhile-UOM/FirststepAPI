@@ -14,6 +14,8 @@ namespace FirstStep.Models
 
         public required string CVurl { get; set; }
 
+        public bool is_called { get; set; } = false;
+
 
         [JsonIgnore]
         public virtual Advertisement? advertisement { get; set; }

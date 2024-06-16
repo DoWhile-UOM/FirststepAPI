@@ -12,8 +12,6 @@ namespace FirstStep.Models
 
         public required DateTime start_time { get; set; }
 
-        public required DateTime end_time { get; set; }
-
         
         [JsonIgnore]
         public virtual Company? company { get; set; }

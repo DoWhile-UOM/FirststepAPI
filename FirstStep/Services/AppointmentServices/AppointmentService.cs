@@ -38,17 +38,14 @@ namespace FirstStep.Services
             }
 
             // check the advertisement is exist
-            if (newAppointment.advertisement_id != null)
+            var advertisement = await _context.Advertisements.FindAsync(newAppointment.advertisement_id);
+            if (advertisement == null)
             {
-                var advertisement = await _context.Advertisements.FindAsync(newAppointment.advertisement_id);
-                if (advertisement == null)
-                {
-                    throw new Exception("Advertisement not found");
-                }
-                if (advertisement.current_status != Advertisement.Status.interview.ToString())
-                {
-                    throw new Exception("Advertisement is not in the interview, therefore can't add an appointment.");
-                }
+                throw new Exception("Advertisement not found");
+            }
+            if (advertisement.current_status != Advertisement.Status.interview.ToString())
+            {
+                throw new Exception("Advertisement is not in the interview, therefore can't add an appointment.");
             }
 
             var appointment = _mapper.Map<Appointment>(newAppointment);
