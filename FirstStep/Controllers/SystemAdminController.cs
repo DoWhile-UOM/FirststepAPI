@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -56,6 +57,13 @@ namespace FirstStep.Controllers
         {
             await _service.Delete(id);
             return Ok();
+        }
+        [HttpGet]
+        [Route("GetLoggings")]
+        public async Task<ActionResult<LoggingsDto>> GetLoggings()
+        {
+            var loggingsDto = await _service.GetLogingsOfUsers();
+            return Ok(loggingsDto);
         }
     }
 }

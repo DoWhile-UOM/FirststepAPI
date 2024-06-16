@@ -1,6 +1,8 @@
 ﻿using FirstStep.Data;
 using FirstStep.Helper;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
+using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 
@@ -9,9 +11,13 @@ namespace FirstStep.Services
     public class SystemAdminService : ISystemAdminService
     {
         private readonly DataContext _context;
+   
+        private readonly IUserService _userService;
 
-        public SystemAdminService(DataContext context) {
+        public SystemAdminService(DataContext context,IUserService userService)
+        {
             _context = context;
+            _userService = userService;
         }
 
         public async Task<IEnumerable<SystemAdmin>> GetAll()
@@ -71,5 +77,40 @@ namespace FirstStep.Services
             _context.SystemAdmins.Remove(systemAdmin);
             await _context.SaveChangesAsync();
         }
+        //dashboard service
+        // getting logging details
+         public async Task<LoggingsDto> GetLogingsOfUsers()
+        {
+            List<ActiveUserDto> activeUsers = await _userService.GetActiveUsersAsync();
+
+            List<ActiveUserDto> inactiveUsers = await _userService.GetInactiveUsersAsync();
+            int activeCmpyUsers = activeUsers.Count -
+                          (activeUsers.Count(user => user.user_type == "seeker") +
+                           activeUsers.Count(user => user.user_type == "sa"));
+            int inactiveCmpyUsers = inactiveUsers.Count -
+                         (inactiveUsers.Count(user => user.user_type == "seeker") +
+                          inactiveUsers.Count(user => user.user_type == "sa"));
+
+
+            var loggingsDto = new LoggingsDto
+            {
+                tot_Active = activeUsers.Count,
+                tot_Inactive = inactiveUsers.Count,
+                active_CA = activeUsers.Count(user => user.user_type == "ca"),
+                inactive_CA = inactiveUsers.Count(user => user.user_type == "ca"),
+                active_hr = activeUsers.Count(user => user.user_type == "hrm"),
+                inactive_hr = inactiveUsers.Count(user => user.user_type == "hrm"),
+                active_hra = activeUsers.Count(user => user.user_type == "hra"),
+                inactive_hra = inactiveUsers.Count(user => user.user_type == "hra"),
+                active_seeker = activeUsers.Count(user => user.user_type == "seeker"),
+                inactive_seeker = inactiveUsers.Count(user => user.user_type == "seeker"),
+                active_cmpy_users = activeCmpyUsers,
+                inacitive_cmpy_users = inactiveCmpyUsers
+            };
+
+            return loggingsDto;
+        }
+
+      
     }
 }

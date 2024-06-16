@@ -188,5 +188,28 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
+
+        //getting active users
+        public async Task<List<ActiveUserDto>> GetActiveUsersAsync()
+        {
+            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+
+            var activeUsers = await _context.Users
+                 .Where(user => user.refresh_token_expiry > thirtyDaysAgo)
+                 .ToListAsync();
+
+            return _mapper.Map<List<ActiveUserDto>>(activeUsers);
+        }
+        //getting inactve Users
+        public async Task<List<ActiveUserDto>> GetInactiveUsersAsync()
+        {
+            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+
+            var inactiveUsers = await _context.Users
+                 .Where(user => user.refresh_token_expiry <= thirtyDaysAgo)
+                 .ToListAsync();
+
+            return _mapper.Map<List<ActiveUserDto>>(inactiveUsers);
+        }
     }
 }
