@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FirstStep.Data
 {
     public class DataContext : DbContext
-    {        
+    {
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
         public DbSet<Advertisement> Advertisements { get; set; } = null!;
@@ -15,9 +15,9 @@ namespace FirstStep.Data
         public DbSet<Skill> Skills { get; set; } = null!;
 
         public DbSet<User> Users { get; set; } = null!;
-        
+
         public DbSet<Company> Companies { get; set; } = null!;
-        
+
         public DbSet<JobField> JobFields { get; set; } = null!;
 
         public DbSet<Employee> Employees { get; set; } = null!;
@@ -36,6 +36,8 @@ namespace FirstStep.Data
 
         public DbSet<OTPRequest> OTPRequests { get; set; } = null!;
 
+        public DbSet<Appointment> Appointments { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,13 +45,13 @@ namespace FirstStep.Data
             modelBuilder.Entity<Employee>().ToTable("Employees");
             modelBuilder.Entity<SystemAdmin>().ToTable("SystemAdmins");
 
-            modelBuilder.Entity<Advertisement>(entity => 
+            modelBuilder.Entity<Advertisement>(entity =>
             {
                 entity.HasOne(e => e.job_Field)
                     .WithMany(e => e.advertisements)
                     .HasForeignKey(e => e.field_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
-                
+
                 entity.HasOne(e => e.hrManager)
                     .WithMany(e => e.advertisements)
                     .HasForeignKey(e => e.hrManager_id)
@@ -140,6 +142,24 @@ namespace FirstStep.Data
                 entity.HasOne(e => e.employee)
                     .WithMany(e => e.revisions)
                     .HasForeignKey(e => e.employee_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+            });
+
+            modelBuilder.Entity<Appointment>(entity =>
+            {
+                entity.HasOne(e => e.company)
+                    .WithMany(e => e.appointments)
+                    .HasForeignKey(e => e.company_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.advertisement)
+                    .WithMany(e => e.appointments)
+                    .HasForeignKey(e => e.advertisement_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.seeker)
+                    .WithMany(e => e.appointments)
+                    .HasForeignKey(e => e.seeker_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
         }

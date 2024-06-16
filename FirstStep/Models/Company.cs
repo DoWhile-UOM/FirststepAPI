@@ -32,15 +32,13 @@ namespace FirstStep.Models
 
         public string? company_description { get; set; }
 
-        public string? company_city { get; set; }
-
-        public string? company_province { get; set; }
-
         public string? company_business_scale { get; set; }
 
-        public string? comment { get; set;}
+        public string? comment { get; set; }
 
         public DateTime company_registered_date { get; set; }
+
+        public string? registration_url { get; set; }
 
 
         [JsonIgnore]
@@ -48,14 +46,17 @@ namespace FirstStep.Models
 
         public int? verified_system_admin_id { get; set; }
 
-        
+
         [JsonIgnore]
         public virtual HRManager? company_admin { get; set; }
 
         public int? company_admin_id { get; set; }
 
-        
+
         [JsonIgnore]
         public ICollection<Employee>? employees { get; set; }
+
+        [JsonIgnore]
+        public ICollection<Appointment>? appointments { get; set; }
     }
 }
