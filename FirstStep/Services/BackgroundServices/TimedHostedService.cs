@@ -1,4 +1,6 @@
-﻿namespace FirstStep.Services.BackgroundServices
+﻿using FirstStep.Data;
+
+namespace FirstStep.Services.BackgroundServices
 {
     public class TimedHostedService : IHostedService, IDisposable
     {
@@ -17,6 +19,16 @@
         public Task StartAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Timed Hosted Service running.");
+
+            // seed data
+            DataSeeder seeder = 
+                new DataSeeder(
+                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<DataContext>(), 
+                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IAdvertisementService>()
+                );
+
+            //seeder.SeedAdvertisements(10).Wait();
+
             _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromDays(1));
             return Task.CompletedTask;
         }
