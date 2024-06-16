@@ -20,17 +20,20 @@ namespace FirstStep.Services.BackgroundServices
         {
             _logger.LogInformation("Timed Hosted Service running.");
 
-            // seed data
-            DataSeeder seeder = 
-                new DataSeeder(
-                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<DataContext>(), 
-                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IAdvertisementService>()
-                );
-
-            //seeder.SeedAdvertisements(10).Wait();
+            // SeedData().Wait();
 
             _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromDays(1));
             return Task.CompletedTask;
+        }
+
+        private Task SeedData()
+        {
+            DataSeeder seeder = 
+                new DataSeeder(
+                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<DataContext>(), 
+                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IAdvertisementService>());
+
+            return seeder.SeedAdvertisements(10);
         }
 
         private async void DoWork(object? state)
