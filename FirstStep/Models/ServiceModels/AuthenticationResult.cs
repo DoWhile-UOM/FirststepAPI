@@ -1,4 +1,6 @@
-namespace FirstStep.Models.DTOs
+using FirstStep.Models.DTOs;
+
+namespace FirstStep.Models.ServiceModels
 {
     public class AuthenticationResult
     {

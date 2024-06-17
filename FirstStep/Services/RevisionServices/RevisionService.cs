@@ -1,6 +1,5 @@
 ﻿using FirstStep.Data;
 using FirstStep.Models;
-using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -14,8 +13,6 @@ namespace FirstStep.Services
             _context = context;
         }
 
-        enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected ,Passed }
-
         public async Task<IEnumerable<Revision>> GetAll()
         {
             return await _context.Revisions.ToListAsync();
@@ -24,6 +21,7 @@ namespace FirstStep.Services
         public async Task<Revision> GetById(int id)
         {
             Revision? revision = await _context.Revisions.FindAsync(id);
+
             if (revision is null)
             {
                 throw new Exception("Revision not found.");
@@ -50,7 +48,7 @@ namespace FirstStep.Services
 
             if (last_revision is null)
             {
-                return ApplicationStatus.NotEvaluated.ToString();
+                return Application.ApplicationStatus.NotEvaluated.ToString();
             }
 
             return last_revision.status;
@@ -71,14 +69,14 @@ namespace FirstStep.Services
         {
             if (application.revisions is null)
             {
-                return ApplicationStatus.NotEvaluated.ToString();
+                return Application.ApplicationStatus.NotEvaluated.ToString();
             }
 
             Revision? last_revision = application.revisions.OrderByDescending(r => r.date).FirstOrDefault();
 
             if (last_revision is null)
             {
-                return ApplicationStatus.NotEvaluated.ToString();
+                return Application.ApplicationStatus.NotEvaluated.ToString();
             }
 
             return last_revision.status;
@@ -88,35 +86,36 @@ namespace FirstStep.Services
         {
             revision.revision_id = 0;
 
-            _context.Revisions.Add(revision);
-            await _context.SaveChangesAsync();
-
-            // Update application status
             var application = await _context.Applications.FindAsync(revision.application_id);
-            if (application != null)
+            
+            if (application == null)
             {
-                application.status = revision.status;
-                await _context.SaveChangesAsync();
+                throw new Exception("Application not found.");
             }
+
+            application.status = revision.status;
+            _context.Revisions.Add(revision);
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task Update(Revision revision)
         {
             Revision dbRevision = await GetById(revision.revision_id);
 
+            var application = await _context.Applications.FindAsync(revision.application_id);
+            
+            if (application == null)
+            {
+                throw new Exception("Application not found.");
+            }
+
             dbRevision.comment = revision.comment;
             dbRevision.date = revision.date;
             dbRevision.status = revision.status;
+            application.status = revision.status;
 
             await _context.SaveChangesAsync();
-
-            // Update application status
-            var application = await _context.Applications.FindAsync(revision.application_id);
-            if (application != null)
-            {
-                application.status = revision.status;
-                await _context.SaveChangesAsync();
-            }
         }
 
         public async Task Delete(int id)

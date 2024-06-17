@@ -61,7 +61,7 @@ namespace FirstStep.MapperProfile
             CreateMap<Application, ApplicationListDto>()
                 .ForMember(
                     des => des.seekerName,
-                    opt => opt.MapFrom(src => src.seeker!.first_name + " " + src.seeker!.last_name));
+                    opt => opt.MapFrom(src => src.seeker!.first_name + ' ' + src.seeker!.last_name));
 
             CreateMap<AddApplicationDto, Application>();
             CreateMap<Seeker, ApplicationViewDto>();
@@ -70,17 +70,23 @@ namespace FirstStep.MapperProfile
             CreateMap<Company, CompanyApplicationDto>();
             CreateMap<Company, CompanyApplicationDto>();
 
-
             CreateMap<Advertisement, ApplicationListingPageDto>()
+                .ForMember(
+                    des => des.role,
+                    opt => opt.MapFrom(src => src.hrManager!.user_type))
+                .ForMember(
+                    des => des.hr_manager_name,
+                    opt => opt.MapFrom(src => src.hrManager!.first_name + ' ' + src.hrManager!.last_name))
                 .ForMember(
                     des => des.company_id,
                     opt => opt.MapFrom(src => src.hrManager!.company_id))
                 .ForMember(
                     des => des.field_name,
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
-                
 
             CreateMap<Application, ApplicationStatusDto>();
+
+            CreateMap<AddAppointmentDto, Appointment>();
         }
     }
 }

@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using FirstStep.Models.ServiceModels;
 
 namespace FirstStep.Services
 {
@@ -26,21 +27,42 @@ namespace FirstStep.Services
         public async Task<AuthenticationResult> Authenticate(LoginRequestDto userObj)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.email == userObj.email);
+            
             if (user == null)
-                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "Username Not Found" };
-
+            {
+                return new AuthenticationResult { 
+                    IsSuccessful = false, 
+                    ErrorMessage = "Username Not Found" 
+                };
+            }
+            
             if (!PasswordHasher.VerifyPassword(userObj.password, user.password_hash))
+            {
+                return new AuthenticationResult 
+                { 
+                    IsSuccessful = false, 
+                    ErrorMessage = "Invalid Password" 
+                };
+            }  
 
-                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "Invalid Password" };
-
-
-            user.token = await CreateJwt(user); //create access token for session
-            var newAccessToken = user.token;
+            var newAccessToken = await CreateJwt(user); //create access token for session
             var newRefreshToken = CreateRefreshToken(); //create refresh token
+            
             user.refresh_token = newRefreshToken;
+            user.token = newAccessToken;
+            user.last_login_date = DateTime.Now;
+
             await _context.SaveChangesAsync();// save changes to database
 
-            return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken } };
+            return new AuthenticationResult 
+            { 
+                IsSuccessful = true, 
+                Token = new TokenApiDto 
+                { 
+                    AccessToken = newAccessToken, 
+                    RefreshToken = newRefreshToken 
+                } 
+            };
         }
 
         public async Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto)

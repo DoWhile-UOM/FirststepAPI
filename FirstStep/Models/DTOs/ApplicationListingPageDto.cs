@@ -10,6 +10,10 @@ namespace FirstStep.Models.DTOs
 
         public string field_name { get; set; }
 
+        public string hr_manager_name { get; set; }
+
+        public string role { get; set; }
+
         public string current_status { get; set; }
         
         public IEnumerable<ApplicationListDto> applicationList { get; set; }

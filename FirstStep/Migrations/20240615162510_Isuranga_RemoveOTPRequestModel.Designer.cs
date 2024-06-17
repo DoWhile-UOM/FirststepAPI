@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Firststep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240615162510_Isuranga_RemoveOTPRequestModel")]
+    partial class Isuranga_RemoveOTPRequestModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,9 +121,6 @@ namespace Firststep.Migrations
                     b.Property<int>("hrManager_id")
                         .HasColumnType("int");
 
-                    b.Property<int>("interview_duration")
-                        .HasColumnType("int");
-
                     b.Property<string>("job_description")
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
@@ -169,9 +169,6 @@ namespace Firststep.Migrations
                     b.Property<int?>("assigned_hrAssistant_id")
                         .HasColumnType("int");
 
-                    b.Property<bool>("is_called")
-                        .HasColumnType("bit");
-
                     b.Property<int>("seeker_id")
                         .HasColumnType("int");
 
@@ -191,41 +188,6 @@ namespace Firststep.Migrations
                     b.HasIndex("seeker_id");
 
                     b.ToTable("Applications");
-                });
-
-            modelBuilder.Entity("FirstStep.Models.Appointment", b =>
-                {
-                    b.Property<int>("appointment_id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("appointment_id"));
-
-                    b.Property<int?>("advertisement_id")
-                        .HasColumnType("int");
-
-                    b.Property<int>("company_id")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("seeker_id")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("start_time")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("appointment_id");
-
-                    b.HasIndex("advertisement_id");
-
-                    b.HasIndex("company_id");
-
-                    b.HasIndex("seeker_id");
-
-                    b.ToTable("Appointments");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
@@ -610,31 +572,6 @@ namespace Firststep.Migrations
                     b.Navigation("seeker");
                 });
 
-            modelBuilder.Entity("FirstStep.Models.Appointment", b =>
-                {
-                    b.HasOne("FirstStep.Models.Advertisement", "advertisement")
-                        .WithMany("appointments")
-                        .HasForeignKey("advertisement_id")
-                        .OnDelete(DeleteBehavior.ClientCascade);
-
-                    b.HasOne("FirstStep.Models.Company", "company")
-                        .WithMany("appointments")
-                        .HasForeignKey("company_id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.HasOne("FirstStep.Models.Seeker", "seeker")
-                        .WithMany("appointments")
-                        .HasForeignKey("seeker_id")
-                        .OnDelete(DeleteBehavior.ClientCascade);
-
-                    b.Navigation("advertisement");
-
-                    b.Navigation("company");
-
-                    b.Navigation("seeker");
-                });
-
             modelBuilder.Entity("FirstStep.Models.Company", b =>
                 {
                     b.HasOne("FirstStep.Models.HRManager", "company_admin")
@@ -761,8 +698,6 @@ namespace Firststep.Migrations
             modelBuilder.Entity("FirstStep.Models.Advertisement", b =>
                 {
                     b.Navigation("applications");
-
-                    b.Navigation("appointments");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Application", b =>
@@ -772,8 +707,6 @@ namespace Firststep.Migrations
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
                 {
-                    b.Navigation("appointments");
-
                     b.Navigation("employees");
                 });
 
@@ -794,8 +727,6 @@ namespace Firststep.Migrations
             modelBuilder.Entity("FirstStep.Models.Seeker", b =>
                 {
                     b.Navigation("applications");
-
-                    b.Navigation("appointments");
                 });
 
             modelBuilder.Entity("FirstStep.Models.SystemAdmin", b =>

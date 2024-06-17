@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models.DTOs;
+using FirstStep.Models.ServiceModels;
 
 namespace FirstStep.Services
 {
