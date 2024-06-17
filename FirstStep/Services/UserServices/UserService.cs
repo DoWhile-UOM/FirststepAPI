@@ -209,5 +209,22 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
+        public async Task<List<ActiveUserDto>> GetActiveUsersAsync()
+        {
+            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+            var activeUsers = await _context.Users
+                .Where(user => user.last_login_date <= thirtyDaysAgo)
+                .ToListAsync();
+            return _mapper.Map<List<ActiveUserDto>>(activeUsers);
+        }
+        public async Task<List<ActiveUserDto>> GetInactiveUsersAsync()
+        {
+            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+
+            var inactiveUsers = await _context.Users
+                .Where(user => user.last_login_date > thirtyDaysAgo)
+                .ToListAsync();
+            return _mapper.Map<List<ActiveUserDto>>(inactiveUsers);
+        }
     }
 }
