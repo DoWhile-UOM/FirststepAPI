@@ -9,7 +9,7 @@ namespace FirstStep.Services
 
         Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto);
 
-        Task<UpdateEmployeeDto> GetUserById(int user_id);
+        Task<UserDto> GetUserById(int user_id);
 
         Task UpdateUser(UpdateUserDto user);
     }
