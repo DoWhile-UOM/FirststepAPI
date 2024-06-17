@@ -56,7 +56,7 @@ namespace FirstStep.MapperProfile
             CreateMap<AddEmployeeDto, HRAssistant>();
             CreateMap<AddCompanyAdminDto, HRManager>();
             CreateMap<Company, CompanyProfileDetailsDto>();
-            CreateMap<User,UpdateEmployeeDto>();
+            CreateMap<User,UserDto>();
 
             CreateMap<Application, ApplicationListDto>()
                 .ForMember(

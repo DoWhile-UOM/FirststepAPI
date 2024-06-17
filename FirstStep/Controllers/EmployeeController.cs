@@ -79,7 +79,7 @@ namespace FirstStep.Controllers
 
         [HttpPut]
         [Route("UpdateEmployee/{id:int}")]
-        public async Task<IActionResult> UpdateEmployee(UpdateEmployeeDto reqEmployee, int id)
+        public async Task<IActionResult> UpdateEmployee(UserDto reqEmployee, int id)
         {
             await _service.Update(id, reqEmployee);
             return Ok();

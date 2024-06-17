@@ -169,11 +169,11 @@ namespace FirstStep.Services
             return principal;
         }
 
-        public async Task<UpdateEmployeeDto> GetUserById(int user_id)
+        public async Task<UserDto> GetUserById(int user_id)
         {
             User? user = await _context.Users.FindAsync(user_id);
-            UpdateEmployeeDto employeeDto = _mapper.Map<UpdateEmployeeDto>(user);
-            return employeeDto;
+            UserDto userDto = _mapper.Map<UserDto>(user);
+            return userDto;
         }
 
         public async Task UpdateUser(UpdateUserDto user)

@@ -32,15 +32,15 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetUser/{userId:int}")]
-        public async Task<IActionResult> GetUserById(int user_id)
+        [Route("GetUser/userId={userId:int}")]
+        public async Task<IActionResult> GetUserById(int userId)
         {
-            UpdateEmployeeDto? employee = await _userService.GetUserById(user_id);
-            if (employee is null)
+            UserDto? user = await _userService.GetUserById(userId);
+            if (user is null)
             {
                 return NoContent();
             }
-            return Ok(employee);
+            return Ok(user);
         }
 
         [HttpPost]

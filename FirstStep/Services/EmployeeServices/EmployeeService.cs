@@ -189,7 +189,7 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(int userId, UpdateEmployeeDto employee)
+        public async Task Update(int userId, UserDto employee)
         {
             var dbEmployee = await GetById(userId);
 
