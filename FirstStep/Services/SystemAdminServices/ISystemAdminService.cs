@@ -15,5 +15,6 @@ namespace FirstStep.Services
 
         public Task Delete(int id);
         public Task<LoggingsDto> GetLoggingsOfUsersAsync();
+        public Task<IEnumerable<NotRegisteredEligibleCompanyDto>> GetEligibleUnregisteredCompanies();
     }
 }

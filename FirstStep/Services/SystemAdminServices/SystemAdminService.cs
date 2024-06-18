@@ -11,11 +11,13 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IUserService _userService;
+        private readonly ICompanyService _companyService;
 
-        public SystemAdminService(DataContext context, IUserService userService)
+        public SystemAdminService(DataContext context, IUserService userService, ICompanyService companyService)
         {
             _context = context;
             _userService = userService;
+            _companyService = companyService;
         }
 
         public async Task<IEnumerable<SystemAdmin>> GetAll()
@@ -58,7 +60,7 @@ namespace FirstStep.Services
 
         public async Task Update(SystemAdmin systemAdmin)
         {
-            SystemAdmin dbSystemAdmin= await GetById(systemAdmin.user_id);
+            SystemAdmin dbSystemAdmin = await GetById(systemAdmin.user_id);
 
             dbSystemAdmin.first_name = systemAdmin.first_name;
             dbSystemAdmin.last_name = systemAdmin.last_name;
@@ -87,6 +89,7 @@ namespace FirstStep.Services
             int tot_cmpny_active_users = tot_active - activeUsers.Count(user => user.user_type == "seeker");
             int tot_cmpny_inactive_users = tot_inactive - inactiveUsers.Count(user => user.user_type == "seeker");
 
+            int eligible_unregistered_companies_count = await _companyService.GetEligibleUnregisteredCompaniesCount();
             var loggingsDto = new LoggingsDto
             {
                 activeTot = tot_active,
@@ -101,9 +104,16 @@ namespace FirstStep.Services
                 inactiveSeeker = inactiveUsers.Count(user => user.user_type == "seeker"),
                 activeCmpUsers = tot_cmpny_active_users,
                 inactiveCmpUsers = tot_cmpny_inactive_users,
+                eligibleUnregisteredCompaniesCount= eligible_unregistered_companies_count,
             };
             return loggingsDto;
 
         }
+
+        public async Task<IEnumerable<NotRegisteredEligibleCompanyDto>> GetEligibleUnregisteredCompanies()
+        {
+            return await _companyService.GetEligibleUnregisteredCompanies();
+        }
+
     }
 }

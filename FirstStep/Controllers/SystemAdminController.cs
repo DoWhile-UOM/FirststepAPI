@@ -39,6 +39,13 @@ namespace FirstStep.Controllers
             var loggingsDto = await _service.GetLoggingsOfUsersAsync();
             return Ok(loggingsDto);
         }
+        [HttpGet]
+        [Route("GetEligibleUnregisteredCompanies")]
+        public async Task<ActionResult<NotRegisteredEligibleCompanyDto>> GetEligibleUnregisteredCompanies()
+        {
+            var eligibleUnregisteredCompanies = await _service.GetEligibleUnregisteredCompanies();
+            return Ok(eligibleUnregisteredCompanies);
+        }
 
         [HttpPost]
         [Route("AddSystemAdmin")]

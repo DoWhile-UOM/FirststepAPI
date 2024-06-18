@@ -14,5 +14,6 @@
         public int inactiveSeeker { get; set; }
         public int activeCmpUsers { get; set; }
         public int inactiveCmpUsers { get; set; }
+        public int eligibleUnregisteredCompaniesCount { get; set; }
     }
 }
