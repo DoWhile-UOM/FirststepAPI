@@ -356,6 +356,18 @@ namespace FirstStep.Services
                     company_logo = c.company_logo
                 })
                 .ToListAsync();
+            //if (companydto.company_logo != null)
+            //{
+            //  companydto.company_logo = await _fileService.GetBlobUrl(companydto.company_logo);
+            // }
+            foreach (var company in companies)
+            {
+                if (company.company_logo != null)
+                {
+                    company.company_logo = await _fileService.GetBlobUrl(company.company_logo);
+                }
+            }
+
             return companies;
         }
 
