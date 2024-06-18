@@ -61,7 +61,7 @@ namespace FirstStep.Services
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.email == userEmail);
             if (user == null)
-                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "User Not Found" };
+                throw new Exception("User not found.");
 
             string token=GenerateRandomString(10);
 

@@ -76,7 +76,7 @@ namespace FirstStep.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e.Message);
+                return ReturnStatusCode(e);
             }
         }
 
@@ -86,19 +86,14 @@ namespace FirstStep.Controllers
         {
             try
             {
-                var response = await _userService.ResetPassword(userObj);
+                await _userService.ResetPassword(userObj);
+                return Ok("Password Reset Link Sent");
 
-                return response switch
-                {
-                    { IsSuccessful: true } => Ok(response.Token),
-                    { IsSuccessful: false } => BadRequest(response.ErrorMessage),
-                    _ => BadRequest(response.ErrorMessage),
-                };
 
             }
             catch (Exception e)
             {
-                return BadRequest(e.Message);
+                return ReturnStatusCode(e);
             }
         }
 
@@ -163,5 +158,23 @@ namespace FirstStep.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+        private ActionResult ReturnStatusCode(Exception e)
+        {
+            if (e is InvalidDataException)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.Message);
+            }
+            else if (e is NullReferenceException)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, e.Message);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+
     }
 }
