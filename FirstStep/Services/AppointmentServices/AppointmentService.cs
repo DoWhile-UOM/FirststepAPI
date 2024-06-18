@@ -98,5 +98,15 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
+
+        public Task DummyService(int? test)
+        {
+            if (test == 1)
+            {
+                throw new Exception("Dummy exception");
+            }
+            return Task.CompletedTask;
+
+        }
     }
 }

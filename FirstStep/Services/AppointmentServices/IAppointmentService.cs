@@ -9,5 +9,7 @@ namespace FirstStep.Services
         Task AssignToAdvertisement(int appointment_id, int advertisement_id);
 
         Task BookAppointment(int appointment_id, int seeker_id);
+
+        Task DummyService(int? test);
     }
 }
