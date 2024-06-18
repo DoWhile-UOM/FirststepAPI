@@ -97,6 +97,29 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpGet("GetApprovedApplication")]
+        public async Task<IActionResult> GetApprovedApplication(int advertisementId, int seekerId)//Change DTO as per descripton
+        {
+            ///Change bellow whole function as per Needed
+            try
+            {
+                var status = await _service.GetApplicationStatus(advertisementId, seekerId);
+                return Ok(status);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+
+
+
+
         [HttpPost]
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
@@ -125,6 +148,31 @@ namespace FirstStep.Controllers
         [Route("DelegateTask/jobID={jobID}")]
         public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID)
         {
+            try
+            {
+                await _service.InitiateTaskDelegation(jobID, null);
+                return Ok("Task delegation initiated successfully.");
+            }
+            catch (NullReferenceException ex) when (ex.Message == "No applications for evaluation.")
+            {
+                return NoContent(); // HTTP 204 No Content
+            }
+            catch (NullReferenceException ex) when (ex.Message == "Not enough HR Assistants for task delegation.")
+            {
+                return BadRequest("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
+            }
+        }
+
+
+        [HttpPatch]
+        [Route("CreateShortList/jobID={jobID}")]
+        public async Task<IActionResult> CreateShortList(int jobID)//Create DTO as per needed
+        {
+            //Change bellow whole function as per Needed
             try
             {
                 await _service.InitiateTaskDelegation(jobID, null);
