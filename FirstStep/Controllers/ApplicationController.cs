@@ -116,6 +116,17 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpGet("GetSelectedApplicationDetails/{applicationId}")]
+        public async Task<IActionResult> GetSelectedApplicationDetails(int applicationId)
+        {
+            var applicationSelectedDto = await _service.GetSelectedApplicationDetails(applicationId);
+            if (applicationSelectedDto == null)
+            {
+                return NotFound("Application not found.");
+            }
+            return Ok(applicationSelectedDto);
+        }
+
 
 
 
