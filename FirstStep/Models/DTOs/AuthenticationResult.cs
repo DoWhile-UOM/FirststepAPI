@@ -5,6 +5,5 @@ namespace FirstStep.Models.DTOs
         public bool IsSuccessful { get; set; }
         public TokenApiDto? Token { get; set; }
         public string? ErrorMessage { get; set; }
-        public string? ResponseMessage { get; set; }
     }
 }
