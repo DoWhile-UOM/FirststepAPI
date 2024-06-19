@@ -371,7 +371,7 @@ namespace FirstStep.Services
         }
 
         //Task delegation strats here
-        private async Task<List<Application>> SelectApplicationsForEvaluation(Advertisement advertisement)
+        private async Task<List<Application>?> SelectApplicationsForEvaluation(Advertisement advertisement)
         {
             // Initialize applicationsOfTheAdvertisement as an empty list
             List<Application> applicationsOfTheAdvertisement = new List<Application>();
@@ -385,8 +385,10 @@ namespace FirstStep.Services
                 // return applications that need evaluate
                 return applicationsOfTheAdvertisement;
             }
-
-            throw new NullReferenceException("No applications for evaluation."); // HTTP 204 No Content
+            else
+            {
+                return null;
+            }
         }
 
         public async Task InitiateTaskDelegation(int advertisement_id, IEnumerable<int>? hrassistant_ids)
@@ -403,7 +405,12 @@ namespace FirstStep.Services
             {
                 var hrAssistants = await _employeeService.GetEmployees(hrassistant_ids);
 
-                List<Application> applicationsForEvaluation = await GetApplicationsForTaskDelegation(advertisement, hrAssistants);
+                List<Application>? applicationsForEvaluation = await GetApplicationsForTaskDelegation(advertisement, hrAssistants);
+
+                if (applicationsForEvaluation is null)
+                {
+                    return;
+                }
 
                 // Delegate tasks to HR assistants
                 await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
@@ -432,10 +439,10 @@ namespace FirstStep.Services
         private async Task<List<Application>?> GetApplicationsForTaskDelegation(Advertisement advertisement, IEnumerable<Employee> hrAssistants)
         {
             // Get applications that need evaluation for the specified company
-            List<Application> applicationsForEvaluation = await SelectApplicationsForEvaluation(advertisement);
+            List<Application>? applicationsForEvaluation = await SelectApplicationsForEvaluation(advertisement);
 
             // Check if there are no applications for evaluation
-            if (!applicationsForEvaluation.Any() || hrAssistants.Count() <= 0)
+            if (applicationsForEvaluation == null || hrAssistants.Count() <= 0)
             {
                 return null;
             }
