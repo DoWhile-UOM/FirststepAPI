@@ -96,8 +96,8 @@ namespace Firststep.Migrations
 
                     b.Property<string>("current_status")
                         .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("nvarchar(7)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("employeement_type")
                         .IsRequired()
@@ -116,6 +116,9 @@ namespace Firststep.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("hrManager_id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("interview_duration")
                         .HasColumnType("int");
 
                     b.Property<string>("job_description")
@@ -157,6 +160,7 @@ namespace Firststep.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("application_Id"));
 
                     b.Property<string>("CVurl")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("advertisement_id")
@@ -164,6 +168,9 @@ namespace Firststep.Migrations
 
                     b.Property<int?>("assigned_hrAssistant_id")
                         .HasColumnType("int");
+
+                    b.Property<bool>("is_called")
+                        .HasColumnType("bit");
 
                     b.Property<int>("seeker_id")
                         .HasColumnType("int");
@@ -184,6 +191,41 @@ namespace Firststep.Migrations
                     b.HasIndex("seeker_id");
 
                     b.ToTable("Applications");
+                });
+
+            modelBuilder.Entity("FirstStep.Models.Appointment", b =>
+                {
+                    b.Property<int>("appointment_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("appointment_id"));
+
+                    b.Property<int?>("advertisement_id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("company_id")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("seeker_id")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("start_time")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("appointment_id");
+
+                    b.HasIndex("advertisement_id");
+
+                    b.HasIndex("company_id");
+
+                    b.HasIndex("seeker_id");
+
+                    b.ToTable("Appointments");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
@@ -275,22 +317,6 @@ namespace Firststep.Migrations
                     b.ToTable("JobFields");
                 });
 
-            modelBuilder.Entity("FirstStep.Models.OTPRequest", b =>
-                {
-                    b.Property<string>("email")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("expiry_date_time")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("otp")
-                        .HasColumnType("int");
-
-                    b.HasKey("email");
-
-                    b.ToTable("OTPRequests");
-                });
-
             modelBuilder.Entity("FirstStep.Models.ProfessionKeyword", b =>
                 {
                     b.Property<int>("profession_id")
@@ -378,6 +404,9 @@ namespace Firststep.Migrations
                     b.Property<string>("first_name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("last_login_date")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("last_name")
                         .IsRequired()
@@ -581,6 +610,31 @@ namespace Firststep.Migrations
                     b.Navigation("seeker");
                 });
 
+            modelBuilder.Entity("FirstStep.Models.Appointment", b =>
+                {
+                    b.HasOne("FirstStep.Models.Advertisement", "advertisement")
+                        .WithMany("appointments")
+                        .HasForeignKey("advertisement_id")
+                        .OnDelete(DeleteBehavior.ClientCascade);
+
+                    b.HasOne("FirstStep.Models.Company", "company")
+                        .WithMany("appointments")
+                        .HasForeignKey("company_id")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.HasOne("FirstStep.Models.Seeker", "seeker")
+                        .WithMany("appointments")
+                        .HasForeignKey("seeker_id")
+                        .OnDelete(DeleteBehavior.ClientCascade);
+
+                    b.Navigation("advertisement");
+
+                    b.Navigation("company");
+
+                    b.Navigation("seeker");
+                });
+
             modelBuilder.Entity("FirstStep.Models.Company", b =>
                 {
                     b.HasOne("FirstStep.Models.HRManager", "company_admin")
@@ -707,6 +761,8 @@ namespace Firststep.Migrations
             modelBuilder.Entity("FirstStep.Models.Advertisement", b =>
                 {
                     b.Navigation("applications");
+
+                    b.Navigation("appointments");
                 });
 
             modelBuilder.Entity("FirstStep.Models.Application", b =>
@@ -716,6 +772,8 @@ namespace Firststep.Migrations
 
             modelBuilder.Entity("FirstStep.Models.Company", b =>
                 {
+                    b.Navigation("appointments");
+
                     b.Navigation("employees");
                 });
 
@@ -736,6 +794,8 @@ namespace Firststep.Migrations
             modelBuilder.Entity("FirstStep.Models.Seeker", b =>
                 {
                     b.Navigation("applications");
+
+                    b.Navigation("appointments");
                 });
 
             modelBuilder.Entity("FirstStep.Models.SystemAdmin", b =>

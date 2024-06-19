@@ -1,22 +1,24 @@
-﻿using FirstStep.Models;
-using FirstStep.Models.DTOs;
+﻿using FirstStep.Models.DTOs;
+using FirstStep.Models.ServiceModels;
 
 namespace FirstStep.Services
 {
     public interface IEmailService
     {
-        Task<string> SendEmail(EmailDto request);
+        Task<string> SendEmail(EmailModel request);
         
-        Task<string> SendOTPEmail(VerifyEmailDto request);//for signup, company registraion and person verification to allow pasword changin in company portal
+        Task<string> SendOTPEmail(VerifyEmailDto request);
 
-        Task<string> VerifyOTP(OTPRequest request);
+        bool VerifyOTP(OTPRequest request);
 
+        public void RemoveExpiredOTP();
 
-        void JobApplicationSuccessfullySentEmail(EmailDto request, string email, string jobseekerFName, string companyName,string jobAdvertisementTitle,string jobApplicationEvaluationStatusLink);//used in seeker portal
+        void JobApplicationSuccessfullySentEmail(EmailModel request, string email, string jobseekerFName, string companyName,string jobAdvertisementTitle,string jobApplicationEvaluationStatusLink);//used in seeker portal
         
         void EvaluatedCompanyRegistraionApplicationEmail( string email, bool HasAccepted, string? comment, string link, string company_name);//EmailDto request was removed
 
-        void SendEmailCompanyRegistration(string email, string company_name, string applicationEvaluationStatusLink);//email for company regisrtation process
+        Task SendEmailCompanyRegistration(string email, string company_name, string applicationEvaluationStatusLink);//email for company regisrtation process
+        
         Task<string> CARegIsSuccessfull(string email, string firstName, string lastName);
     }
 }

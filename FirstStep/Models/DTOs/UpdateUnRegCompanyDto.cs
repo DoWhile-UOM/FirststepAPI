@@ -4,8 +4,7 @@ namespace FirstStep.Models.DTOs
 {
     public class UpdateUnRegCompanyDto
     {
-        public required int company_id { get; set; }
-
+        public int company_id { get; set; }
         public required int business_reg_no { get; set; }
 
         public required string company_name { get; set; }
@@ -18,10 +17,18 @@ namespace FirstStep.Models.DTOs
         [DataType(DataType.PhoneNumber)]
         public required int company_phone_number { get; set; }
 
-        public string? business_reg_certificate { get; set; }
+        public IFormFile? business_reg_certificate { get; set; }
 
-        public string? certificate_of_incorporation { get; set; }
+        public IFormFile? certificate_of_incorporation { get; set; }
 
-        public required DateTime company_applied_date { get; set; } = DateTime.Now;
+        public DateTime company_applied_date { get; set; } = DateTime.Now;
+
+        public IFormFile? company_logo { get; set; }
+
+        public string? company_description { get; set; }
+
+        public string? company_business_scale { get; set; }
+
+        public required DateTime company_registered_date { get; set; }
     }
 }

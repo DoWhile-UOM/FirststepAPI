@@ -8,11 +8,13 @@ namespace FirstStep.Models
         [Key]
         public int application_Id { get; set; }
 
-        public required string status { get; set; } // need to be removed
+        public required string status { get; set; }
 
         public required DateTime submitted_date { get; set; } = DateTime.Now;
 
-        public string? CVurl { get; set; }
+        public required string CVurl { get; set; }
+
+        public bool is_called { get; set; } = false;
 
 
         [JsonIgnore]
@@ -35,5 +37,8 @@ namespace FirstStep.Models
 
         [JsonIgnore]
         public virtual ICollection<Revision>? revisions { get; set; }
+
+
+        public enum ApplicationStatus { Pass, NotEvaluated, Accepted, Rejected, Done }
     }
 }

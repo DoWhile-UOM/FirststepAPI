@@ -1,4 +1,6 @@
-﻿namespace FirstStep.Services.BackgroundServices
+﻿using FirstStep.Data;
+
+namespace FirstStep.Services.BackgroundServices
 {
     public class TimedHostedService : IHostedService, IDisposable
     {
@@ -17,8 +19,21 @@
         public Task StartAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Timed Hosted Service running.");
+
+            // SeedData().Wait();
+
             _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromDays(1));
             return Task.CompletedTask;
+        }
+
+        private Task SeedData()
+        {
+            DataSeeder seeder = 
+                new DataSeeder(
+                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<DataContext>(), 
+                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IAdvertisementService>());
+
+            return seeder.SeedAdvertisements(10);
         }
 
         private async void DoWork(object? state)
@@ -26,12 +41,16 @@
             using (var scope = _scopeFactory.CreateScope())
             {
                 var advertisementService = scope.ServiceProvider.GetRequiredService<IAdvertisementService>();
+                var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
                 // Close expired advertisements
                 await advertisementService.CloseExpiredAdvertisements();
 
                 // remove expired advertisements from seeker's saved list
                 await advertisementService.RemoveSavedExpiredAdvertisements();
+
+                // remove expired otps
+                emailService.RemoveExpiredOTP();
             }
         }
 

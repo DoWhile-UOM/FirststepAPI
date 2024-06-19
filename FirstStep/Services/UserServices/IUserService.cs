@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models.DTOs;
+using FirstStep.Models.ServiceModels;
 
 namespace FirstStep.Services
 {
@@ -12,8 +13,8 @@ namespace FirstStep.Services
 
         Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto);
 
-        Task<string> RegisterUser(UserRegRequestDto userObj, string? type, string? company_id);
+        Task<UserDto> GetUserById(int user_id);
 
-        Task<bool> CheckEmailExist(string Email);
+        Task UpdateUser(UpdateUserDto user);
     }
 }

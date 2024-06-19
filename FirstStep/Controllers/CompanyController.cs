@@ -75,7 +75,7 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("AddCompany")] // Company Admin
-        public async Task<IActionResult> AddCompany(AddCompanyDto newCompany)
+        public async Task<IActionResult> AddCompany([FromForm] AddCompanyDto newCompany)
         {
             try
             {
@@ -84,11 +84,8 @@ namespace FirstStep.Controllers
             }
             catch (Exception ex)//Handle other errors
             {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
                 return BadRequest(ex.Message);
             }
-
         }
 
         [HttpPut]
@@ -119,7 +116,7 @@ namespace FirstStep.Controllers
 
         [HttpPut]
         [Route("UpdateUnregisteredCompany/{companyId:int}")] // Company Admin
-        public async Task<IActionResult> UpdateUnregisteredCompany(UpdateUnRegCompanyDto reqCompany, int companyId)
+        public async Task<IActionResult> UpdateUnregisteredCompany([FromForm] UpdateUnRegCompanyDto reqCompany, int companyId)
         {
             if (companyId != reqCompany.company_id)
             {
@@ -141,6 +138,26 @@ namespace FirstStep.Controllers
 
             await _service.UpdateRegisteredCompany(companyId, reqCompany);
             return Ok($"Successfully updated registered company on ID: {companyId}.");
+        }
+
+        [HttpPatch]
+        [Route("UpdateCompanyLogo/companyId={companyId:int}")]
+        public async Task<IActionResult> UpdateCompanyLogo(IFormFile file, int companyId)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file uploaded.");
+            }
+
+            try
+            {
+                await _service.SaveCompanyLogo(file, companyId);
+                return Ok("File uploaded successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
 
         [HttpDelete]

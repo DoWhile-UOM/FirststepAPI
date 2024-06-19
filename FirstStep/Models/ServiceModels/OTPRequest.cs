@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace FirstStep.Models
+namespace FirstStep.Models.ServiceModels
 {
     public class OTPRequest
     {
-        [Key]
         [EmailAddress]
         public required string email { get; set; }
 

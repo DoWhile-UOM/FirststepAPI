@@ -1,11 +1,10 @@
 ﻿using FirstStep.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Validation
 {
     public static class AdvertisementValidation
     {
-        public enum Status { active, hold, closed }
-
         public static bool IsExpired(Advertisement advertisement)
         {
             if (advertisement.submission_deadline == null)
@@ -18,7 +17,17 @@ namespace FirstStep.Validation
 
         public static bool IsActive(Advertisement advertisement)
         {
-            if (advertisement.current_status != Status.active.ToString())
+            if (advertisement.current_status != Advertisement.Status.active.ToString())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool IsHold(Advertisement advertisement)
+        {
+            if (advertisement.current_status != Advertisement.Status.hold.ToString())
             {
                 return false;
             }
@@ -36,13 +45,30 @@ namespace FirstStep.Validation
             return true;
         }
 
+        public static void IsSutableForApply(Advertisement? advertisement)
+        {
+            // validate advertisement
+            if (advertisement is null)
+            {
+                throw new InvalidDataException("Advertisement not found.");
+            }
+            else if (IsExpired(advertisement))
+            {
+                throw new InvalidDataException("Advertisement is expired.");
+            }
+            else if (!IsActive(advertisement))
+            {
+                throw new InvalidDataException("Advertisement is not active.");
+            }
+        }
+
         public static void CheckStatus(string status)
         {
             if (status == "all")
             {
                 return;
             }
-            if (!Enum.TryParse<Status>(status, out _))
+            if (!Enum.TryParse<Advertisement.Status>(status, out _))
             {
                 throw new InvalidDataException("Invalid status.");
             }

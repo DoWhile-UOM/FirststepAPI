@@ -7,7 +7,6 @@ using FirstStep.Validation;
 using Microsoft.EntityFrameworkCore;
 using KdTree;
 using KdTree.Math;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FirstStep.Services
 {
@@ -51,7 +50,7 @@ namespace FirstStep.Services
                     .Include("hrManager")
                     .Include("skills")
                     .Include("savedSeekers")
-                    .Where(x => x.current_status == AdvertisementValidation.Status.active.ToString())
+                    .Where(x => x.current_status == Advertisement.Status.active.ToString())
                     .ToListAsync();
             }
             else
@@ -131,7 +130,7 @@ namespace FirstStep.Services
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
             advertisementDto.company_name = _context.Companies.Find(dbAdvertismeent.hrManager!.company_id)!.company_name;
-            advertisementDto.company_logo_url = await _fileService.GetBlobImageUrl(dbAdvertismeent.hrManager!.company!.company_logo!);
+            advertisementDto.company_logo_url = await _fileService.GetBlobUrl(dbAdvertismeent.hrManager!.company!.company_logo!);
             advertisementDto.is_expired = AdvertisementValidation.IsExpired(dbAdvertismeent);
 
             return advertisementDto;
@@ -165,25 +164,39 @@ namespace FirstStep.Services
         {
             var advertisements = await FindByCompanyID(companyID);
 
-            return advertisements.Where(e => e.current_status == AdvertisementValidation.Status.active.ToString()).ToList();
+            return advertisements.Where(e => e.current_status == Advertisement.Status.active.ToString()).ToList();
         }
 
-        public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status)
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetCompanyAdvertisementList(int emp_id, string status)
         {
             AdvertisementValidation.CheckStatus(status);
 
-            var dbAdvertisements = await FindByCompanyID(companyID);
+            Employee? employee = await _context.Employees.FindAsync(emp_id);
 
-            return CreateCompanyAdvertisementList(dbAdvertisements, status);
+            if (employee is null)
+            {
+                throw new NullReferenceException("Employee is not found");
+            }
+
+            var dbAdvertisements = await FindByCompanyID(employee.company_id);
+
+            return CreateCompanyAdvertisementList(dbAdvertisements, status, employee);
         }
 
-        public async Task<IEnumerable<AdvertisementTableRowDto>> GetByCompanyID(int companyID, string status, string title)
+        public async Task<IEnumerable<AdvertisementTableRowDto>> GetCompanyAdvertisementList(int emp_id, string status, string title)
         {
             AdvertisementValidation.CheckStatus(status);
+
+            Employee? employee = await _context.Employees.FindAsync(emp_id);
+
+            if (employee is null)
+            {
+                throw new NullReferenceException("Employee is not found");
+            }
 
             if (title != null)
             {
-                var dbAdvertisements = await FindByCompanyID(companyID);
+                var dbAdvertisements = await FindByCompanyID(employee.company_id);
 
                 // filter advertisements by title
                 var filteredAdvertisements = dbAdvertisements.Where(x => x.title.ToLower().Contains(title.ToLower())).ToList();
@@ -201,11 +214,11 @@ namespace FirstStep.Services
                     }
                 }
 
-                return CreateCompanyAdvertisementList(filteredAdvertisements, status);
+                return CreateCompanyAdvertisementList(filteredAdvertisements, status, employee);
             }
             else
             {
-                return await GetByCompanyID(companyID, status);
+                return await GetCompanyAdvertisementList(employee.company_id, status);
             }
         }
 
@@ -283,7 +296,7 @@ namespace FirstStep.Services
             // add skills to the advertisement
             newAdvertisement.skills = await IncludeSkillsToAdvertisement(advertisementDto.reqSkills);
 
-            newAdvertisement.current_status = AdvertisementValidation.Status.active.ToString();
+            newAdvertisement.current_status = Advertisement.Status.active.ToString();
             _context.Advertisements.Add(newAdvertisement);
             await _context.SaveChangesAsync();
         }
@@ -303,7 +316,7 @@ namespace FirstStep.Services
                 throw new InvalidDataException("Submission deadline cannot be in the past.");
             }
 
-            advertisement.current_status = AdvertisementValidation.Status.active.ToString();
+            advertisement.current_status = Advertisement.Status.active.ToString();
             advertisement.submission_deadline = submissionDeadline;
             advertisement.expired_date = null;
 
@@ -315,7 +328,7 @@ namespace FirstStep.Services
             AdvertisementValidation.CheckStatus(newStatus);
             var advertisement = await FindById(id);
 
-            if (newStatus == AdvertisementValidation.Status.active.ToString() && AdvertisementValidation.IsExpired(advertisement))
+            if (newStatus == Advertisement.Status.active.ToString() && AdvertisementValidation.IsExpired(advertisement))
             {
                 // can't activate an expired advertisement, therefore first need to update the submission deadline
                 throw new InvalidDataException("Cannot activate an expired advertisement.");
@@ -325,7 +338,7 @@ namespace FirstStep.Services
                 // no need to update the status, because the advertisement is already in the requested status
                 return;
             }
-            else if (newStatus == AdvertisementValidation.Status.closed.ToString() && AdvertisementValidation.IsActive(advertisement))
+            else if (newStatus == Advertisement.Status.closed.ToString() && AdvertisementValidation.IsActive(advertisement))
             {
                 // can't close an active advertisement, therefore first need to update the submission deadline
                 throw new BadHttpRequestException("Cannot close an active advertisement.");
@@ -346,8 +359,12 @@ namespace FirstStep.Services
                 // set the expired date to 10 days after the current date, because need to hold saved advertisements for 10 days
                 advertisement.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
 
-                // execute task delegation on expired advertisements
-                await _applicationService.InitiateTaskDelegation(advertisement);
+                try
+                {
+                    // execute task delegation on expired advertisements
+                    await _applicationService.InitiateTaskDelegation(advertisement);
+                }
+                catch { }
             }
 
             await _context.SaveChangesAsync();
@@ -437,10 +454,14 @@ namespace FirstStep.Services
             foreach (var submitApplication in submittedApplications)
             {
                 var dbAdvertisement = await FindById(submitApplication.advertisement_id);
+
+                // skip the closed advertisements
+                if (dbAdvertisement.current_status == Advertisement.Status.closed.ToString()) continue;
+
                 var appliedAdvertisement = _mapper.Map<AppliedAdvertisementShortDto>(dbAdvertisement);
 
                 // find the current application status by checking the last revision for the application
-                appliedAdvertisement.application_status = _applicationService.GetCurrentApplicationStatus(submitApplication);
+                appliedAdvertisement.application_status = _applicationService.GetApplicationStatus(submitApplication);
 
                 appliedAdvertisement.application_id = submitApplication.application_Id;
 
@@ -451,7 +472,7 @@ namespace FirstStep.Services
                     Company? company = await _context.Companies.FindAsync(company_id);
                     if (company == null) continue;
 
-                    appliedAdvertisement.company_logo_url = await _fileService.GetBlobImageUrl(company.company_logo!);
+                    appliedAdvertisement.company_logo_url = await _fileService.GetBlobUrl(company.company_logo!);
                     appliedAdvertisement.company_name = company.company_name;
 
                     recentAccessedCompanies.Add(company_id, (appliedAdvertisement.company_name, appliedAdvertisement.company_logo_url));
@@ -476,7 +497,7 @@ namespace FirstStep.Services
             {
                 // check the advertisement had any applications
                 if (advertisement.applications!
-                    .Where(a => a.status == ApplicationService.ApplicationStatus.NotEvaluated.ToString())
+                    .Where(a => a.status == Application.ApplicationStatus.NotEvaluated.ToString())
                     .Count() > 0)
                 {
                     throw new InvalidOperationException("Cannot delete an advertisement that has non evaluated applications.");
@@ -599,7 +620,7 @@ namespace FirstStep.Services
                     Company? company = await _context.Companies.FindAsync(company_id);
                     if (company == null) continue;
 
-                    adDto.company_logo_url = await _fileService.GetBlobImageUrl(company.company_logo!);
+                    adDto.company_logo_url = await _fileService.GetBlobUrl(company.company_logo!);
                     adDto.company_name = company.company_name;
 
                     recentAccessedCompanies.Add(company_id, (adDto.company_name, adDto.company_logo_url));
@@ -617,13 +638,21 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of JobOfferDtos and create advertisement list for the company (Company Admin and HR Manager)
-        private IEnumerable<AdvertisementTableRowDto> CreateCompanyAdvertisementList(IEnumerable<Advertisement> dbAds, string status)
+        private IEnumerable<AdvertisementTableRowDto> CreateCompanyAdvertisementList(IEnumerable<Advertisement> dbAds, string status, Employee employee)
         {
             var jobOfferDtos = new List<AdvertisementTableRowDto>();
 
             foreach (var ad in dbAds)
             {
+                // skip the advertisements that are not in the requested status
                 if (status != "all" && ad.current_status != status)
+                {
+                    continue;
+                }
+
+                // skip the advertisements that are not belong to the employee
+                // ca has permission to see all advertisements
+                if (employee.user_type != User.UserType.ca.ToString() && ad.hrManager_id != employee.user_id)
                 {
                     continue;
                 }
@@ -635,13 +664,13 @@ namespace FirstStep.Services
                 jobOfferDto.no_of_applications = ad.applications!.Count();
 
                 jobOfferDto.no_of_evaluated_applications = ad.applications!
-                    .Where(a => a.status != ApplicationService.ApplicationStatus.NotEvaluated.ToString()).Count();
+                    .Where(a => a.status != Application.ApplicationStatus.NotEvaluated.ToString()).Count();
 
                 jobOfferDto.no_of_accepted_applications = ad.applications!
-                    .Where(a => a.status == ApplicationService.ApplicationStatus.Accepted.ToString()).Count();
+                    .Where(a => a.status == Application.ApplicationStatus.Accepted.ToString()).Count();
 
                 jobOfferDto.no_of_rejected_applications = ad.applications!
-                    .Where(a => a.status == ApplicationService.ApplicationStatus.Rejected.ToString()).Count();
+                    .Where(a => a.status == Application.ApplicationStatus.Rejected.ToString()).Count();
 
                 jobOfferDtos.Add(jobOfferDto);
             }
@@ -658,7 +687,7 @@ namespace FirstStep.Services
             {
                 // select only advertisements that are in hold status
                 // because only hold advertisements are suitable for evaluating
-                if (ad.current_status != AdvertisementValidation.Status.hold.ToString())
+                if (ad.current_status != Advertisement.Status.hold.ToString())
                 {
                     continue;
                 }
@@ -672,7 +701,7 @@ namespace FirstStep.Services
                 jobOfferDto.no_of_evaluated_applications = hra.applications!
                     .Where(a => 
                         a.advertisement_id == ad.advertisement_id && 
-                        a.status != ApplicationService.ApplicationStatus.NotEvaluated.ToString())
+                        a.status != Application.ApplicationStatus.NotEvaluated.ToString())
                     .Count();
                 jobOfferDto.no_of_nonevaluated_applications = jobOfferDto.no_of_assigned_applications - jobOfferDto.no_of_evaluated_applications;
 
@@ -694,7 +723,7 @@ namespace FirstStep.Services
                 .Include("hrManager")
                 .Include("savedSeekers")
                 .Where(ad =>
-                    ad.current_status == AdvertisementValidation.Status.active.ToString() &&
+                    ad.current_status == Advertisement.Status.active.ToString() &&
                     ad.country == requestAdsDto.country &&
                     ad.field_id == reqField.field_id)
                 .ToListAsync();
@@ -884,7 +913,7 @@ namespace FirstStep.Services
 
             foreach (var ad in filteredAds)
             {
-                if (!advertisementDistances.ContainsKey(ad.Key))
+                if (!matchingAdvertisements.ContainsKey(ad.Key))
                 {
                     matchingAdvertisements.Add(ad.Key, (ad.Value, advertisementDistances[ad.Key]));
                 }
@@ -920,8 +949,15 @@ namespace FirstStep.Services
                 tree.Add(key, ad.Key);
             }
 
-            // find the nearest neighbors with 80% coverage
-            var nearestAds = tree.GetNearestNeighbours(new[] { highestMatchingSkillPercentage, lowestDistance }, (int)(matchingAdvertisements.Count * 0.8));
+            int totalResults = matchingAdvertisements.Count;
+
+            if (totalResults > 10)
+            {
+                // find the nearest neighbors with 80% coverage
+                totalResults = (int)(matchingAdvertisements.Count * 0.8);
+            }
+
+            var nearestAds = tree.GetNearestNeighbours(new[] { highestMatchingSkillPercentage, lowestDistance }, totalResults);
 
             return nearestAds.Select(e => e.Value).ToList();
         }
@@ -997,7 +1033,7 @@ namespace FirstStep.Services
                 float matchingSkillsPercentage = (float)matchingSkills / ad.skills.Count();
 
                 // select only when matching skills percentage is greater than 50%
-                if (matchingSkillsPercentage > 50)
+                if (matchingSkillsPercentage > 0.5)
                 {
                     matchingAdvertisements.Add(ad, matchingSkillsPercentage);
                 }
@@ -1020,7 +1056,7 @@ namespace FirstStep.Services
 
                 if (DateTime.Now > ad.submission_deadline)
                 {
-                    ad.current_status = AdvertisementValidation.Status.hold.ToString();
+                    ad.current_status = Advertisement.Status.hold.ToString();
                     ad.expired_date = DateTime.Now.AddDays(AdvertisementExpiredDays);
 
                     try

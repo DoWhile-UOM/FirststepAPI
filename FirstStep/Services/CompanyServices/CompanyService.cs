@@ -2,8 +2,8 @@
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace FirstStep.Services
 {
@@ -48,6 +48,10 @@ namespace FirstStep.Services
         {
             Company company = await FindByID(id);
             CompanyProfileDetailsDto companydto = _mapper.Map<CompanyProfileDetailsDto>(company);
+            if (companydto.company_logo != null)
+            {
+                companydto.company_logo = await _fileService.GetBlobUrl(companydto.company_logo);
+            }
             return companydto;
         }
 
@@ -61,7 +65,6 @@ namespace FirstStep.Services
             return await _context.Companies.Where(c => c.verification_status).ToListAsync();
         }
 
-        //get company list for system admin
         public async Task<IEnumerable<ViewCompanyListDto>> GetAllCompanyList()
         {
             IEnumerable<Company> companies = await GetAll();
@@ -69,7 +72,6 @@ namespace FirstStep.Services
             return companyDtos;
         }
 
-        
         public async Task<CompanyProfileDto> GetCompanyProfile(int companyID, int seekerID, int pageLength)
         {
             // get all active advertisements under the company
@@ -90,22 +92,33 @@ namespace FirstStep.Services
             }
             else
             {
-                advertisementCompanyDto.company_logo = await _fileService.GetBlobImageUrl(dbCompany.company_logo);
+                advertisementCompanyDto.company_logo = await _fileService.GetBlobUrl(dbCompany.company_logo);
             }
 
             return advertisementCompanyDto;
         }
 
 
-        //get company application by id
         public async Task<CompanyApplicationDto> GetCompanyApplicationById(int companyID)
         {
             Company company = await FindByID(companyID);
             CompanyApplicationDto companydto = _mapper.Map<CompanyApplicationDto>(company);
+            if(companydto.business_reg_certificate != null)
+            {
+                companydto.business_reg_certificate = await _fileService.GetBlobUrl(companydto.business_reg_certificate);
+            }
+            if (companydto.certificate_of_incorporation != null) 
+            {
+                companydto.certificate_of_incorporation = await _fileService.GetBlobUrl(companydto.certificate_of_incorporation);
+            }
+            if (company.company_logo != null)
+            {
+                companydto.company_logo = await _fileService.GetBlobUrl(company.company_logo);
+            }
+            
             return companydto;
         }
         
-        //Company Registration Starts here
         public async Task Create(AddCompanyDto newCompanyDto)
         {
             var company = _mapper.Map<Company>(newCompanyDto);
@@ -119,21 +132,29 @@ namespace FirstStep.Services
             {
                 throw new Exception("Company registration number already exists");
             }
+            if (newCompanyDto.company_logo != null)
+            {
+                company.company_logo = await _fileService.UploadFile(newCompanyDto.company_logo);
+            }
+            if (newCompanyDto.certificate_of_incorporation != null)
+            {
+                company.certificate_of_incorporation = await _fileService.UploadFile(newCompanyDto.certificate_of_incorporation);
+            }
+            if (newCompanyDto.business_reg_certificate != null)
+            {
+                company.business_reg_certificate = await _fileService.UploadFile(newCompanyDto.business_reg_certificate);
+            }
 
             company.verification_status = false;
             company.registration_url= GenerateUniqueStringId(company.business_reg_no);
 
-            //Call Company Registration Email Verfication service
-
-
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
 
-            _emailService.SendEmailCompanyRegistration(company.company_email, company.company_name,company.registration_url); //Send Company Registration Email
+            await _emailService.SendEmailCompanyRegistration(company.company_email, company.company_name,company.registration_url); //Send Company Registration Email
             //return(company.registration_url); //Return Company Registration URL (Unique ID 
         }
 
-        //Company Resgistration State Check ID Generation Starts here
         public static string GenerateUniqueStringId(int inputInteger)
         {
             while (true)
@@ -158,19 +179,6 @@ namespace FirstStep.Services
                           .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        //Company Resgistration State Check ID Generation Ends here
-
-
-        public class EmailAlreadyExistsException : Exception
-        {
-            public EmailAlreadyExistsException(string message) : base(message) { }
-        }
-
-        public class RegistrationNumberAlreadyExistsException : Exception
-        {
-            public RegistrationNumberAlreadyExistsException(string message) : base(message) { }
-        }
-
         private async Task<bool> CheckCompnayEmailExist(string Email) //Function to check company email exist
         {
             return await _context.Companies.AnyAsync(x => x.company_email == Email);
@@ -192,12 +200,25 @@ namespace FirstStep.Services
             return company;
         }
 
-        //-----------------Company Registration Ends here---------------------------------------------------------
-
-
         public async Task Delete(int id)
         {
             Company company = await FindByID(id);
+
+            // remove the docuemnts from the blob storage
+            if (company.company_logo != null)
+            {
+                await _fileService.DeleteBlob(company.company_logo);
+            }
+
+            if (company.certificate_of_incorporation != null)
+            {
+                await _fileService.DeleteBlob(company.certificate_of_incorporation);
+            }
+
+            if (company.business_reg_certificate != null)
+            {
+                await _fileService.DeleteBlob(company.business_reg_certificate);
+            }
 
             _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
@@ -206,7 +227,7 @@ namespace FirstStep.Services
         public async Task UpdateCompanyVerification(int companyID, CompanyRegInfoDto companyRegInfo)
         {
             var unRegCompany = await FindByID(companyID);
-            var link = "";
+            string link;
 
             var rejectedLink = unRegCompany.registration_url;
 
@@ -225,8 +246,8 @@ namespace FirstStep.Services
             {
                 link = "http://localhost:4200/RegCheck?id=" + rejectedLink;
             }
-            _emailService.EvaluatedCompanyRegistraionApplicationEmail(unRegCompany.company_email, companyRegInfo.verification_status, companyRegInfo.comment, link, unRegCompany.company_name);
 
+            _emailService.EvaluatedCompanyRegistraionApplicationEmail(unRegCompany.company_email, companyRegInfo.verification_status, companyRegInfo.comment, link, unRegCompany.company_name);
         }
 
         public async Task RegisterCompany(int companyID, AddDetailsCompanyDto company)
@@ -254,10 +275,24 @@ namespace FirstStep.Services
             dbCompany.business_reg_no = company.business_reg_no;
             dbCompany.company_website = company.company_website;
             dbCompany.company_phone_number = company.company_phone_number;
+            dbCompany.company_business_scale = company.company_business_scale;
             dbCompany.verification_status = false;
-            dbCompany.business_reg_certificate = company.business_reg_certificate;
-            dbCompany.certificate_of_incorporation = company.certificate_of_incorporation;
             dbCompany.company_applied_date = company.company_applied_date;
+            dbCompany.comment = null;
+            dbCompany.verified_system_admin_id = null;
+
+            if (company.company_logo != null)
+            {
+                dbCompany.company_logo = await _fileService.UploadFile(company.company_logo);
+            }
+            if (company.certificate_of_incorporation != null)
+            {
+                dbCompany.certificate_of_incorporation = await _fileService.UploadFile(company.certificate_of_incorporation);
+            }
+            if (company.business_reg_certificate != null)
+            {
+                dbCompany.business_reg_certificate = await _fileService.UploadFile(company.business_reg_certificate);
+            }
 
             await _context.SaveChangesAsync();
         }
@@ -275,7 +310,6 @@ namespace FirstStep.Services
             dbCompany.company_email = company.company_email;
             dbCompany.company_website = company.company_website;
             dbCompany.company_phone_number = company.company_phone_number;
-            dbCompany.company_logo = company.company_logo;
             dbCompany.company_description = company.company_description;
             dbCompany.company_business_scale = company.company_business_scale;
 
@@ -287,6 +321,26 @@ namespace FirstStep.Services
             Company company = await FindByID(companyID);
 
             return company.verification_status;
+        }
+
+        public async Task SaveCompanyLogo(IFormFile file, int companyId)
+        {
+            var company = await FindByID(companyId);
+
+            if (company == null)
+            {
+                throw new NullReferenceException("Company not found.");
+            }
+
+            // delete the old file
+            if (company.company_logo != null)
+            {
+                await _fileService.DeleteBlob(company.company_logo);
+            }
+
+            company.company_logo = await _fileService.UploadFile(file);
+
+            await _context.SaveChangesAsync();
         }
     }
 }

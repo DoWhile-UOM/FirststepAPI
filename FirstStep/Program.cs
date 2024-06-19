@@ -1,3 +1,5 @@
+using Azure.Communication.Email;
+using Azure.Storage.Blobs;
 using FirstStep.Data;
 using FirstStep.Services;
 using FirstStep.Services.BackgroundServices;
@@ -12,10 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(opt =>
+builder.Services.AddSwaggerGen(options =>
 {
-    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "FirstStep Job Matching Platform", Version = "v1" });
-    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "FirstStep Job Matching Platform", Version = "v1" });
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
         Description = "Please enter token",
@@ -25,7 +27,7 @@ builder.Services.AddSwaggerGen(opt =>
         Scheme = "bearer"
     });
 
-    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -46,7 +48,19 @@ builder.Services.AddAutoMapper(typeof(Program));
 // DataContext Configuration
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("FITiotServerConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"));
+});
+
+// Azure Blob Storage Configuration
+builder.Services.AddScoped(options =>
+{
+    return new BlobServiceClient(builder.Configuration.GetConnectionString("AzureBlobStorageConnection"));
+});
+
+// Email Client Configuration
+builder.Services.AddScoped(options =>
+{
+    return new EmailClient(builder.Configuration.GetConnectionString("AzureEmailConnection"));
 });
 
 // Services Configuration
@@ -64,6 +78,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
 // Background Services Configuration
 builder.Services.AddHostedService<TimedHostedService>();
@@ -83,7 +98,6 @@ builder.Services.AddAuthentication(x =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("AshanMatheeshaSecretKeythisisSecret")),
         ValidateAudience = false,
         ValidateIssuer = false,
-        //ClockSkew = TimeSpan.Zero
     };
 });
 
@@ -97,11 +111,14 @@ app.UseCors(options =>
 }); 
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 

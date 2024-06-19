@@ -1,62 +1,79 @@
-﻿using FirstStep.Data;
-using System.Text.RegularExpressions;
-using System.Text;
-using FirstStep.Models.DTOs;
+﻿using AutoMapper;
+using FirstStep.Data;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
+using FirstStep.Models.ServiceModels;
 using Microsoft.EntityFrameworkCore;
 using FirstStep.Helper;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+using System.Text;
 
 namespace FirstStep.Services
 {
     public class UserService: IUserService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
         private readonly ICompanyService _companyService;
         private readonly IEmployeeService _employeeService;
         private readonly IEmailService _emailService;
-        // Dictionary for reset password
+        
         private readonly Dictionary<string, int> _passwordResetTokens = new Dictionary<string, int>();
         private static readonly Random random = new Random();
 
-        public UserService(DataContext context, 
-            ICompanyService companyService, 
-            IEmployeeService employeeService, 
-            IEmailService emailService)
+        public UserService(DataContext context, IMapper mapper)
         {
             _context = context;
-            _companyService = companyService;
-            _employeeService = employeeService;
-            _emailService = emailService;
+            _mapper = mapper;
         }
 
-        //User Authentication
         public async Task<AuthenticationResult> Authenticate(LoginRequestDto userObj)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.email == userObj.email);
+            
             if (user == null)
-                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "Username Not Found" };
-
+            {
+                return new AuthenticationResult { 
+                    IsSuccessful = false, 
+                    ErrorMessage = "Username Not Found" 
+                };
+            }
+            
             if (!PasswordHasher.VerifyPassword(userObj.password, user.password_hash))
+            {
+                return new AuthenticationResult 
+                { 
+                    IsSuccessful = false, 
+                    ErrorMessage = "Invalid Password" 
+                };
+            }  
 
-                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "Invalid Password" };
-
-
-            user.token = await CreateJwt(user); //create access token for session
-            var newAccessToken = user.token;
+            var newAccessToken = await CreateJwt(user); //create access token for session
             var newRefreshToken = CreateRefreshToken(); //create refresh token
+            
             user.refresh_token = newRefreshToken;
+            user.token = newAccessToken;
+            user.last_login_date = DateTime.Now;
+
             await _context.SaveChangesAsync();// save changes to database
 
-            return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken } };
+            return new AuthenticationResult 
+            { 
+                IsSuccessful = true, 
+                Token = new TokenApiDto 
+                { 
+                    AccessToken = newAccessToken, 
+                    RefreshToken = newRefreshToken 
+                } 
+            };
         }
-        //Reset Password Request
+        
         public async Task<AuthenticationResult> ResetPasswordRequest(string userEmail)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.email == userEmail);
@@ -113,7 +130,6 @@ namespace FirstStep.Services
 
         }
 
-        //Refresh Token
         public async Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto)
         {
             if (tokenApiDto is null)
@@ -135,119 +151,6 @@ namespace FirstStep.Services
             return new AuthenticationResult { IsSuccessful = true, Token = new TokenApiDto { AccessToken = await newAccessToken, RefreshToken = newRefreshToken } };
         }
 
-        //Register User
-        public async Task<string> RegisterUser(UserRegRequestDto userObj, string? type,string? company_id) // UserRegRequestDto must modify
-        {
-            //var result = await _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
-            //Console.WriteLine(result);
-
-            if (userObj == null)
-                return "Null User";
-
-            //check if email already exists
-            if (await CheckEmailExist(userObj.email))
-                return "Email Already exist";//email already exists
-
-
-            //password strength check
-            var passCheck = PasswordStrengthCheck(userObj.password_hash);
-
-            if (!string.IsNullOrEmpty(passCheck))
-                return passCheck.ToString();
-
-            userObj.password_hash = PasswordHasher.Hasher(userObj.password_hash);//Hash password before saving to database
-
-            string user_type;
-
-            switch (type) //use enum instead of string
-            {
-                case "CA":
-                    user_type = "CA";
-                    if(company_id == null)
-                        return "Company ID is Null";
-
-                    //Call Company service to find input id is valid by FindByRegCheckID(string id)
-                    var company = await _companyService.FindByRegCheckID(company_id);
-                    if (company == null)
-                        return "Company Not Found";
-
-                    if(company.verification_status==false)
-                        return "Company Not Verified";
-
-                    if(company.company_admin_id != null)
-                        return "Company Admin Already Exists";//should remove bcz service will handle this
-
-                    await _employeeService.CreateCompanyAdmin(new AddEmployeeDto
-                    {
-                        email = userObj.email,
-                        password = userObj.password_hash,
-                        first_name = userObj.first_name,
-                        last_name = userObj.last_name,
-                        company_id = company.company_id
-                    });//Register on employee service
-
-                    //Call Email service to send success email
-                    var result=await _emailService.CARegIsSuccessfull(userObj.email, userObj.first_name, userObj.last_name);
-                    Console.WriteLine(result);
-
-                    return "Company Admin Registered Successfully";
-
-                case "HRM":
-                    user_type = "HRM";
-                    //Check auth bearer token if bearer have access to add manager(company admin)
-                    //Call Company service to add company manager 
-                    //call emailservice to send email to manager email
-                    break;
-                case "HRA":
-                    user_type = "HRA";
-                    //Check auth bearer token if bearer have access to add manager(company admin)
-                    //Call Company service to add company manager 
-                    //call emailservice to send email to manager email
-                    break;
-                default:
-                    user_type = "SEEKER";
-
-                    //Call Email service to send email to user email
-                    break;
-            }
-
-            User userNewObj = new User
-            {
-                email = userObj.email,
-                password_hash = userObj.password_hash,
-                first_name = userObj.first_name,
-                last_name = userObj.last_name,
-                user_type = user_type,
-                token = null,
-                refresh_token = null
-            };
-
-            _context.Users.Add(userNewObj);
-            _context.SaveChanges();
-
-            return "User Registered Successfully";
-        }
-
-        //Check if email already exists
-        public async Task<bool> CheckEmailExist(string Email)
-        {
-            return await _context.Users.AnyAsync(x => x.email == Email);
-        }
-
-        ///Password Strength Checker
-        private static string PasswordStrengthCheck(string pass)
-        {
-            StringBuilder sb = new StringBuilder();
-            if (pass.Length < 9)
-                sb.Append("Minimum password length should be 8" + Environment.NewLine);
-            if (!(Regex.IsMatch(pass, "[a-z]") && Regex.IsMatch(pass, "[A-Z]") && Regex.IsMatch(pass, "[0-9]")))
-                sb.Append("Password should be AlphaNumeric" + Environment.NewLine);
-            if (!Regex.IsMatch(pass, "[<,>,@,!,#,$,%,^,&,*,(,),_,+,\\[,\\],{,},?,:,;,|,',\\,.,/,~,`,-,=]"))
-                sb.Append("Password should contain special charcter" + Environment.NewLine);
-            return sb.ToString();
-        }
-
-        //Create JWT Token
         private async Task<string> CreateJwt(User user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -297,7 +200,6 @@ namespace FirstStep.Services
             return jwtTokenHandler.WriteToken(token);
         }
 
-        //Refresh token generator
         private string CreateRefreshToken()
         {
             var tokenBytes = RandomNumberGenerator.GetBytes(64);
@@ -312,7 +214,6 @@ namespace FirstStep.Services
             return refreshToken;
         }
 
-        //Fetch user prinicipals from the expired access token
         private ClaimsPrincipal GetPrincipleFromExpiredToken(string token)
         {
             var key = Encoding.ASCII.GetBytes("AshanMatheeshaSecretKeythisisSecret");
@@ -331,6 +232,47 @@ namespace FirstStep.Services
             if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("This is Invalid Token");
             return principal;
+        }
+
+        public async Task<UserDto> GetUserById(int user_id)
+        {
+            User? user = await _context.Users.FindAsync(user_id);
+            UserDto userDto = _mapper.Map<UserDto>(user);
+            return userDto;
+        }
+
+        public async Task UpdateUser(UpdateUserDto user)
+        {
+            var toBeUpdatedUser = await _context.Users.FindAsync(user.user_id);
+            
+            if (toBeUpdatedUser is null)
+            {
+                throw new Exception("User doesn't exist");
+            }
+
+            if(user.password_hash.Length != 0)
+            {
+                //password strength check
+                var passCheck = UserCreateHelper.PasswordStrengthCheck(user.password_hash);
+                Console.WriteLine(passCheck);
+
+                if (!string.IsNullOrEmpty(passCheck))
+                {
+                    throw new Exception(passCheck);
+                }
+
+                //Hash password before saving
+                user.password_hash = PasswordHasher.Hasher(user.password_hash);
+
+                //saving
+                toBeUpdatedUser.password_hash = user.password_hash;
+            }
+            //saving data in the database
+            toBeUpdatedUser.first_name = user.first_name;
+            toBeUpdatedUser.last_name = user.last_name;
+            toBeUpdatedUser.email = user.email;
+
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -39,11 +39,13 @@ namespace FirstStep.Models
 
         public DateTime? expired_date { get; set; }
 
-        [MaxLength(7)]
+        [MaxLength(10)]
         public required string current_status { get; set; }
 
         [MaxLength(4000)]
         public string? job_description { get; set; }
+
+        public int interview_duration { get; set; }
 
 
         [JsonIgnore]
@@ -69,5 +71,11 @@ namespace FirstStep.Models
 
         [JsonIgnore]
         public virtual ICollection<Skill>? skills { get; set; }
+
+        [JsonIgnore]
+        public virtual ICollection<Appointment>? appointments { get; set; }
+
+
+        public enum Status { active, hold, closed, interview }
     }
 }

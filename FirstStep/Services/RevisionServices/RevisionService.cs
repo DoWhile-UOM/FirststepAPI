@@ -13,8 +13,6 @@ namespace FirstStep.Services
             _context = context;
         }
 
-        enum ApplicationStatus { Evaluated, NotEvaluated, Accepted, Rejected }
-
         public async Task<IEnumerable<Revision>> GetAll()
         {
             return await _context.Revisions.ToListAsync();
@@ -23,6 +21,7 @@ namespace FirstStep.Services
         public async Task<Revision> GetById(int id)
         {
             Revision? revision = await _context.Revisions.FindAsync(id);
+
             if (revision is null)
             {
                 throw new Exception("Revision not found.");
@@ -47,31 +46,37 @@ namespace FirstStep.Services
                 .OrderByDescending(r => r.date)
                 .FirstOrDefaultAsync();
 
-            // need to check whether the latest revision is added by a HR manager or HR assistant
-            // when it added by HR manager, the status is valid
-            // when it added by HR assistant, need to check again any hr manager is added a revision before that
-
-
             if (last_revision is null)
             {
-                return ApplicationStatus.NotEvaluated.ToString();
+                return Application.ApplicationStatus.NotEvaluated.ToString();
             }
 
             return last_revision.status;
+        }
+
+        public async Task<Revision?> GetLastRevision(int applicationID)
+        {
+            var lastRevision = await _context.Revisions
+                .Include("employee")
+                .Where(r => r.application_id == applicationID)
+                .OrderByDescending(r => r.date)
+                .FirstOrDefaultAsync();
+
+            return lastRevision;
         }
 
         public string GetCurrentStatus(Application application)
         {
             if (application.revisions is null)
             {
-                return ApplicationStatus.NotEvaluated.ToString();
+                return Application.ApplicationStatus.NotEvaluated.ToString();
             }
 
             Revision? last_revision = application.revisions.OrderByDescending(r => r.date).FirstOrDefault();
 
             if (last_revision is null)
             {
-                return ApplicationStatus.NotEvaluated.ToString();
+                return Application.ApplicationStatus.NotEvaluated.ToString();
             }
 
             return last_revision.status;
@@ -81,7 +86,16 @@ namespace FirstStep.Services
         {
             revision.revision_id = 0;
 
+            var application = await _context.Applications.FindAsync(revision.application_id);
+            
+            if (application == null)
+            {
+                throw new Exception("Application not found.");
+            }
+
+            application.status = revision.status;
             _context.Revisions.Add(revision);
+
             await _context.SaveChangesAsync();
         }
 
@@ -89,9 +103,17 @@ namespace FirstStep.Services
         {
             Revision dbRevision = await GetById(revision.revision_id);
 
+            var application = await _context.Applications.FindAsync(revision.application_id);
+            
+            if (application == null)
+            {
+                throw new Exception("Application not found.");
+            }
+
             dbRevision.comment = revision.comment;
             dbRevision.date = revision.date;
             dbRevision.status = revision.status;
+            application.status = revision.status;
 
             await _context.SaveChangesAsync();
         }
