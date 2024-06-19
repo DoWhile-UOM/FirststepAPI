@@ -418,27 +418,26 @@ namespace FirstStep.Services
         {
             var hrAssistants = await _employeeService.GetAllHRAssistants(advertisement.hrManager!.company_id);
 
-            List<Application> applicationsForEvaluation = await GetApplicationsForTaskDelegation(advertisement, hrAssistants);
+            List<Application>? applicationsForEvaluation = await GetApplicationsForTaskDelegation(advertisement, hrAssistants);
+
+            if (applicationsForEvaluation is null)
+            {
+                return;
+            }
 
             // Delegate tasks to HR assistants
             await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
         }
 
-        private async Task<List<Application>> GetApplicationsForTaskDelegation(Advertisement advertisement, IEnumerable<Employee> hrAssistants)
+        private async Task<List<Application>?> GetApplicationsForTaskDelegation(Advertisement advertisement, IEnumerable<Employee> hrAssistants)
         {
             // Get applications that need evaluation for the specified company
             List<Application> applicationsForEvaluation = await SelectApplicationsForEvaluation(advertisement);
 
             // Check if there are no applications for evaluation
-            if (!applicationsForEvaluation.Any())
+            if (!applicationsForEvaluation.Any() || hrAssistants.Count() <= 0)
             {
-                throw new NullReferenceException("No applications for evaluation."); // HTTP 204 No Content
-            }
-
-            // Check if there are fewer than 2 HR assistants
-            if (hrAssistants.Count() < 2)
-            {
-                throw new NullReferenceException("Not enough HR Assistants for task delegation."); // HTTP 400 Bad Request
+                return null;
             }
 
             return applicationsForEvaluation;

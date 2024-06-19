@@ -351,7 +351,7 @@ namespace FirstStep.Services
             {
                 advertisement.expired_date = null;
             }
-            else
+            else if (newStatus == Advertisement.Status.hold.ToString())
             {
                 // set submission deadline to the current date, because need to block application submition anymore
                 advertisement.submission_deadline = DateTime.Now;
@@ -364,7 +364,10 @@ namespace FirstStep.Services
                     // execute task delegation on expired advertisements
                     await _applicationService.InitiateTaskDelegation(advertisement);
                 }
-                catch { }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
 
             await _context.SaveChangesAsync();
