@@ -1,4 +1,5 @@
 ﻿using FirstStep.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services.BackgroundServices
 {
@@ -24,6 +25,15 @@ namespace FirstStep.Services.BackgroundServices
 
             _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromDays(1));
             return Task.CompletedTask;
+        }
+
+        private Task TestDatabaseConnection()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+                return context.Database.OpenConnectionAsync();
+            }
         }
 
         private Task SeedData()
