@@ -82,16 +82,11 @@ namespace FirstStep.Services
                           .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public async Task<AuthenticationResult> ResetPassword(PasswordResetDto userObj)
+        public async Task ResetPassword(PasswordResetDto userObj)
         {
             if (userObj.token == null)
             {
-                return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "Token is Null" }; 
-            }
-
-            foreach (var kvp in _passwordResetTokens)
-            {
-                Console.WriteLine($"Token: {kvp.Key}, User ID: {kvp.Value}");
+                throw new Exception("Token is null.");
             }
 
             Console.WriteLine(_passwordResetTokens.TryGetValue(userObj.token, out var test));
@@ -100,23 +95,25 @@ namespace FirstStep.Services
                 var user = await _context.Users.FirstOrDefaultAsync(x => x.user_id == userId);
 
                 if (user == null)
-                    return new AuthenticationResult { IsSuccessful = false, ErrorMessage = "User Not Found" };
+                    throw new Exception("Invalid Request.");
 
                 //password strength check
                 var passCheck = PasswordStrengthCheck(userObj.password);
 
                 if (!string.IsNullOrEmpty(passCheck))
                 {
-                    return new AuthenticationResult { IsSuccessful = false, ErrorMessage = passCheck.ToString() };
+                    throw new Exception(passCheck.ToString());
                 }
 
                 user.password_hash = PasswordHasher.Hasher(userObj.password);//Hash password before saving to database
+                _passwordResetTokens.Remove(userObj.token);
                 _context.SaveChanges();
-                return new AuthenticationResult { IsSuccessful = true , ResponseMessage="Password Change Successful"};
-
+            }
+            else
+            {
+                throw new Exception("Internal Error Occured");
             }
 
-            return new AuthenticationResult { IsSuccessful = false , ErrorMessage = "Error Occured" };
         }
 
         //Refresh Token

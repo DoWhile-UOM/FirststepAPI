@@ -8,7 +8,7 @@ namespace FirstStep.Services
 
         Task<AuthenticationResult> ResetPasswordRequest(string userEmail);
 
-        Task<AuthenticationResult> ResetPassword(PasswordResetDto userObj);
+        Task ResetPassword(PasswordResetDto userObj);
 
         Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto);
 

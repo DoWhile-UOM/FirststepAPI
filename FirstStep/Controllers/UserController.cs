@@ -64,14 +64,8 @@ namespace FirstStep.Controllers
         {
             try
             {
-                var response = await _userService.ResetPasswordRequest(userEmail);
-
-                return response switch
-                {
-                    { IsSuccessful: true } => Ok(response.Token),
-                    { IsSuccessful: false } => BadRequest(response.ErrorMessage),
-                    _ => BadRequest(response.ErrorMessage),
-                };
+                await _userService.ResetPasswordRequest(userEmail);
+                return Ok("Password Reset Link Sent");
 
             }
             catch (Exception e)
@@ -87,7 +81,7 @@ namespace FirstStep.Controllers
             try
             {
                 await _userService.ResetPassword(userObj);
-                return Ok("Password Reset Link Sent");
+                return Ok("Password Reset Was Succesful");
 
 
             }
