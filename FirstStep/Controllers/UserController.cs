@@ -65,15 +65,6 @@ namespace FirstStep.Controllers
             }
         }
 
-        [Authorize]
-        [HttpGet]
-        [Route("GetAllUsers")]
-        public async Task<IActionResult> GetAllUsers()
-        {
-            var users = await _context.Users.ToListAsync();
-            return Ok(users);
-        }
-
         [HttpPost]
         [Route("Refresh")]
         public async Task<IActionResult> Refresh([FromBody] TokenApiDto tokenApiDto)

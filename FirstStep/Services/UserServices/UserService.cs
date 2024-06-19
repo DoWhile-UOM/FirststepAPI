@@ -1,14 +1,11 @@
 ﻿using AutoMapper;
 using FirstStep.Data;
+using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Models.ServiceModels;
 using Microsoft.EntityFrameworkCore;
-using FirstStep.Helper;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -20,17 +17,16 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
-        private readonly ICompanyService _companyService;
-        private readonly IEmployeeService _employeeService;
         private readonly IEmailService _emailService;
         
         private readonly Dictionary<string, int> _passwordResetTokens = new Dictionary<string, int>();
         private static readonly Random random = new Random();
 
-        public UserService(DataContext context, IMapper mapper)
+        public UserService(DataContext context, IMapper mapper, IEmailService emailService)
         {
             _context = context;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         public async Task<AuthenticationResult> Authenticate(LoginRequestDto userObj)
@@ -99,14 +95,13 @@ namespace FirstStep.Services
                           .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public async Task ResetPassword(PasswordResetDto userObj)
+        public async Task<AuthenticationResult> ResetPassword(PasswordResetDto userObj)
         {
             if (userObj.token == null)
             {
                 throw new Exception("Token is null.");
             }
 
-            Console.WriteLine(_passwordResetTokens.TryGetValue(userObj.token, out var test));
             if (_passwordResetTokens.TryGetValue(userObj.token, out var userId))
             {
                 var user = await _context.Users.FirstOrDefaultAsync(x => x.user_id == userId);
@@ -115,7 +110,7 @@ namespace FirstStep.Services
                     throw new Exception("Invalid Request.");
 
                 //password strength check
-                var passCheck = PasswordStrengthCheck(userObj.password);
+                var passCheck = UserCreateHelper.PasswordStrengthCheck(userObj.password);
 
                 if (!string.IsNullOrEmpty(passCheck))
                 {
@@ -124,10 +119,15 @@ namespace FirstStep.Services
 
                 user.password_hash = PasswordHasher.Hasher(userObj.password);//Hash password before saving to database
                 _passwordResetTokens.Remove(userObj.token);
-                _context.SaveChanges();
+
+                await _context.SaveChangesAsync();
+
                 return new AuthenticationResult { IsSuccessful = true };
             }
-
+            else
+            {
+                throw new Exception("Invalid Token.");
+            }
         }
 
         public async Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto)
