@@ -615,6 +615,10 @@ namespace FirstStep.Services
             var applicationSelectedDtos = applications.Select(a =>
             {
                 var applicationSelectedDto = _mapper.Map<ApplicationSelectedDto>(a);
+                if(a.seeker == null)
+                {
+                    throw new NullReferenceException("Seeker not found.");
+                }
                 applicationSelectedDto.seeker_name = a.seeker!.first_name + " " + a.seeker!.last_name;
                 //get the last revision employee name 
                 var lastRevision = _revisionService.GetLastRevision(a.application_Id).Result;
