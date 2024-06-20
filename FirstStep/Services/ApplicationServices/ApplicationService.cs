@@ -549,44 +549,83 @@ namespace FirstStep.Services
 
 
         //get selected application details as ApplicationSelectedDto 
-        public async Task<ApplicationSelectedDto> GetSelectedApplicationDetails(int applicationId)
+        /*  public async Task<ApplicationSelectedDto> GetSelectedApplicationDetails(int applicationId)
+          {
+              //check the advertisment in hold state
+              var application = await _context.Applications
+                   .Include(a => a.seeker)
+                   .Include(a => a.advertisement)
+                   .Where(a => a.application_Id == applicationId)
+                   .FirstOrDefaultAsync();
+
+              if (application == null)
+              {
+                  throw new NullReferenceException("Application not found.");
+              }
+
+              if (application.advertisement == null)
+              {
+                  throw new NullReferenceException("Advertisement not found.");
+              }
+
+              if (application.advertisement.current_status != Advertisement.Status.hold.ToString())
+              {
+                  throw new InvalidDataException("Advertisement is not in hold state.");
+              }
+              //the application should be in accepted state
+              if (application.status != Application.ApplicationStatus.Accepted.ToString())
+              {
+                  throw new InvalidDataException("Application is not in accepted state.");
+              }
+              var applicationSelectedDto = _mapper.Map<ApplicationSelectedDto>(application);
+              applicationSelectedDto.seeker_name = application.seeker!.first_name + " " + application.seeker!.last_name;
+              //get the last revision employee name 
+              var lastRevision = await _revisionService.GetLastRevision(application.application_Id);
+              if (lastRevision != null)
+              {
+                  applicationSelectedDto.last_revision_employee_name = lastRevision.employee!.first_name + " " + lastRevision.employee!.last_name;
+              }
+              return applicationSelectedDto;
+
+          }*/
+
+        //get selected applications details as ApplicationSelectedDto using advertisment ID
+        public async Task<IEnumerable<ApplicationSelectedDto>> GetSelectedApplicationsDetails(int advertisementId)
         {
             //check the advertisment in hold state
-            var application = await _context.Applications
-                 .Include(a => a.seeker)
-                 .Include(a => a.advertisement)
-                 .Where(a => a.application_Id == applicationId)
-                 .FirstOrDefaultAsync();
+            var advertisement = await _context.Advertisements
+                .Include(a => a.applications)
+                .Where(a => a.advertisement_id == advertisementId)
+                .FirstOrDefaultAsync();
 
-            if (application == null)
-            {
-                throw new NullReferenceException("Application not found.");
-            }
-
-            if (application.advertisement == null)
+            if (advertisement == null)
             {
                 throw new NullReferenceException("Advertisement not found.");
             }
 
-            if (application.advertisement.current_status != Advertisement.Status.hold.ToString())
+            if (advertisement.current_status != Advertisement.Status.hold.ToString())
             {
                 throw new InvalidDataException("Advertisement is not in hold state.");
             }
-            //the application should be in accepted state
-            if (application.status != Application.ApplicationStatus.Accepted.ToString())
-            {
-                throw new InvalidDataException("Application is not in accepted state.");
-            }
-            var applicationSelectedDto = _mapper.Map<ApplicationSelectedDto>(application);
-            applicationSelectedDto.seeker_name = application.seeker!.first_name + " " + application.seeker!.last_name;
-            //get the last revision employee name 
-            var lastRevision = await _revisionService.GetLastRevision(application.application_Id);
-            if (lastRevision != null)
-            {
-                applicationSelectedDto.last_revision_employee_name = lastRevision.employee!.first_name + " " + lastRevision.employee!.last_name;
-            }
-            return applicationSelectedDto;
 
+            //get the applications that are in accepted state
+            var applications = advertisement.applications!.Where(a => a.status == Application.ApplicationStatus.Accepted.ToString());
+
+            //get the selected applications details
+            var applicationSelectedDtos = applications.Select(a =>
+            {
+                var applicationSelectedDto = _mapper.Map<ApplicationSelectedDto>(a);
+                applicationSelectedDto.seeker_name = a.seeker!.first_name + " " + a.seeker!.last_name;
+                //get the last revision employee name 
+                var lastRevision = _revisionService.GetLastRevision(a.application_Id).Result;
+                if (lastRevision != null)
+                {
+                    applicationSelectedDto.last_revision_employee_name = lastRevision.employee!.first_name + " " + lastRevision.employee!.last_name;
+                }
+                return applicationSelectedDto;
+            });
+
+            return applicationSelectedDtos;
         }
 
 

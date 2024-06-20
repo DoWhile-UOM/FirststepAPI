@@ -40,7 +40,11 @@ namespace FirstStep.Services
         public string GetApplicationStatus(Application application);
 
         //get selected application details as ApplicationSelectedDto 
-        public Task<ApplicationSelectedDto> GetSelectedApplicationDetails(int applicationId);
+        /*  public Task<ApplicationSelectedDto> GetSelectedApplicationDetails(int applicationId);*/
+
+        //get selected applications details as ApplicationSelectedDto using advertisment ID
+        public Task<IEnumerable<ApplicationSelectedDto>> GetSelectedApplicationsDetails(int advertisementId);
+
 
 
 
