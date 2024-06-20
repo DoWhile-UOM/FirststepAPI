@@ -1,6 +1,7 @@
 ﻿using FirstStep.Data;
 using FirstStep.Helper;
 using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 
@@ -9,9 +10,14 @@ namespace FirstStep.Services
     public class SystemAdminService : ISystemAdminService
     {
         private readonly DataContext _context;
+        private readonly IUserService _userService;
+        private readonly ICompanyService _companyService;
 
-        public SystemAdminService(DataContext context) {
+        public SystemAdminService(DataContext context, IUserService userService, ICompanyService companyService)
+        {
             _context = context;
+            _userService = userService;
+            _companyService = companyService;
         }
 
         public async Task<IEnumerable<SystemAdmin>> GetAll()
@@ -54,7 +60,7 @@ namespace FirstStep.Services
 
         public async Task Update(SystemAdmin systemAdmin)
         {
-            SystemAdmin dbSystemAdmin= await GetById(systemAdmin.user_id);
+            SystemAdmin dbSystemAdmin = await GetById(systemAdmin.user_id);
 
             dbSystemAdmin.first_name = systemAdmin.first_name;
             dbSystemAdmin.last_name = systemAdmin.last_name;
@@ -71,5 +77,43 @@ namespace FirstStep.Services
             _context.SystemAdmins.Remove(systemAdmin);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<LoggingsDto> GetLoggingsOfUsersAsync()
+        {
+            List<ActiveUserDto> activeUsers = await _userService.GetActiveUsersAsync();
+            List<ActiveUserDto> inactiveUsers = await _userService.GetInactiveUsersAsync();
+
+            int tot_active = activeUsers.Count() - (activeUsers.Count(user => user.user_type == "sa"));
+            int tot_inactive = inactiveUsers.Count() - (inactiveUsers.Count(user => user.user_type == "sa"));
+
+            int tot_cmpny_active_users = tot_active - activeUsers.Count(user => user.user_type == "seeker");
+            int tot_cmpny_inactive_users = tot_inactive - inactiveUsers.Count(user => user.user_type == "seeker");
+
+            int eligible_unregistered_companies_count = await _companyService.GetEligibleUnregisteredCompaniesCount();
+            var loggingsDto = new LoggingsDto
+            {
+                activeTot = tot_active,
+                inactiveTot = tot_inactive,
+                activeCA = activeUsers.Count(user => user.user_type == "ca"),
+                inactiveCA = inactiveUsers.Count(user => user.user_type == "ca"),
+                activeHRM = activeUsers.Count(user => user.user_type == "hrm"),
+                inactiveHRM = inactiveUsers.Count(user => user.user_type == "hrm"),
+                activeHRA = activeUsers.Count(user => user.user_type == "hra"),
+                inactiveHRA = inactiveUsers.Count(user => user.user_type == "hra"),
+                activeSeeker = activeUsers.Count(user => user.user_type == "seeker"),
+                inactiveSeeker = inactiveUsers.Count(user => user.user_type == "seeker"),
+                activeCmpUsers = tot_cmpny_active_users,
+                inactiveCmpUsers = tot_cmpny_inactive_users,
+                eligibleUnregisteredCompaniesCount= eligible_unregistered_companies_count,
+            };
+            return loggingsDto;
+
+        }
+
+        public async Task<IEnumerable<NotRegisteredEligibleCompanyDto>> GetEligibleUnregisteredCompanies()
+        {
+            return await _companyService.GetEligibleUnregisteredCompanies();
+        }
+
     }
 }

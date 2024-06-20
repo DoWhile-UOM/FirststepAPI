@@ -1,4 +1,5 @@
 ﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,20 @@ namespace FirstStep.Controllers
         public async Task<ActionResult<SystemAdmin>> GetSystemAdminById(int id)
         {
             return Ok(await _service.GetById(id));
+        }
+        [HttpGet]
+        [Route("GetLoggingsDetails")]
+        public async Task<ActionResult<LoggingsDto>> GetLoggings()
+        {
+            var loggingsDto = await _service.GetLoggingsOfUsersAsync();
+            return Ok(loggingsDto);
+        }
+        [HttpGet]
+        [Route("GetEligibleUnregisteredCompanies")]
+        public async Task<ActionResult<NotRegisteredEligibleCompanyDto>> GetEligibleUnregisteredCompanies()
+        {
+            var eligibleUnregisteredCompanies = await _service.GetEligibleUnregisteredCompanies();
+            return Ok(eligibleUnregisteredCompanies);
         }
 
         [HttpPost]
