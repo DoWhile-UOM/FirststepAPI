@@ -16,5 +16,7 @@ namespace FirstStep.Services
         Task<UserDto> GetUserById(int user_id);
 
         Task UpdateUser(UpdateUserDto user);
+
+        Task<LoggingsDto> GetLoggingsOfUsersAsync();
     }
 }

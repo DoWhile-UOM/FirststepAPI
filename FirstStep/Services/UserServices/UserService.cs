@@ -274,5 +274,52 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
+
+        private async Task<List<ActiveUsers>> GetActiveUsersAsync()
+        {
+            var activeUsers = await _context.Users
+                .Where(user => user.last_login_date <= DateTime.Now.AddDays(-30))
+                .ToListAsync();
+
+            return _mapper.Map<List<ActiveUsers>>(activeUsers);
+        }
+
+        private async Task<List<ActiveUsers>> GetInactiveUsersAsync()
+        {
+            var inactiveUsers = await _context.Users
+                .Where(user => user.last_login_date > DateTime.Now.AddDays(-90))
+                .ToListAsync();
+
+            return _mapper.Map<List<ActiveUsers>>(inactiveUsers);
+        }
+
+        public async Task<LoggingsDto> GetLoggingsOfUsersAsync()
+        {
+            List<ActiveUsers> activeUsers = await GetActiveUsersAsync();
+            List<ActiveUsers> inactiveUsers = await GetInactiveUsersAsync();
+
+            int tot_active = activeUsers.Count() - (activeUsers.Count(user => user.user_type == "sa"));
+            int tot_inactive = inactiveUsers.Count() - (inactiveUsers.Count(user => user.user_type == "sa"));
+
+            int tot_cmpny_active_users = tot_active - activeUsers.Count(user => user.user_type == "seeker");
+            int tot_cmpny_inactive_users = tot_inactive - inactiveUsers.Count(user => user.user_type == "seeker");
+
+            var loggingsDto = new LoggingsDto
+            {
+                activeTot = tot_active,
+                inactiveTot = tot_inactive,
+                activeCA = activeUsers.Count(user => user.user_type == "ca"),
+                inactiveCA = inactiveUsers.Count(user => user.user_type == "ca"),
+                activeHRM = activeUsers.Count(user => user.user_type == "hrm"),
+                inactiveHRM = inactiveUsers.Count(user => user.user_type == "hrm"),
+                activeHRA = activeUsers.Count(user => user.user_type == "hra"),
+                inactiveHRA = inactiveUsers.Count(user => user.user_type == "hra"),
+                activeSeeker = activeUsers.Count(user => user.user_type == "seeker"),
+                inactiveSeeker = inactiveUsers.Count(user => user.user_type == "seeker"),
+                activeCmpUsers = tot_cmpny_active_users,
+                inactiveCmpUsers = tot_cmpny_inactive_users
+            };
+            return loggingsDto;
+        }
     }
 }

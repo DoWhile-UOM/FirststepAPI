@@ -2,7 +2,6 @@
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -341,6 +340,30 @@ namespace FirstStep.Services
             company.company_logo = await _fileService.UploadFile(file);
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<NotRegisteredEligibleCompanyDto>> GetEligibleUnregisteredCompanies()
+        {
+          var companies = await _context.Companies
+                .Where(c => c.verified_system_admin_id != null && c.company_admin_id == null)
+                .Select(c => new NotRegisteredEligibleCompanyDto
+                {
+                    company_id = c.company_id,
+                    company_name = c.company_name,
+                    company_email = c.company_email,
+                    company_logo = c.company_logo
+                })
+                .ToListAsync();
+
+            foreach (var company in companies)
+            {
+                if (company.company_logo != null)
+                {
+                    company.company_logo = await _fileService.GetBlobUrl(company.company_logo);
+                }
+            }
+
+            return companies;
         }
     }
 }
