@@ -43,6 +43,14 @@ namespace FirstStep.Controllers
             return Ok(user);
         }
 
+        [HttpGet]
+        [Route("GetLoggingsDetails")]
+        public async Task<ActionResult<LoggingsDto>> GetLoggings()
+        {
+            var loggingsDto = await _userService.GetLoggingsOfUsersAsync();
+            return Ok(loggingsDto);
+        }
+
         [HttpPost]
         [Route("Authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] LoginRequestDto userObj)

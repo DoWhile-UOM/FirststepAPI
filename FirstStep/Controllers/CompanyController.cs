@@ -73,6 +73,14 @@ namespace FirstStep.Controllers
             return Ok(await _service.FindByRegCheckID(companyId));
         }
 
+        [HttpGet]
+        [Route("GetEligibleUnregisteredCompanies")]
+        public async Task<ActionResult<NotRegisteredEligibleCompanyDto>> GetEligibleUnregisteredCompanies()
+        {
+            var eligibleUnregisteredCompanies = await _service.GetEligibleUnregisteredCompanies();
+            return Ok(eligibleUnregisteredCompanies);
+        }
+
         [HttpPost]
         [Route("AddCompany")] // Company Admin
         public async Task<IActionResult> AddCompany([FromForm] AddCompanyDto newCompany)

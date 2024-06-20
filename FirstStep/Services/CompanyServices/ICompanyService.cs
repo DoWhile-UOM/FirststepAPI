@@ -38,7 +38,7 @@ namespace FirstStep.Services
         public Task<bool> IsRegistered(int companyID);
 
         public Task SaveCompanyLogo(IFormFile file, int companyId);
+
         public Task<IEnumerable<NotRegisteredEligibleCompanyDto>> GetEligibleUnregisteredCompanies();
-        public Task<int> GetEligibleUnregisteredCompaniesCount();
     }
 }

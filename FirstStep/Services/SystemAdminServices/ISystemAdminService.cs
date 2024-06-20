@@ -1,5 +1,4 @@
 ﻿using FirstStep.Models;
-using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -14,7 +13,5 @@ namespace FirstStep.Services
         public Task Update(SystemAdmin systemAdmin);
 
         public Task Delete(int id);
-        public Task<LoggingsDto> GetLoggingsOfUsersAsync();
-        public Task<IEnumerable<NotRegisteredEligibleCompanyDto>> GetEligibleUnregisteredCompanies();
     }
 }

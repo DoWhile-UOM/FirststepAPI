@@ -17,8 +17,6 @@ namespace FirstStep.Services
 
         Task UpdateUser(UpdateUserDto user);
 
-        public Task<List<ActiveUserDto>> GetActiveUsersAsync();
-
-        public Task<List<ActiveUserDto>> GetInactiveUsersAsync();
+        Task<LoggingsDto> GetLoggingsOfUsersAsync();
     }
 }
