@@ -118,13 +118,22 @@ namespace FirstStep.Controllers
 
         [HttpGet("GetSelectedApplicationsDetails/{advertisementId}")]
         public async Task<IActionResult> GetSelectedApplicationDetails(int advertisementId)
-        {
-            var applicationSelectedDto = await _service.GetSelectedApplicationsDetails(advertisementId);
-            if (applicationSelectedDto == null)
+        {  
+            try
             {
-                return NotFound("Applications not found.");
+                var applicationSelectedDto = await _service.GetSelectedApplicationsDetails(advertisementId);
+                return Ok(applicationSelectedDto);
             }
-            return Ok(applicationSelectedDto);
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+
+
         }
 
 

@@ -589,7 +589,7 @@ namespace FirstStep.Services
 
           }*/
 
-        //get selected applications details as ApplicationSelectedDto using advertisment ID
+        //get selected applications details  such as seeker name last revision employee  in ApplicationSelectedDto using advertisment ID
         public async Task<IEnumerable<ApplicationSelectedDto>> GetSelectedApplicationsDetails(int advertisementId)
         {
             //check the advertisment in hold state
@@ -608,29 +608,29 @@ namespace FirstStep.Services
                 throw new InvalidDataException("Advertisement is not in hold state.");
             }
 
-            //get the applications that are in accepted state
+            //get the applications in accepted state
             var applications = advertisement.applications!.Where(a => a.status == Application.ApplicationStatus.Accepted.ToString());
 
-            //get the selected applications details
-            var applicationSelectedDtos = applications.Select(a =>
+            List<ApplicationSelectedDto> applicationSelectedDtos = new List<ApplicationSelectedDto>();
+
+            foreach (var application in applications)
             {
-                var applicationSelectedDto = _mapper.Map<ApplicationSelectedDto>(a);
-                if(a.seeker == null)
-                {
-                    throw new NullReferenceException("Seeker not found.");
-                }
-                applicationSelectedDto.seeker_name = a.seeker!.first_name + " " + a.seeker!.last_name;
+                var applicationSelectedDto = _mapper.Map<ApplicationSelectedDto>(application);
+                var seeker = await _context.Seekers.FindAsync(application.seeker_id);
+                applicationSelectedDto.seeker_name = application.seeker!.first_name + " " + application.seeker!.last_name;
                 //get the last revision employee name 
-                var lastRevision = _revisionService.GetLastRevision(a.application_Id).Result;
+                var lastRevision = await _revisionService.GetLastRevision(application.application_Id);
                 if (lastRevision != null)
                 {
                     applicationSelectedDto.last_revision_employee_name = lastRevision.employee!.first_name + " " + lastRevision.employee!.last_name;
                 }
-                return applicationSelectedDto;
-            });
+                applicationSelectedDtos.Add(applicationSelectedDto);
+            }
 
             return applicationSelectedDtos;
-        }
+        }   
+
+
 
 
 
