@@ -1,4 +1,7 @@
-﻿namespace FirstStep.Services.BackgroundServices
+﻿using FirstStep.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace FirstStep.Services.BackgroundServices
 {
     public class TimedHostedService : IHostedService, IDisposable
     {
@@ -17,8 +20,30 @@
         public Task StartAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Timed Hosted Service running.");
+
+            // SeedData().Wait();
+
             _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromDays(1));
             return Task.CompletedTask;
+        }
+
+        private Task TestDatabaseConnection()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+                return context.Database.OpenConnectionAsync();
+            }
+        }
+
+        private Task SeedData()
+        {
+            DataSeeder seeder = 
+                new DataSeeder(
+                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<DataContext>(), 
+                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IAdvertisementService>());
+
+            return seeder.SeedAdvertisements(10);
         }
 
         private async void DoWork(object? state)

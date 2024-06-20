@@ -34,6 +34,8 @@ namespace FirstStep.Data
 
         public DbSet<Revision> Revisions { get; set; } = null!;
 
+        public DbSet<Appointment> Appointments { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -138,6 +140,24 @@ namespace FirstStep.Data
                 entity.HasOne(e => e.employee)
                     .WithMany(e => e.revisions)
                     .HasForeignKey(e => e.employee_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+            });
+
+            modelBuilder.Entity<Appointment>(entity =>
+            {
+                entity.HasOne(e => e.company)
+                    .WithMany(e => e.appointments)
+                    .HasForeignKey(e => e.company_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.advertisement)
+                    .WithMany(e => e.appointments)
+                    .HasForeignKey(e => e.advertisement_id)
+                    .OnDelete(DeleteBehavior.ClientCascade);
+
+                entity.HasOne(e => e.seeker)
+                    .WithMany(e => e.appointments)
+                    .HasForeignKey(e => e.seeker_id)
                     .OnDelete(DeleteBehavior.ClientCascade);
             });
         }

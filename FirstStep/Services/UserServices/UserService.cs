@@ -1,15 +1,15 @@
 ﻿using AutoMapper;
 using FirstStep.Data;
+using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Models.ServiceModels;
 using Microsoft.EntityFrameworkCore;
-using FirstStep.Helper;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using FirstStep.Models.ServiceModels;
 
 namespace FirstStep.Services
 {
@@ -17,11 +17,16 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
+        
+        private readonly Dictionary<string, int> _passwordResetTokens = new Dictionary<string, int>();
+        private static readonly Random random = new Random();
 
-        public UserService(DataContext context, IMapper mapper)
+        public UserService(DataContext context, IMapper mapper, IEmailService emailService)
         {
             _context = context;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         public async Task<AuthenticationResult> Authenticate(LoginRequestDto userObj)
@@ -63,6 +68,66 @@ namespace FirstStep.Services
                     RefreshToken = newRefreshToken 
                 } 
             };
+        }
+        
+        public async Task<AuthenticationResult> ResetPasswordRequest(string userEmail)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.email == userEmail);
+            if (user == null)
+                throw new Exception("User not found.");
+
+            string token=GenerateRandomString(10);
+
+            _passwordResetTokens.Add(token,user.user_id);
+
+
+            //Call Email service to send reset password email
+            var result = await _emailService.CARegIsSuccessfull(user.email, token, "test");
+            Console.WriteLine(token);
+
+            return new AuthenticationResult { IsSuccessful = true};
+        }
+
+        private static string GenerateRandomString(int length)
+        {
+            const string charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            return new string(Enumerable.Repeat(charset, length)
+                          .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        public async Task<AuthenticationResult> ResetPassword(PasswordResetDto userObj)
+        {
+            if (userObj.token == null)
+            {
+                throw new Exception("Token is null.");
+            }
+
+            if (_passwordResetTokens.TryGetValue(userObj.token, out var userId))
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.user_id == userId);
+
+                if (user == null)
+                    throw new Exception("Invalid Request.");
+
+                //password strength check
+                var passCheck = UserCreateHelper.PasswordStrengthCheck(userObj.password);
+
+                if (!string.IsNullOrEmpty(passCheck))
+                {
+                    throw new Exception(passCheck.ToString());
+                }
+
+                user.password_hash = PasswordHasher.Hasher(userObj.password);//Hash password before saving to database
+                _passwordResetTokens.Remove(userObj.token);
+
+                await _context.SaveChangesAsync();
+
+                return new AuthenticationResult { IsSuccessful = true };
+            }
+            else
+            {
+                throw new Exception("Invalid Token.");
+            }
         }
 
         public async Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto)
@@ -169,11 +234,11 @@ namespace FirstStep.Services
             return principal;
         }
 
-        public async Task<UpdateEmployeeDto> GetUserById(int user_id)
+        public async Task<UserDto> GetUserById(int user_id)
         {
             User? user = await _context.Users.FindAsync(user_id);
-            UpdateEmployeeDto employeeDto = _mapper.Map<UpdateEmployeeDto>(user);
-            return employeeDto;
+            UserDto userDto = _mapper.Map<UserDto>(user);
+            return userDto;
         }
 
         public async Task UpdateUser(UpdateUserDto user)

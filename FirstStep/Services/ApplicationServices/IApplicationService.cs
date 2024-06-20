@@ -17,7 +17,9 @@ namespace FirstStep.Services
 
         public Task<IEnumerable<Application>> GetBySeekerId(int id);
 
-        public Task Create(AddApplicationDto newApplicationDto);
+        public Task SubmitApplication(AddApplicationDto newApplicationDto);
+
+        public Task ResubmitApplication(AddApplicationDto newApplicationDto);
 
         public Task Update(Application application);
 

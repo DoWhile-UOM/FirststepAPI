@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Firststep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240615200910_Isuranga_CreateAppointmentTable")]
+    partial class Isuranga_CreateAppointmentTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,9 +121,6 @@ namespace Firststep.Migrations
                     b.Property<int>("hrManager_id")
                         .HasColumnType("int");
 
-                    b.Property<int>("interview_duration")
-                        .HasColumnType("int");
-
                     b.Property<string>("job_description")
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
@@ -169,9 +169,6 @@ namespace Firststep.Migrations
                     b.Property<int?>("assigned_hrAssistant_id")
                         .HasColumnType("int");
 
-                    b.Property<bool>("is_called")
-                        .HasColumnType("bit");
-
                     b.Property<int>("seeker_id")
                         .HasColumnType("int");
 
@@ -206,6 +203,9 @@ namespace Firststep.Migrations
 
                     b.Property<int>("company_id")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("end_time")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("seeker_id")
                         .HasColumnType("int");

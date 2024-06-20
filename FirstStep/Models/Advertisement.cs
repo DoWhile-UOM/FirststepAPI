@@ -45,6 +45,8 @@ namespace FirstStep.Models
         [MaxLength(4000)]
         public string? job_description { get; set; }
 
+        public int interview_duration { get; set; }
+
 
         [JsonIgnore]
         public virtual HRManager? hrManager { get; set; }
@@ -69,6 +71,9 @@ namespace FirstStep.Models
 
         [JsonIgnore]
         public virtual ICollection<Skill>? skills { get; set; }
+
+        [JsonIgnore]
+        public virtual ICollection<Appointment>? appointments { get; set; }
 
 
         public enum Status { active, hold, closed, interview }

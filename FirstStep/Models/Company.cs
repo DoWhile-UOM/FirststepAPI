@@ -55,5 +55,8 @@ namespace FirstStep.Models
         
         [JsonIgnore]
         public ICollection<Employee>? employees { get; set; }
+
+        [JsonIgnore]
+        public ICollection<Appointment>? appointments { get; set; }
     }
 }

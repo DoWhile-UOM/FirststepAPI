@@ -101,8 +101,24 @@ namespace FirstStep.Controllers
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
         {
-            await _service.Create(newApplication);
+            await _service.SubmitApplication(newApplication);
             return Ok();
+        }
+
+        [HttpPut]
+        [Route("ResubmitApplication")]
+        public async Task<IActionResult> ResubmitApplication([FromForm] AddApplicationDto newApplication)
+        {
+            await _service.ResubmitApplication(newApplication);
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("UpdateApplication")]
+        public async Task<IActionResult> UpdateCApplication(Application reqApplication)
+        {
+            await _service.Update(reqApplication);
+            return Ok($"Successfully Updated Application ID: {reqApplication.application_Id}");
         }
 
         [HttpPatch]
@@ -157,14 +173,6 @@ namespace FirstStep.Controllers
         {
             await _service.ChangeAssignedHRA(applicationId, hraId);
             return Ok("Successfully changed assigned HRA.");
-        }
-
-        [HttpPut]
-        [Route("UpdateApplication")]
-        public async Task<IActionResult> UpdateCApplication(Application reqApplication)
-        {
-            await _service.Update(reqApplication);            
-            return Ok($"Successfully Updated Application ID: {reqApplication.application_Id}");
         }
 
         [HttpDelete]

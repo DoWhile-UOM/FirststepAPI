@@ -56,11 +56,10 @@ namespace FirstStep.MapperProfile
             CreateMap<AddEmployeeDto, HRAssistant>();
             CreateMap<AddCompanyAdminDto, HRManager>();
             CreateMap<Company, CompanyProfileDetailsDto>();
-
-            CreateMap<User,UpdateEmployeeDto>();
             CreateMap<User, ActiveUserDto>()
-            .ForMember(dest => dest.user_id, opt => opt.MapFrom(src => src.user_id))
-            .ForMember(dest => dest.user_type, opt => opt.MapFrom(src => src.user_type));
+              .ForMember(dest => dest.user_id, opt => opt.MapFrom(src => src.user_id))
+              .ForMember(dest => dest.user_type, opt => opt.MapFrom(src => src.user_type));
+            CreateMap<User,UserDto>();
 
             CreateMap<Application, ApplicationListDto>()
                 .ForMember(
@@ -89,6 +88,8 @@ namespace FirstStep.MapperProfile
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
 
             CreateMap<Application, ApplicationStatusDto>();
+
+            CreateMap<AddAppointmentDto, Appointment>();
         }
     }
 }

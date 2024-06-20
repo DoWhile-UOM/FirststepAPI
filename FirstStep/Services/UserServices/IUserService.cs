@@ -7,9 +7,13 @@ namespace FirstStep.Services
     {
         Task<AuthenticationResult> Authenticate(LoginRequestDto userObj);
 
+        Task<AuthenticationResult> ResetPasswordRequest(string userEmail);
+
+        Task<AuthenticationResult> ResetPassword(PasswordResetDto userObj);
+
         Task<AuthenticationResult> RefreshToken(TokenApiDto tokenApiDto);
 
-        Task<UpdateEmployeeDto> GetUserById(int user_id);
+        Task<UserDto> GetUserById(int user_id);
 
         Task UpdateUser(UpdateUserDto user);
 

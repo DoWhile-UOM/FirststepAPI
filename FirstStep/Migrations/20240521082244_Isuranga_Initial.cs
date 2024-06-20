@@ -312,6 +312,7 @@ namespace Firststep.Migrations
                     comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     company_registered_date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     verified_system_admin_id = table.Column<int>(type: "int", nullable: true),
+                    registration_url = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     company_admin_id = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
