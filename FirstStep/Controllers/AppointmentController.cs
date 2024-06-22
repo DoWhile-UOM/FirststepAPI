@@ -18,7 +18,7 @@ namespace FirstStep.Controllers
 
         [HttpPost]
         [Route("CreateAppointment")]
-        public async Task<IActionResult> CreateAppointment(AddAppointmentDto newAppointment)
+        public async Task<IActionResult> CreateAppointment(AddAppointmentDto newAppointment)//Create Appointment Slot(Company Available Time)
         {
             await _appointmentService.CreateAppointment(newAppointment);
             return Ok();
@@ -26,7 +26,7 @@ namespace FirstStep.Controllers
 
         [HttpPut]
         [Route("UpdateTimeSlot")]
-        public async Task<IActionResult> UpdateTimeSlot(UpdateAdvertisementDto reqAdvertisement)//AddApointment DTO eka use karanna
+        public async Task<IActionResult> UpdateTimeSlot(AddAppointmentDto updateAppointment)//Update Appointment Slot(Company Available Time)
         {
 
             try

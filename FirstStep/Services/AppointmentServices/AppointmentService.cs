@@ -56,6 +56,36 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task UpdateAppointment(UpdateAppointmentDto slot)
+        {
+            /* check the company is exist
+            var company = await _context.Companies.FindAsync(slot.company_id);
+            if (company == null)
+            {
+                throw new Exception("Company not found");
+            }
+
+            // check the advertisement is exist
+            var advertisement = await _context.Advertisements.FindAsync(slot.advertisement_id);
+            if (advertisement == null)
+            {
+                throw new Exception("Advertisement not found");
+            }
+            if (advertisement.current_status != Advertisement.Status.interview.ToString())
+            {
+                throw new Exception("Advertisement is not in the interview, therefore can't Update an appointment.");
+            }*/
+
+            var appointment = await _context.Appointments.FindAsync(slot.appointment_id);
+
+            //appointment.start_time = slot.start_time;
+            //appointment.end_time = slot.end_time;
+
+            //_context.Appointments.Add(appointment);
+
+            await _context.SaveChangesAsync();
+        }
+
         public async Task AssignToAdvertisement(int appointment_id, int advertisement_id)
         {
             var appointment = await FindById(appointment_id);
