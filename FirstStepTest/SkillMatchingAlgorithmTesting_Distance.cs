@@ -6,17 +6,14 @@ using FirstStep.MapperProfile;
 using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.EntityFrameworkCore;
-using Xunit.Abstractions;
 
 namespace FirstStepTest
 {
-    public class SkillMatchingAlgorithmTesting: IDisposable
+    public class SkillMatchingAlgorithmTesting_Distance : IDisposable
     {
         private readonly DataContext _context;
         private readonly BlobServiceClient _blobServiceClient;
         private readonly IMapper _mapper;
-
-        private readonly ITestOutputHelper _output;
 
         private readonly AdvertisementService _advertisementService;
         private readonly SkillService _skillService;
@@ -30,11 +27,11 @@ namespace FirstStepTest
         private readonly EmployeeService _employeeService;
         //private readonly EmailService _emailService;
 
-        public SkillMatchingAlgorithmTesting(ITestOutputHelper output)
+        public SkillMatchingAlgorithmTesting_Distance()
         {
             // Set up DbContext options to use in-memory database
             var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase_SkillsMatching")
+                .UseInMemoryDatabase(databaseName: "TestDatabase_DistanceMatching")
                 .Options;
 
             // setup BlobServiceClient
@@ -62,7 +59,6 @@ namespace FirstStepTest
             _employeeService = new EmployeeService(_context, _mapper);
             _applicationService = new ApplicationService(_context, _mapper, _revisionService, _fileService, _employeeService);
             _advertisementService = new AdvertisementService(_context, _mapper, _keywordService, _skillService, _seekerService, _applicationService, _fileService);
-            _output = output;
         }
 
         private void SeedDatabaseFromOriginal()
@@ -110,70 +106,76 @@ namespace FirstStepTest
         }
 
         [Fact]
-        public async Task TestExecutionSpeed_SkillMatchingAlgorithm_Kandy()
-        {
-            // arange
-            int seekerId = 4153;
-            Coordinate seekerLocation = new Coordinate { Longitude = 80.636696, Latitude = 7.291418 };
-
-            // Act
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
-            await Test_SkillMatchingAlgorithm(seekerId, seekerLocation);
-
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-
-            // output the execution speed
-            _output.WriteLine("Execution speed: " + elapsedMs + " ms");
-
-            Assert.True(true);
-        }
-
-        [Fact]
-        public async Task TestExecutionSpeed_SkillMatchingAlgorithm_Galle()
-        {
-            // arange
-            int seekerId = 4153;
-            Coordinate seekerLocation = new Coordinate { Longitude = 80.220978, Latitude = 6.053519 };
-
-            // Act
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
-            await Test_SkillMatchingAlgorithm(seekerId, seekerLocation);
-
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-
-            // output the execution speed
-            _output.WriteLine("Execution speed: " + elapsedMs + " ms");
-
-            Assert.True(true);
-        }
-
-        [Fact]
-        public async Task TestExecutionSpeed_SkillMatchingAlgorithm_Colombo()
+        public async Task TestSkillMatchingAlgorithm_Colombo()
         {
             // arange
             int seekerId = 4153;
             Coordinate seekerLocation = new Coordinate { Longitude = 79.861244, Latitude = 6.927079 };
 
             // Act
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
-            await Test_SkillMatchingAlgorithm(seekerId, seekerLocation);
-
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-
-            // output the execution speed
-            _output.WriteLine("Execution speed: " + elapsedMs + " ms");
-
-            Assert.True(true);
+            await Test_SkillMatchingAlgorithm_ForDistance(seekerId, seekerLocation);
         }
 
-        private async Task Test_SkillMatchingAlgorithm(int seekerId, Coordinate seekerLocation)
+        [Fact]
+        public async Task TestSkillMatchingAlgorithm_Kandy()
         {
+            // arange
+            int seekerId = 4153;
+            Coordinate seekerLocation = new Coordinate { Longitude = 80.636696, Latitude = 7.291418 };
+
+            // Act
+            await Test_SkillMatchingAlgorithm_ForDistance(seekerId, seekerLocation);
+        }
+
+        [Fact]
+        public async Task TestSkillMatchingAlgorithm_Galle()
+        {
+            // arange
+            int seekerId = 4153;
+            Coordinate seekerLocation = new Coordinate { Longitude = 80.220978, Latitude = 6.053519 };
+
+            // Act
+            await Test_SkillMatchingAlgorithm_ForDistance(seekerId, seekerLocation);
+        }
+
+        [Fact]
+        public async Task TestSkillMatchingAlgorithm_Gampaha()
+        {
+            // arange
+            int seekerId = 4153;
+            Coordinate seekerLocation = new Coordinate { Longitude = 80.014366, Latitude = 7.087310 };
+
+            // Act
+            await Test_SkillMatchingAlgorithm_ForDistance(seekerId, seekerLocation);
+        }
+
+        [Fact]
+        public async Task TestSkillMatchingAlgorithm_Jaffna()
+        {
+            // arange
+            int seekerId = 4153;
+            Coordinate seekerLocation = new Coordinate { Longitude = 80.005974, Latitude = 9.661623 };
+
+            // Act
+            await Test_SkillMatchingAlgorithm_ForDistance(seekerId, seekerLocation);
+        }
+
+        private async Task Test_SkillMatchingAlgorithm_ForDistance(int seekerId, Coordinate seekerLocation)
+        {
+            // find the seekers
+            var seekers = await _seekerService.GetAll();
+
+            Assert.True(seekers.Count() > 0);
+
+            // remove all the skills of the seeker
+            var seeker = await _seekerService.GetById(seekerId);
+
+            if (seeker.skills!.Count() > 0)
+            {
+                seeker.skills!.Clear();
+                _context.SaveChanges();
+            }
+
             // Act
             AdvertisementFirstPageDto result = await _advertisementService
                 .GetRecommendedAdvertisements(seekerId, (float)seekerLocation.Longitude, (float)seekerLocation.Latitude, 100);
@@ -192,6 +194,12 @@ namespace FirstStepTest
             }
 
             Assert.True(result.FirstPageAdvertisements.Count() > 0);
+
+            // check if the distances are in ascending order
+            for (int i = 0; i < distances.Count - 1; i++)
+            {
+                Assert.True(distances[i] <= distances[i + 1]);
+            }
         }
 
         public void Dispose()
