@@ -114,16 +114,7 @@ namespace FirstStepTest
             int seekerId = 4153;
             Coordinate seekerLocation = new Coordinate { Longitude = 80.636696, Latitude = 7.291418 };
 
-            // Act
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
             await Test_SkillMatchingAlgorithm(seekerId, seekerLocation);
-
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-
-            // output the execution speed
-            _output.WriteLine("Execution speed: " + elapsedMs + " ms");
 
             Assert.True(true);
         }
@@ -135,16 +126,7 @@ namespace FirstStepTest
             int seekerId = 4153;
             Coordinate seekerLocation = new Coordinate { Longitude = 80.220978, Latitude = 6.053519 };
 
-            // Act
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
             await Test_SkillMatchingAlgorithm(seekerId, seekerLocation);
-
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-
-            // output the execution speed
-            _output.WriteLine("Execution speed: " + elapsedMs + " ms");
 
             Assert.True(true);
         }
@@ -156,16 +138,7 @@ namespace FirstStepTest
             int seekerId = 4153;
             Coordinate seekerLocation = new Coordinate { Longitude = 79.861244, Latitude = 6.927079 };
 
-            // Act
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
             await Test_SkillMatchingAlgorithm(seekerId, seekerLocation);
-
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-
-            // output the execution speed
-            _output.WriteLine("Execution speed: " + elapsedMs + " ms");
 
             Assert.True(true);
         }
