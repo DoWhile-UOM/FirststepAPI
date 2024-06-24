@@ -75,7 +75,7 @@ namespace FirstStep.Services
                 BlobName = blobName,
                 Resource = "b",//blob
                 StartsOn = DateTimeOffset.UtcNow,
-                ExpiresOn = DateTimeOffset.UtcNow.AddHours(24)
+                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(20)
             };
 
             sasBuilder.SetPermissions(BlobSasPermissions.Read);
