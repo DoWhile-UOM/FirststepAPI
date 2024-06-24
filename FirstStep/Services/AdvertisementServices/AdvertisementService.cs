@@ -876,9 +876,7 @@ namespace FirstStep.Services
             // get all active advertisements in seeker's field
             var advertisements = await FindBySeekerJobFieldID(seekerID);
 
-            Console.WriteLine(seeker.skills);
-
-            if (seeker.skills!.Count() <= 1)
+            if (seeker.skills!.Count() <= 0)
             {
                 // when seeker has no skills, return all advertisements in the seeker's field by lowest distance to highest
                 return await FindNearestAdvertisements(advertisements, longitude, latitude);

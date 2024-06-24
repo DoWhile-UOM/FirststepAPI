@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace FirstStep.Models
 {
+    [Index(nameof(status))]
     public class Revision
     {
         [Key]
@@ -12,6 +14,7 @@ namespace FirstStep.Models
 
         public required DateTime date { get; set; } = DateTime.Now;
 
+        [MaxLength(15)]
         public required string status { get; set; }
 
 

@@ -67,13 +67,13 @@ namespace FirstStepTest
 
         private void SeedDatabaseFromOriginal()
         {
-            //var originalOptions = new DbContextOptionsBuilder<DataContext>()
-            //    .UseSqlServer("Data Source=192.248.11.34;Database=jobsearch-app;User ID=JobAppMasterUser;Password=FirstStep2024User;TrustServerCertificate=true")
-            //    .Options;
-
             var originalOptions = new DbContextOptionsBuilder<DataContext>()
-                .UseSqlServer("Server=tcp:firststepserver.database.windows.net;Initial Catalog=firststepdb;Persist Security Info=False;User ID=adminteam;Password=58ashates88$8;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;")
+                .UseSqlServer("Data Source=192.248.11.34;Database=jobsearch-app;User ID=JobAppMasterUser;Password=FirstStep2024User;TrustServerCertificate=true")
                 .Options;
+
+            //var originalOptions = new DbContextOptionsBuilder<DataContext>()
+            //    .UseSqlServer("Server=tcp:firststepserver.database.windows.net;Initial Catalog=firststepdb;Persist Security Info=False;User ID=adminteam;Password=58ashates88$8;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;")
+            //    .Options;
 
             using (var originalContext = new DataContext(originalOptions))
             {
