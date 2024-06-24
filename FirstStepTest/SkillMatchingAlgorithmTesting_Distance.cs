@@ -36,8 +36,8 @@ namespace FirstStepTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase_DistanceMatching")
                 .Options;
 
-            _storageSharedKeyCredential = Moq.Mock.Of<StorageSharedKeyCredential>();
-            _blobServiceClient = Moq.Mock.Of<BlobServiceClient>();
+            _storageSharedKeyCredential = new StorageSharedKeyCredential("firststep", "uufTzzJ+uB7BRnKG9cN2RUi0mw92n5lTl2EMvnOTw6xv7sfPQSWBqJxHll+Zn2FNc06cGf8Qgrkb+ASteH1KEQ==");
+            _blobServiceClient = new BlobServiceClient("DefaultEndpointsProtocol=https;AccountName=firststep;AccountKey=uufTzzJ+uB7BRnKG9cN2RUi0mw92n5lTl2EMvnOTw6xv7sfPQSWBqJxHll+Zn2FNc06cGf8Qgrkb+ASteH1KEQ==;EndpointSuffix=core.windows.net");
 
             // Initialize DbContext
             _context = new DataContext(options);
@@ -111,7 +111,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_Colombo()
         {
             // arange
-            int seekerId = 4153;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 79.861244, Latitude = 6.927079 };
 
             // Act
@@ -122,7 +122,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_Kandy()
         {
             // arange
-            int seekerId = 4153;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 80.636696, Latitude = 7.291418 };
 
             // Act
@@ -133,7 +133,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_Galle()
         {
             // arange
-            int seekerId = 4153;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 80.220978, Latitude = 6.053519 };
 
             // Act
@@ -144,7 +144,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_Gampaha()
         {
             // arange
-            int seekerId = 4153;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 80.014366, Latitude = 7.087310 };
 
             // Act
@@ -155,7 +155,7 @@ namespace FirstStepTest
         public async Task TestSkillMatchingAlgorithm_Jaffna()
         {
             // arange
-            int seekerId = 4153;
+            int seekerId = 4;
             Coordinate seekerLocation = new Coordinate { Longitude = 80.005974, Latitude = 9.661623 };
 
             // Act
