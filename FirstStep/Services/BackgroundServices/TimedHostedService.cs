@@ -40,7 +40,6 @@ namespace FirstStep.Services.BackgroundServices
         {
             DataSeeder seeder = 
                 new DataSeeder(
-                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<DataContext>(), 
                     _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IAdvertisementService>());
 
             return seeder.SeedAdvertisements(10);

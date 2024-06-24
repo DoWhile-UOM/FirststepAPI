@@ -1,13 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace FirstStep.Models
 {
+    [Index(nameof(status))]
     public class Application
     {
         [Key]
         public int application_Id { get; set; }
 
+        [MaxLength(15)]
         public required string status { get; set; }
 
         public required DateTime submitted_date { get; set; } = DateTime.Now;

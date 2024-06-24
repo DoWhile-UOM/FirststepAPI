@@ -1,18 +1,14 @@
-﻿using FirstStep.Models;
-using FirstStep.Models.DTOs;
+﻿using FirstStep.Models.DTOs;
 using FirstStep.Services;
-using System.Collections.Generic;
 
 namespace FirstStep.Data
 {
     public class DataSeeder
     {
-        private readonly DataContext _context;
         private readonly IAdvertisementService _advertisementService;
 
-        public DataSeeder(DataContext context, IAdvertisementService advertisementService)
+        public DataSeeder(IAdvertisementService advertisementService)
         {
-            _context = context;
             _advertisementService = advertisementService;
         }
 
@@ -21,10 +17,11 @@ namespace FirstStep.Data
             // random advertisement values
 
             // random job titles
-            string[] jobTitles = new string[] {
+            string[] jobTitles = {
                 "AI Engineer", "Data Scientist", "AI Developer", "AI Data Scientist", "AI Product Manager", "AI Research Scientist", "DevOps Engineer", "Python Web Developer", "Senior Data Scientist",
                 "Python DevOps Engineer", "Python Automation Engineer", "Deep Learning Engineer", "Python Scripting Specialist", "Applied Machine Learning Researcher", "NLP (Natural Language Processing) Engineer",
-                "Quantitative Data Scientist", "Marketing Data Analyst", "Big Data Analyst", "Full Stack Engineer", "Business Data Analyst", "Python Backend Developer", "Machine Learning Scientist", "Computer Vision Engineer"};
+                "Quantitative Data Scientist", "Marketing Data Analyst", "Big Data Analyst", "Full Stack Engineer", "Business Data Analyst", "Python Backend Developer", "Machine Learning Scientist", "Computer Vision Engineer"
+			};
 
             // random countries and cities
             Dictionary<string, string[]> countries = new Dictionary<string, string[]>()
@@ -35,28 +32,28 @@ namespace FirstStep.Data
                 { "Australia", new string[] {"Sydney", "Melbourne", "Brisbane", "Perth" } },
             };
 
-            string[] cities = new string[] { "Colombo", "Kandy", "Matara", "Kalutara", "Gampaha", "Moratuwa", "Galle", "Matale"};
+            string[] cities = { "Colombo", "Kandy", "Matara", "Kalutara", "Gampaha", "Moratuwa", "Galle", "Matale"};
 
             // random employment types
-            string[] employmentTypes = new string[] { "Full-time", "Part-time", "Contract", "Internship", "Temporary", "Volunteer" };
+            string[] employmentTypes = { "Full-time", "Part-time", "Contract", "Internship", "Temporary", "Volunteer" };
 
             // random arrangements
-            string[] arrangements = new string[] { "Remote", "On-site", "Hybrid" };
+            string[] arrangements = { "Remote", "On-site", "Hybrid" };
 
             // random experiences
-            string[] experiences = new string[] { "Internship", "Entry Level", "Associate", "Mid Level", "Senior Level", "Experienced" };
+            string[] experiences = { "Internship", "Entry Level", "Associate", "Mid Level", "Senior Level", "Experienced" };
 
             // random job keywords
-            string[] keywords = new string[] { "ai", "machine learning", "data science", "devop", "big data", "deep learning", "computer vision", "python", "software engineer", "ai engineer" };
+            string[] keywords = { "ai", "machine learning", "data science", "devop", "big data", "deep learning", "computer vision", "python", "software engineer", "ai engineer" };
 
             // random skills
-            string[] skills = new string[] { "machine learning", "flask", "fastapi", "python", "machine learning", "classification", "machine learning models", "data science", "cicd", "azure", "aws" };
+            string[] skills = { "machine learning", "flask", "fastapi", "python", "machine learning", "classification", "machine learning models", "data science", "cicd", "azure", "aws" };
 
             // random salary
-            float[] salaries = new float[] { 6500f, 2500f, 2550f, 1500f };
+            float[] salaries = { 6500f, 2500f, 2550f, 1500f };
 
             // random hr managers
-            int[] hrmanager = new int[] { 1075, 4137 };
+            int[] hrmanager = { 1075, 4137 };
 
             // sample description
             string description = @"<h2>
