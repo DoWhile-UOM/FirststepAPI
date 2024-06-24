@@ -1,4 +1,5 @@
 using Azure.Communication.Email;
+using Azure.Storage;
 using Azure.Storage.Blobs;
 using FirstStep.Data;
 using FirstStep.Services;
@@ -51,16 +52,24 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"));
 });
 
+// Email Client Configuration
+builder.Services.AddScoped(options =>
+{
+    return new EmailClient(builder.Configuration.GetConnectionString("AzureEmailConnection"));
+});
+
 // Azure Blob Storage Configuration
 builder.Services.AddScoped(options =>
 {
     return new BlobServiceClient(builder.Configuration.GetConnectionString("AzureBlobStorageConnection"));
 });
 
-// Email Client Configuration
+// SAS Token Configuration
 builder.Services.AddScoped(options =>
 {
-    return new EmailClient(builder.Configuration.GetConnectionString("AzureEmailConnection"));
+    return new StorageSharedKeyCredential(
+        builder.Configuration.GetConnectionString("AccountName"), 
+        builder.Configuration.GetConnectionString("AccountKey"));
 });
 
 // Services Configuration

@@ -9,9 +9,11 @@ namespace FirstStep.Services
     {
         BlobServiceClient _blobServiceClient;
         BlobContainerClient _blobcontainerClient;
+        StorageSharedKeyCredential _storageSharedKeyCredential;
 
-        public FileService(BlobServiceClient blobServiceClient)
+        public FileService(BlobServiceClient blobServiceClient, StorageSharedKeyCredential storageSharedKeyCredential)
         {
+            _storageSharedKeyCredential = storageSharedKeyCredential;
             _blobServiceClient = blobServiceClient;
             _blobcontainerClient = _blobServiceClient.GetBlobContainerClient("firststep");
         }
@@ -81,7 +83,7 @@ namespace FirstStep.Services
             sasBuilder.SetPermissions(BlobSasPermissions.Read);
 
             // Generate the SAS token
-            var sasQueryParamas = sasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential("firststep", "uufTzzJ+uB7BRnKG9cN2RUi0mw92n5lTl2EMvnOTw6xv7sfPQSWBqJxHll+Zn2FNc06cGf8Qgrkb+ASteH1KEQ==")).ToString();
+            var sasQueryParamas = sasBuilder.ToSasQueryParameters(_storageSharedKeyCredential).ToString();
 
             var sasToken = sasQueryParamas.ToString();
 

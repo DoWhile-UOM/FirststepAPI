@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Storage;
 using Azure.Storage.Blobs;
 using FirstStep.Data;
 using FirstStep.Helper;
@@ -6,7 +7,6 @@ using FirstStep.MapperProfile;
 using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.EntityFrameworkCore;
-using Xunit.Abstractions;
 
 namespace FirstStepTest
 {
@@ -14,9 +14,8 @@ namespace FirstStepTest
     {
         private readonly DataContext _context;
         private readonly BlobServiceClient _blobServiceClient;
+        private readonly StorageSharedKeyCredential _storageSharedKeyCredential;
         private readonly IMapper _mapper;
-
-        private readonly ITestOutputHelper _output;
 
         private readonly AdvertisementService _advertisementService;
         private readonly SkillService _skillService;
@@ -30,15 +29,15 @@ namespace FirstStepTest
         private readonly EmployeeService _employeeService;
         //private readonly EmailService _emailService;
 
-        public SkillMatchingAlgorithmTesting(ITestOutputHelper output)
+        public SkillMatchingAlgorithmTesting()
         {
             // Set up DbContext options to use in-memory database
             var options = new DbContextOptionsBuilder<DataContext>()
                 .UseInMemoryDatabase(databaseName: "TestDatabase_SkillsMatching")
                 .Options;
 
-            // setup BlobServiceClient
-            _blobServiceClient = new BlobServiceClient("DefaultEndpointsProtocol=https;AccountName=firststep;AccountKey=uufTzzJ+uB7BRnKG9cN2RUi0mw92n5lTl2EMvnOTw6xv7sfPQSWBqJxHll+Zn2FNc06cGf8Qgrkb+ASteH1KEQ==;EndpointSuffix=core.windows.net");
+            _storageSharedKeyCredential = Moq.Mock.Of<StorageSharedKeyCredential>();
+            _blobServiceClient = Moq.Mock.Of<BlobServiceClient>();
 
             // Initialize DbContext
             _context = new DataContext(options);
@@ -57,12 +56,11 @@ namespace FirstStepTest
             _skillService = new SkillService(_context);
             _keywordService = new ProfessionKeywordService(_context, _mapper);
             _revisionService = new RevisionService(_context);
-            _fileService = new FileService(_blobServiceClient);
+            _fileService = new FileService(_blobServiceClient, _storageSharedKeyCredential);
             _seekerService = new SeekerService(_context, _mapper, _skillService, _fileService);
             _employeeService = new EmployeeService(_context, _mapper);
             _applicationService = new ApplicationService(_context, _mapper, _revisionService, _fileService, _employeeService);
             _advertisementService = new AdvertisementService(_context, _mapper, _keywordService, _skillService, _seekerService, _applicationService, _fileService);
-            _output = output;
         }
 
         private void SeedDatabaseFromOriginal()
