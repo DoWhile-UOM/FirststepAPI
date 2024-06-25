@@ -1,4 +1,5 @@
-﻿using FirstStep.Models.DTOs;
+﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 
 namespace FirstStep.Services
 {
@@ -11,5 +12,9 @@ namespace FirstStep.Services
         Task BookAppointment(int appointment_id, int seeker_id);
 
         Task DummyService(int? test);
+
+        Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date);
+
+        Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus);
     }
 }

@@ -2,6 +2,7 @@
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
 {
@@ -97,6 +98,36 @@ namespace FirstStep.Services
             appointment.status = Appointment.Status.Booked.ToString();
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date)
+        {
+            return await _context.Appointments
+                .Where(a => a.start_time.Date == date.Date)
+                .Select(a => new dailyInterviewDto
+                {
+                    appointment_id = a.appointment_id,
+                    status = Enum.Parse<Appointment.Status>(a.status),
+                    start_time = a.start_time,
+                    title = a.advertisement.title,
+                    first_name = a.seeker.first_name,
+                    last_name = a.seeker.last_name
+                }).ToListAsync();
+        }
+
+
+        public async Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus)
+        {
+            var appointment = await FindById(appointment_id);
+            if (appointment == null || appointment.status == Appointment.Status.Missed.ToString() || appointment.status == Appointment.Status.Complete.ToString())
+            {
+                return false;
+            }
+
+            appointment.status = newStatus.ToString();
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public Task DummyService(int? test)

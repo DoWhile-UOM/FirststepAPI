@@ -1,4 +1,5 @@
-﻿using FirstStep.Models.DTOs;
+﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -54,6 +55,26 @@ namespace FirstStep.Controllers
         {
             await _appointmentService.BookAppointment(appointment_id, seeker_id);
             return Ok();
+        }
+
+        [HttpGet("{date}")]
+        public async Task<ActionResult<List<dailyInterviewDto>>> GetSchedulesByDate(DateTime date)
+        {
+            var schedules = await _appointmentService.GetSchedulesByDate(date);
+            return Ok(schedules);
+        }
+
+
+        [HttpPatch("{appointment_id}")]
+        public async Task<IActionResult> UpdateInterviewStatus(int appointment_id, [FromBody] Appointment.Status newStatus)
+        {
+            var result = await _appointmentService.UpdateInterviewStatus(appointment_id, newStatus);
+            if (!result)
+            {
+                return BadRequest("Unable to update status or status change not allowed.");
+            }
+
+            return NoContent();
         }
 
         private ActionResult ReturnStatusCode(Exception e)
