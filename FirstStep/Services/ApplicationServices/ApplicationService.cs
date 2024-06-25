@@ -45,8 +45,7 @@ namespace FirstStep.Services
             foreach (var application in applications)
             {
                 if (application.advertisement_id == newApplicationDto.advertisement_id
-                    && application.seeker_id == newApplicationDto.seeker_id
-                    && application.status == Application.ApplicationStatus.NotEvaluated.ToString())
+                    && application.seeker_id == newApplicationDto.seeker_id)
                 {
                     throw new ApplicationAlreadyExistsException("Can't apply! another application is in the waiting list");
                 }
