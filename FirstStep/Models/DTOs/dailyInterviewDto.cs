@@ -8,6 +8,8 @@
 
         public required DateTime start_time { get; set; }
 
+        public required DateTime end_time { get; set; }
+
         public required string title { get; set; }
 
         public required string first_name { get; set; }

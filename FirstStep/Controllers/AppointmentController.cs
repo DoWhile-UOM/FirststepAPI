@@ -57,7 +57,9 @@ namespace FirstStep.Controllers
             return Ok();
         }
 
-        [HttpGet("{date}")]
+        // Fetch schedules by date
+        [HttpGet]
+        [Route("GetByDate/{date}")]
         public async Task<ActionResult<List<dailyInterviewDto>>> GetSchedulesByDate(DateTime date)
         {
             var schedules = await _appointmentService.GetSchedulesByDate(date);
@@ -65,8 +67,10 @@ namespace FirstStep.Controllers
         }
 
 
-        [HttpPatch("{appointment_id}")]
-        public async Task<IActionResult> UpdateInterviewStatus(int appointment_id, [FromBody] Appointment.Status newStatus)
+        // Update the status of an interview
+        [HttpPatch]
+        [Route("UpdateStatus/appointment={appointment_id:int}/status={newStatus}")]
+        public async Task<IActionResult> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus)
         {
             var result = await _appointmentService.UpdateInterviewStatus(appointment_id, newStatus);
             if (!result)
@@ -76,6 +80,7 @@ namespace FirstStep.Controllers
 
             return NoContent();
         }
+
 
         private ActionResult ReturnStatusCode(Exception e)
         {

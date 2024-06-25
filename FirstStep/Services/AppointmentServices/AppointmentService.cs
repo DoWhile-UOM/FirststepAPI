@@ -51,6 +51,7 @@ namespace FirstStep.Services
 
             var appointment = _mapper.Map<Appointment>(newAppointment);
 
+
             appointment.status = Appointment.Status.Pending.ToString();
 
             _context.Appointments.Add(appointment);
@@ -103,15 +104,18 @@ namespace FirstStep.Services
         public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date)
         {
             return await _context.Appointments
+                .Include(a => a.advertisement)
+                .Include(a => a.seeker)
                 .Where(a => a.start_time.Date == date.Date)
                 .Select(a => new dailyInterviewDto
                 {
                     appointment_id = a.appointment_id,
                     status = Enum.Parse<Appointment.Status>(a.status),
                     start_time = a.start_time,
+                    end_time = a.start_time.AddMinutes(a.advertisement.interview_duration), 
                     title = a.advertisement.title,
-                    first_name = a.seeker.first_name,
-                    last_name = a.seeker.last_name
+                    first_name = a.seeker != null ? a.seeker.first_name : "N/A",
+                    last_name = a.seeker != null ? a.seeker.last_name : "N/A"  
                 }).ToListAsync();
         }
 
@@ -119,6 +123,7 @@ namespace FirstStep.Services
         public async Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus)
         {
             var appointment = await FindById(appointment_id);
+            // Check if the appointment can be updated
             if (appointment == null || appointment.status == Appointment.Status.Missed.ToString() || appointment.status == Appointment.Status.Complete.ToString())
             {
                 return false;
