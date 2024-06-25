@@ -33,6 +33,7 @@ namespace FirstStep.Services
         public async Task<Seeker> GetById(int id)
         {
             Seeker? seeker = await _context.Seekers
+                .Include("applications")
                 .Include("job_Field")
                 .Include("skills")
                 .Where(e => e.user_id == id)
@@ -80,8 +81,9 @@ namespace FirstStep.Services
         public async Task<SeekerApplicationDto> GetSeekerDetails(int id)
         {
             Seeker seeker = await GetById(id);
+            
             SeekerApplicationDto seekerdto = _mapper.Map<SeekerApplicationDto>(seeker);
-            //assign GetBlobUrl to seekerApplicationDto default_cv_url 
+
             seekerdto.defualt_cv_url = await _fileService.GetBlobUrl(seekerdto.cVurl);
 
             return seekerdto;
