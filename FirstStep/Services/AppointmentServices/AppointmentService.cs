@@ -2,6 +2,7 @@
 using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
 {
@@ -38,7 +39,11 @@ namespace FirstStep.Services
             }
 
             // check the advertisement is exist
-            var advertisement = await _context.Advertisements.FindAsync(newAppointmentDto.advertisement_id);
+            var advertisement = await _context.Advertisements
+                .Include("appointments")
+                .Where(a => a.advertisement_id == newAppointmentDto.advertisement_id)
+                .FirstOrDefaultAsync();
+
             if (advertisement == null)
             {
                 throw new Exception("Advertisement not found");
@@ -48,6 +53,10 @@ namespace FirstStep.Services
                 throw new Exception("Advertisement is not in the hold, therefore can't add an appointment.");
             }
 
+            // delete all appointments for the advertisement
+            advertisement.appointments!.Clear();
+
+            // change advertisement status to interview
             advertisement.current_status = Advertisement.Status.interview.ToString();
             advertisement.interview_duration = newAppointmentDto.duration;
 
