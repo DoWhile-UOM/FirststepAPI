@@ -18,7 +18,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAvailabelSlots")]
+        [Route("GetAvailabelSlots/{advertismentId:int}")]
         public async Task<IActionResult> GetAdvertisementByIdWithKeywords(int advertismentId)
         {
             try
