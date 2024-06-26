@@ -28,31 +28,42 @@ namespace FirstStep.Services
             return appointment;
         }
 
-        public async Task CreateAppointment(AddAppointmentDto newAppointment)
+        public async Task CreateAppointment(AddAppointmentDto newAppointmentDto)
         {
             // check the company is exist
-            var company = await _context.Companies.FindAsync(newAppointment.company_id);
+            var company = await _context.Companies.FindAsync(newAppointmentDto.company_id);
             if (company == null)
             {
                 throw new Exception("Company not found");
             }
 
             // check the advertisement is exist
-            var advertisement = await _context.Advertisements.FindAsync(newAppointment.advertisement_id);
+            var advertisement = await _context.Advertisements.FindAsync(newAppointmentDto.advertisement_id);
             if (advertisement == null)
             {
                 throw new Exception("Advertisement not found");
             }
-            if (advertisement.current_status != Advertisement.Status.interview.ToString())
+            if (advertisement.current_status != Advertisement.Status.hold.ToString())
             {
-                throw new Exception("Advertisement is not in the interview, therefore can't add an appointment.");
+                throw new Exception("Advertisement is not in the hold, therefore can't add an appointment.");
             }
 
-            var appointment = _mapper.Map<Appointment>(newAppointment);
+            advertisement.current_status = Advertisement.Status.interview.ToString();
+            advertisement.interview_duration = newAppointmentDto.duration;
 
-            appointment.status = Appointment.Status.Pending.ToString();
+            foreach (var time_slot in newAppointmentDto.time_slots)
+            {
+                Appointment newAppointment = new Appointment()
+                {
+                    advertisement_id = newAppointmentDto.advertisement_id,
+                    company_id = newAppointmentDto.company_id,
+                    start_time = time_slot,
+                    status = Appointment.Status.Pending.ToString()
+                };
 
-            _context.Appointments.Add(appointment);
+                await _context.Appointments.AddAsync(newAppointment);
+            }
+
             await _context.SaveChangesAsync();
         }
 

@@ -17,8 +17,8 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("CreateAppointment")]
-        public async Task<IActionResult> CreateAppointment(AddAppointmentDto newAppointment)//Create Appointment Slot(Company Available Time)
+        [Route("CreateAppointments")]
+        public async Task<IActionResult> CreateAppointments(AddAppointmentDto newAppointment)//Create Appointment Slot(Company Available Time)
         {
             await _appointmentService.CreateAppointment(newAppointment);
             return Ok();
