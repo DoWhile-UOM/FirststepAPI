@@ -161,6 +161,8 @@ namespace FirstStep.Controllers
             return Ok($"Successfully Updated Application ID: {reqApplication.application_Id}");
         }
 
+      
+
         [HttpPatch]
         [Route("DelegateTask/jobID={jobID}")]
         public async Task<IActionResult> DelegateTaskToHRAssistants(int jobID)
@@ -182,6 +184,16 @@ namespace FirstStep.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
             }
+        }
+
+
+        //set the application isCalled to true by the application id using UpdateApplicationStatusDto
+        [HttpPatch]
+        [Route("SetToInterview")]
+        public async Task<IActionResult> SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto)
+        {
+            await _service.SetToInterview(updateApplicationStatusDto);
+            return Ok("Successfully updated isCalled status.");
         }
 
 

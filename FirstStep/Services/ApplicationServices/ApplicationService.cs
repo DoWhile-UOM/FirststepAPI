@@ -134,20 +134,20 @@ namespace FirstStep.Services
             {
                 //use default cv use in the seeker profile
                 var seeker = await _context.Seekers.FindAsync(newApplicationDto.seeker_id);
-                
+
                 //handle the case where the seeker is not found
                 if (seeker == null)
                 {
                     throw new InvalidDataException("Seeker not found.");
                 }
-                
+
                 newApplication.CVurl = seeker.CVurl;
             }
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();
         }
-        
+
         public async Task Delete(int id)
         {
             Application application = await FindById(id);
@@ -292,9 +292,9 @@ namespace FirstStep.Services
         {
             var application = await FindById(id);
 
-            if (application is null) 
-            { 
-                throw new NullReferenceException("Application not found."); 
+            if (application is null)
+            {
+                throw new NullReferenceException("Application not found.");
             }
 
             // Get the latest revision
@@ -308,7 +308,7 @@ namespace FirstStep.Services
             applicationDto.seeker_id = application.seeker_id;
 
             //applicationDto.cVurl = application.CVurl!; // when this is defualt cv, get from the seeker's profile
-           
+
             // Fetch CV URL and profile picture URL from the file service
             var cvUrl = application.CVurl != null ? await _fileService.GetBlobUrl(application.CVurl) : await _fileService.GetBlobUrl(application.seeker!.CVurl);
             var profilePictureUrl = application.seeker!.profile_picture != null ? await _fileService.GetBlobUrl(application.seeker.profile_picture) : null;
@@ -498,7 +498,7 @@ namespace FirstStep.Services
 
             return applicationStatus;
         }
-        
+
         public async Task<IEnumerable<RevisionHistoryDto>> GetRevisionHistory(int applicationId)
         {
             var revisions = await _context.Revisions
@@ -588,9 +588,25 @@ namespace FirstStep.Services
             return applicationSelectedDtos;
         }
 
-        public Task ConfirmInterview(int advertisementId, IEnumerable<int> selectedApplicationIds)
+
+        //set the application isCalled to true by the application id using UpdateApplicationStatusDto
+        public async Task SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto)
         {
-            throw new NotImplementedException();
+            var application = await _context.Applications
+                .Where(a => a.application_Id == updateApplicationStatusDto.application_id)
+                .FirstOrDefaultAsync();
+
+            if (application == null)
+            {
+                throw new NullReferenceException("Application not found.");
+            }
+
+            application.is_called = updateApplicationStatusDto.is_called;
+
+            await _context.SaveChangesAsync();
         }
+
+
+
     }
 }
