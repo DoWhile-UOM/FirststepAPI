@@ -1,4 +1,5 @@
-﻿using FirstStep.Models.DTOs;
+﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,20 @@ namespace FirstStep.Controllers
             _appointmentService = appointmentService;
         }
 
+        [HttpGet]
+        [Route("GetAvailabelSlots")]
+        public async Task<IActionResult> GetAdvertisementByIdWithKeywords(int advertismentId)
+        {
+            try
+            {
+                return Ok(await _appointmentService.GetAvailabelSlots(advertismentId));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
         [HttpPost]
         [Route("CreateAppointments")]
         public async Task<IActionResult> CreateAppointments(AddAppointmentDto newAppointment)//Create Appointment Slot(Company Available Time)
@@ -25,20 +40,6 @@ namespace FirstStep.Controllers
         }
 
         [HttpPut]
-        [Route("UpdateTimeSlot")]
-        public async Task<IActionResult> UpdateTimeSlot(AddAppointmentDto updateAppointment)//Update Appointment Slot(Company Available Time)
-        {
-
-            try
-            {
-                await _appointmentService.DummyService(2);
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return ReturnStatusCode(e);
-            }
-        }
 
         [HttpPatch]//Remove this cotroller only
         [Route("AssignToAdvertisement/appointment={appointment_id:int}/advertisement={advertisement_id:int}")]

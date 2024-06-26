@@ -149,13 +149,19 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public Task DummyService(int? test)
+        public async Task<IEnumerable<AppointmentAvailabelDto>> GetAvailabelSlots(int advertisment_id)
         {
-            if (test == 1)
-            {
-                throw new Exception("Dummy exception");
-            }
-            return Task.CompletedTask;
+            var result= await _context.Appointments
+                .Where(x => x.advertisement_id == advertisment_id && x.status==Appointment.Status.Pending.ToString())
+                .Select(x => new AppointmentAvailabelDto
+                {
+                    appointment_id = x.appointment_id,
+                    start_time = x.start_time
+
+                })
+                .ToListAsync();
+
+            return result;
 
         }
     }
