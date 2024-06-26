@@ -548,48 +548,6 @@ namespace FirstStep.Services
         }
 
 
-        //get selected application details as ApplicationSelectedDto 
-        /*  public async Task<ApplicationSelectedDto> GetSelectedApplicationDetails(int applicationId)
-          {
-              //check the advertisment in hold state
-              var application = await _context.Applications
-                   .Include(a => a.seeker)
-                   .Include(a => a.advertisement)
-                   .Where(a => a.application_Id == applicationId)
-                   .FirstOrDefaultAsync();
-
-              if (application == null)
-              {
-                  throw new NullReferenceException("Application not found.");
-              }
-
-              if (application.advertisement == null)
-              {
-                  throw new NullReferenceException("Advertisement not found.");
-              }
-
-              if (application.advertisement.current_status != Advertisement.Status.hold.ToString())
-              {
-                  throw new InvalidDataException("Advertisement is not in hold state.");
-              }
-              //the application should be in accepted state
-              if (application.status != Application.ApplicationStatus.Accepted.ToString())
-              {
-                  throw new InvalidDataException("Application is not in accepted state.");
-              }
-              var applicationSelectedDto = _mapper.Map<ApplicationSelectedDto>(application);
-              applicationSelectedDto.seeker_name = application.seeker!.first_name + " " + application.seeker!.last_name;
-              //get the last revision employee name 
-              var lastRevision = await _revisionService.GetLastRevision(application.application_Id);
-              if (lastRevision != null)
-              {
-                  applicationSelectedDto.last_revision_employee_name = lastRevision.employee!.first_name + " " + lastRevision.employee!.last_name;
-              }
-              return applicationSelectedDto;
-
-          }*/
-
-        //get selected applications details  such as seeker name last revision employee  in ApplicationSelectedDto using advertisment ID
         public async Task<IEnumerable<ApplicationSelectedDto>> GetSelectedApplicationsDetails(int advertisementId)
         {
             //check the advertisment in hold state
@@ -628,11 +586,11 @@ namespace FirstStep.Services
             }
 
             return applicationSelectedDtos;
-        }   
+        }
 
-
-
-
-
+        public Task ConfirmInterview(int advertisementId, IEnumerable<int> selectedApplicationIds)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
