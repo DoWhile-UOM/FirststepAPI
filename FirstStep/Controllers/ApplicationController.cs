@@ -187,7 +187,7 @@ namespace FirstStep.Controllers
         }
 
 
-        //set the application isCalled to true by the application id using UpdateApplicationStatusDto
+        //set the application isCalled to true 
         [HttpPatch]
         [Route("SetToInterview")]
         public async Task<IActionResult> SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto)

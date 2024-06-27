@@ -41,7 +41,6 @@ namespace FirstStep.Services
 
         public Task<IEnumerable<ApplicationSelectedDto>> GetSelectedApplicationsDetails(int advertisementId);
 
-        //set the application isCalled to true by the application id using UpdateApplicationStatusDto
         public Task SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto);
 
 
