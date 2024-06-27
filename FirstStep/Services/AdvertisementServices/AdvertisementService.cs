@@ -616,6 +616,9 @@ namespace FirstStep.Services
                 // check whether the advertisement is expired or not
                 adDto.is_expired = AdvertisementValidation.IsExpired(ad);
 
+                // check whether seeker can apply to the advertisement
+                adDto.can_apply = AdvertisementValidation.CanApply(seeker.applications, ad.advertisement_id);
+
                 company_id = ad.hrManager!.company_id;
 
                 if (!recentAccessedCompanies.ContainsKey(company_id))
