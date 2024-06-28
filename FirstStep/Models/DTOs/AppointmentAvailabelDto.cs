@@ -1,8 +1,12 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public class AppointmentAvailabelDto
+    public struct AppointmentAvailabelDto
     {
-        public int appointment_id { get; set; }
-        public DateTime start_time { get; set; }
+        public IEnumerable<AppointmentAvailabelTimeDto> slot { get; set; }
+
+        public int interview_duration { get; set; }
+        public string title { get; set; }
+
+        public string company_name { get; set; }
     }
 }

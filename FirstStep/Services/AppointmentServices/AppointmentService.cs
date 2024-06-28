@@ -149,19 +149,44 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<AppointmentAvailabelDto>> GetAvailabelSlots(int advertisment_id)
+        public async Task<AppointmentAvailabelDto> GetAvailabelSlots(int advertisment_id)
         {
-            var result= await _context.Appointments
+            List <Appointment>? result=await _context.Appointments
+                .Include(x => x.advertisement)
+                .Include(x => x.company)
                 .Where(x => x.advertisement_id == advertisment_id && x.status==Appointment.Status.Pending.ToString())
-                .Select(x => new AppointmentAvailabelDto
-                {
-                    appointment_id = x.appointment_id,
-                    start_time = x.start_time
-
-                })
                 .ToListAsync();
 
-            return result;
+            if (result == null)
+            {
+                throw new Exception("No appointments found");
+            }
+
+            AppointmentAvailabelDto appointmentAvailabel = new AppointmentAvailabelDto();
+
+            appointmentAvailabel.slot = new List<AppointmentAvailabelTimeDto>;
+
+            appointmentAvailabel.slot.appointment_id = result.Select(x => x.appointment_id);
+
+            appointmentAvailabel.slot.start_time = result.Select(x => x.start_time);
+
+            appointmentAvailabel.interview_duration = result.Select(x => x.advertisement!.interview_duration).FirstOrDefault();
+
+            appointmentAvailabel.title = result.Select(x => x.advertisement!.title).FirstOrDefault()!;
+
+            appointmentAvailabel.company_name = result.Select(x => x.company!.company_name).FirstOrDefault()!;
+
+            //var result= await _context.Appointments
+            //    .Where(x => x.advertisement_id == advertisment_id && x.status==Appointment.Status.Pending.ToString())
+            //    .Select(x => new AppointmentAvailabelDto
+            //    {
+            //        appointment_id = x.appointment_id,
+            //        start_time = x.start_time
+
+            //    })
+            //    .ToListAsync();
+
+            return appointmentAvailabel;
 
         }
     }
