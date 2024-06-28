@@ -576,6 +576,7 @@ namespace FirstStep.Services
                 var applicationSelectedDto = _mapper.Map<ApplicationSelectedDto>(application);
                 //application id
                 applicationSelectedDto.application_id = application.application_Id;
+                applicationSelectedDto.application_status = application.is_called;
                 var seeker = await _context.Seekers.FindAsync(application.seeker_id);
                 applicationSelectedDto.seeker_name = application.seeker!.first_name + " " + application.seeker!.last_name;
                 //get the last revision employee name 
