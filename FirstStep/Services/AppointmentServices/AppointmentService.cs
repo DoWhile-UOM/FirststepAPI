@@ -153,7 +153,7 @@ namespace FirstStep.Services
         {
             Advertisement? advertisement = await _context.Advertisements
                 .Include(x => x.appointments)
-                .Include(x => x.hrManager)
+                .Include(x => x.hrManager!.company)
                 .FirstOrDefaultAsync(x => x.advertisement_id == advertisment_id);
 
             if (advertisement == null)
@@ -181,9 +181,7 @@ namespace FirstStep.Services
 
             appointmentAvailable.title = advertisement.title;
             appointmentAvailable.interview_duration = advertisement.interview_duration;
-
-            var company = await _context.Companies.FindAsync(advertisement.hrManager!.company_id);
-            appointmentAvailable.company_name = company!.company_name;
+            appointmentAvailable.company_name = advertisement.hrManager!.company!.company_name;
 
             return appointmentAvailable;
         }
