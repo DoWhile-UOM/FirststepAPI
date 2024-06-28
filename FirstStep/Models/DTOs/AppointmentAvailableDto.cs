@@ -1,6 +1,6 @@
 ﻿namespace FirstStep.Models.DTOs
 {
-    public struct AppointmentAvailabelDto
+    public struct AppointmentAvailableDto
     {
         public IEnumerable<AppointmentAvailabelTimeDto> slot { get; set; }
 
