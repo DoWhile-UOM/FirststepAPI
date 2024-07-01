@@ -14,7 +14,7 @@ namespace FirstStep.Models
 
         public required string CVurl { get; set; }
 
-        public bool is_called { get; set; } = false;
+        public bool is_called { get; set; } = false;//is checked->true, is not checked->false
 
 
         [JsonIgnore]
