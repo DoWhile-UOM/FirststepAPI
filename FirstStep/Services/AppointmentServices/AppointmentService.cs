@@ -185,5 +185,47 @@ namespace FirstStep.Services
 
             return appointmentAvailable;
         }
+
+
+        public async Task<AppointmentAvailableDto> GetBookedAppointmentList(int advertisment_id)
+        {
+            Advertisement? advertisement = await _context.Advertisements
+                .Include(x => x.appointments)
+                .Include(x => x.appointments!.Select(a => a.seeker))
+                .Include(x => x.hrManager!.company)
+                .FirstOrDefaultAsync(x => x.advertisement_id == advertisment_id && x.appointments!.Select(a => a.seeker_id)!=null);
+
+            if (advertisement == null)
+            {
+                throw new Exception("Advertisement not found");
+            }
+
+            if (advertisement.current_status != Advertisement.Status.interview.ToString())
+            {
+                throw new Exception("Advertisement is not in the interview, therefore can't proceed.");
+            }
+
+            if (advertisement.appointments == null)
+            {
+                throw new Exception("No appointments found");
+            }
+
+            AppointmentAvailableDto appointmentAvailable = new AppointmentAvailableDto();
+
+            appointmentAvailable.slot = advertisement.appointments!.Select(x => new AppointmentAvailabelTimeDto
+            {
+                appointment_id = x.appointment_id,
+                start_time = x.start_time
+            }).ToList();
+
+            appointmentAvailable.title = advertisement.title;
+            appointmentAvailable.interview_duration = advertisement.interview_duration;
+            appointmentAvailable.company_name = advertisement.hrManager!.company!.company_name;
+
+            return appointmentAvailable;
+        }
+
+
+
     }
 }

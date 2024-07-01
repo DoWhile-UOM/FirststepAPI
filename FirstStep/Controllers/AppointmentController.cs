@@ -31,6 +31,20 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetBookedAppointmentList/{advertismentId:int}")]
+        public async Task<IActionResult> GetBookedAppointmentList(int advertismentId)
+        {
+            try
+            {
+                return Ok(await _appointmentService.GetAvailabelSlots(advertismentId));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
         [HttpPost]
         [Route("CreateAppointments")]
         public async Task<IActionResult> CreateAppointments(AddAppointmentDto newAppointment)//Create Appointment Slot(Company Available Time)
