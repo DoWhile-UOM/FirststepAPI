@@ -1,4 +1,5 @@
-﻿using FirstStep.Models;
+﻿using FirstStep.Exceptions;
+using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
@@ -141,8 +142,23 @@ namespace FirstStep.Controllers
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
         {
-            await _service.SubmitApplication(newApplication);
-            return Ok();
+            try
+            {
+                await _service.SubmitApplication(newApplication);
+                return Ok();
+            }
+            catch (InvalidDataException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (ApplicationAlreadyExistsException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         [HttpPut]

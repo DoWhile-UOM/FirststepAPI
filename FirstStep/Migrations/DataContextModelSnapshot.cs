@@ -148,6 +148,8 @@ namespace Firststep.Migrations
 
                     b.HasIndex("hrManager_id");
 
+                    b.HasIndex("title", "current_status");
+
                     b.ToTable("Advertisements");
                 });
 
@@ -177,7 +179,8 @@ namespace Firststep.Migrations
 
                     b.Property<string>("status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
 
                     b.Property<DateTime>("submitted_date")
                         .HasColumnType("datetime2");
@@ -189,6 +192,8 @@ namespace Firststep.Migrations
                     b.HasIndex("assigned_hrAssistant_id");
 
                     b.HasIndex("seeker_id");
+
+                    b.HasIndex("status");
 
                     b.ToTable("Applications");
                 });
@@ -330,11 +335,14 @@ namespace Firststep.Migrations
 
                     b.Property<string>("profession_name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("profession_id");
 
                     b.HasIndex("field_id");
+
+                    b.HasIndex("profession_name");
 
                     b.ToTable("ProfessionKeywords");
                 });
@@ -361,13 +369,16 @@ namespace Firststep.Migrations
 
                     b.Property<string>("status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
 
                     b.HasKey("revision_id");
 
                     b.HasIndex("application_id");
 
                     b.HasIndex("employee_id");
+
+                    b.HasIndex("status");
 
                     b.ToTable("Revisions");
                 });
@@ -382,9 +393,12 @@ namespace Firststep.Migrations
 
                     b.Property<string>("skill_name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("skill_id");
+
+                    b.HasIndex("skill_name");
 
                     b.ToTable("Skills");
                 });
@@ -399,7 +413,8 @@ namespace Firststep.Migrations
 
                     b.Property<string>("email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("first_name")
                         .IsRequired()
@@ -430,6 +445,8 @@ namespace Firststep.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("user_id");
+
+                    b.HasIndex("email");
 
                     b.ToTable("Users");
 

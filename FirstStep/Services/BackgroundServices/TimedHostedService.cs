@@ -1,4 +1,5 @@
 ﻿using FirstStep.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services.BackgroundServices
 {
@@ -26,11 +27,19 @@ namespace FirstStep.Services.BackgroundServices
             return Task.CompletedTask;
         }
 
+        private Task TestDatabaseConnection()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+                return context.Database.OpenConnectionAsync();
+            }
+        }
+
         private Task SeedData()
         {
             DataSeeder seeder = 
                 new DataSeeder(
-                    _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<DataContext>(), 
                     _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IAdvertisementService>());
 
             return seeder.SeedAdvertisements(10);

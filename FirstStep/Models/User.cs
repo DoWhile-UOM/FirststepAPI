@@ -1,12 +1,15 @@
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace FirstStep.Models
 {
+    [Index(nameof(email))]
     public class User
     {
         [Key]
         public int user_id { get; set; }
 
+        [MaxLength(100)]
         [EmailAddress]
         public required string email { get; set; }
 

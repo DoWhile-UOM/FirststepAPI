@@ -62,6 +62,23 @@ namespace FirstStep.Validation
             }
         }
 
+        public static bool CanApply(ICollection<Application>? seekerApplications, int advertisement_id)
+        {
+            if (seekerApplications is null)
+            {
+                return true;
+            }
+
+            if (seekerApplications.Any(application => application.advertisement_id == advertisement_id))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         public static void CheckStatus(string status)
         {
             if (status == "all")
