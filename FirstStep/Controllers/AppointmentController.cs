@@ -1,4 +1,5 @@
-﻿using FirstStep.Models.DTOs;
+﻿using FirstStep.Models;
+using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,29 +17,43 @@ namespace FirstStep.Controllers
             _appointmentService = appointmentService;
         }
 
-        [HttpPost]
-        [Route("CreateAppointment")]
-        public async Task<IActionResult> CreateAppointment(AddAppointmentDto newAppointment)
+        [HttpGet]
+        [Route("GetAvailabelSlots/{advertismentId:int}")]
+        public async Task<IActionResult> GetAdvertisementByIdWithKeywords(int advertismentId)
         {
-            await _appointmentService.CreateAppointment(newAppointment);
-            return Ok();
-        }
-
-        [HttpPut]
-        [Route("UpdateTimeSlot")]
-        public async Task<IActionResult> UpdateTimeSlot(UpdateAdvertisementDto reqAdvertisement)//AddApointment DTO eka use karanna
-        {
-
             try
             {
-                await _appointmentService.DummyService(2);
-                return Ok();
+                return Ok(await _appointmentService.GetAvailabelSlots(advertismentId));
             }
             catch (Exception e)
             {
                 return ReturnStatusCode(e);
             }
         }
+
+        [HttpGet]
+        [Route("GetBookedAppointmentList/{advertismentId:int}")]
+        public async Task<IActionResult> GetBookedAppointmentList(int advertismentId)
+        {
+            try
+            {
+                return Ok(await _appointmentService.GetAvailabelSlots(advertismentId));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpPost]
+        [Route("CreateAppointments")]
+        public async Task<IActionResult> CreateAppointments(AddAppointmentDto newAppointment)//Create Appointment Slot(Company Available Time)
+        {
+            await _appointmentService.CreateAppointment(newAppointment);
+            return Ok();
+        }
+
+        [HttpPut]
 
         [HttpPatch]//Remove this cotroller only
         [Route("AssignToAdvertisement/appointment={appointment_id:int}/advertisement={advertisement_id:int}")]
