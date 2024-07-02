@@ -110,7 +110,7 @@ namespace FirstStep.Services
                 .Select(a => new dailyInterviewDto
                 {
                     appointment_id = a.appointment_id,
-                    status = Enum.Parse<Appointment.Status>(a.status),
+                    status = Enum.Parse<Appointment.Status>(a.status, true), // Parse with case-insensitivity
                     start_time = a.start_time,
                     end_time = a.start_time.AddMinutes(a.advertisement.interview_duration), 
                     title = a.advertisement.title,

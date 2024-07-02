@@ -29,16 +29,8 @@ namespace FirstStep.Controllers
         [Route("UpdateTimeSlot")]
         public async Task<IActionResult> UpdateTimeSlot(UpdateAdvertisementDto reqAdvertisement)//AddApointment DTO eka use karanna
         {
-
-            try
-            {
                 await _appointmentService.DummyService(2);
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return ReturnStatusCode(e);
-            }
+                return Ok();         
         }
 
         [HttpPatch]//Remove this cotroller only
@@ -70,9 +62,15 @@ namespace FirstStep.Controllers
         // Update the status of an interview
         [HttpPatch]
         [Route("UpdateStatus/appointment={appointment_id:int}/status={newStatus}")]
-        public async Task<IActionResult> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus)
+        public async Task<IActionResult> UpdateInterviewStatus(int appointment_id, string newStatus)
         {
-            var result = await _appointmentService.UpdateInterviewStatus(appointment_id, newStatus);
+            // Validate the status value
+            if (!Enum.TryParse<Appointment.Status>(newStatus, true, out var appointmentStatus))
+            {
+                return BadRequest("Invalid status value.");
+            }
+
+            var result = await _appointmentService.UpdateInterviewStatus(appointment_id, appointmentStatus);
             if (!result)
             {
                 return BadRequest("Unable to update status or status change not allowed.");
@@ -81,21 +79,5 @@ namespace FirstStep.Controllers
             return NoContent();
         }
 
-
-        private ActionResult ReturnStatusCode(Exception e)
-        {
-            if (e is InvalidDataException)
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, e.Message);
-            }
-            else if (e is NullReferenceException)
-            {
-                return StatusCode(StatusCodes.Status404NotFound, e.Message);
-            }
-            else
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
-        }
     }
 }
