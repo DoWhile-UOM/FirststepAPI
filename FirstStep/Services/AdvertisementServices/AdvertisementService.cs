@@ -274,9 +274,7 @@ namespace FirstStep.Services
                 return await CreateFirstPageResults(advertisements, seekerID, noOfResultsPerPage);
             }
 
-            Coordinate coordinate = await Map.GetCoordinates(seeker.city!.ToLower());
-
-            var matchingAds = await FindMatchingAdvertisements(seeker, (float)coordinate.Longitude, (float)coordinate.Latitude);
+            var matchingAds = await FindMatchingAdvertisements(seeker, seeker.longitude, seeker.latitude);
 
             return await CreateFirstPageResults(matchingAds, seekerID, noOfResultsPerPage);
         }
@@ -417,6 +415,11 @@ namespace FirstStep.Services
             dbAdvertisement.submission_deadline = reqAdvertisement.submission_deadline;
             dbAdvertisement.job_description = reqAdvertisement.job_description;
             dbAdvertisement.field_id = reqAdvertisement.field_id;
+
+            // update the geometry coordinates of the city
+            Coordinate coordinate = await Map.GetCoordinates(reqAdvertisement.city.ToLower());
+            dbAdvertisement.longitude = (float)coordinate.Longitude;
+            dbAdvertisement.latitude = (float)coordinate.Latitude;
 
             // update keywords in the advertisement
             dbAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(reqAdvertisement.reqKeywords, dbAdvertisement.field_id);
@@ -865,11 +868,18 @@ namespace FirstStep.Services
             var filteredAdvertisements = new List<Advertisement> { };
 
             // get coordinates of the requested city
-            var reqCityCoordinate = await Map.GetCoordinates(reqCity.ToLower());
+            Coordinate reqCityCoordinate = await Map.GetCoordinates(reqCity.ToLower());
+            Coordinate adCityCoordinate;
 
             foreach (Advertisement advertisement in advertisements)
             {
-                if (await Map.GetDistance(advertisement.city, reqCityCoordinate) <= reqDistance)
+                adCityCoordinate = new Coordinate
+                {
+                    Latitude = advertisement.latitude,
+                    Longitude = advertisement.longitude
+                };
+
+                if (Map.GetDistance(adCityCoordinate, reqCityCoordinate) <= reqDistance)
                 {
                     filteredAdvertisements.Add(advertisement);
                 }
@@ -886,7 +896,7 @@ namespace FirstStep.Services
             if (seeker.skills!.Count() <= 0)
             {
                 // when seeker has no skills, return all advertisements in the seeker's field by lowest distance to highest
-                return await FindNearestAdvertisements(advertisements, longitude, latitude);
+                return FindNearestAdvertisements(advertisements, longitude, latitude);
             }
 
             // find advertisements matching with the seeker's skills
@@ -895,11 +905,11 @@ namespace FirstStep.Services
             if (filteredAds.Count() <= 0)
             {
                 // when there are no matching advertisements, return all advertisements in the seeker's field by lowest distance to highest
-               return await FindNearestAdvertisements(advertisements, longitude, latitude);
+               return FindNearestAdvertisements(advertisements, longitude, latitude);
             }
 
             // find the distance between the seeker's city and the advertisement's city
-            Dictionary<Advertisement, float> advertisementDistances = await FindDistanceForAdvertisements(longitude, latitude, filteredAds.Keys);
+            Dictionary<Advertisement, float> advertisementDistances = FindDistanceForAdvertisements(longitude, latitude, filteredAds.Keys);
 
             // round the number of advertisements to the nearest hundred
             if ((int)Math.Round(filteredAds.Count() / 100.0) * 100 > 1000)
@@ -931,10 +941,10 @@ namespace FirstStep.Services
             return SortByNearestNeighbor(matchingAdvertisements);
         }
 
-        private async Task<List<Advertisement>> FindNearestAdvertisements(IEnumerable<Advertisement> advertisements, float longitude, float latitude)
+        private List<Advertisement> FindNearestAdvertisements(IEnumerable<Advertisement> advertisements, float longitude, float latitude)
         {
             // find distance between advertisement location to seeker's location
-            Dictionary<Advertisement, float> distances = await FindDistanceForAdvertisements(longitude, latitude, advertisements);
+            Dictionary<Advertisement, float> distances = FindDistanceForAdvertisements(longitude, latitude, advertisements);
 
             // sort by acoording to distance in acending order
             return SortByDistance(distances);
@@ -976,7 +986,7 @@ namespace FirstStep.Services
             return advertisementDistances.OrderBy(e => e.Value).ToDictionary(e => e.Key, e => e.Value).Keys.ToList();
         }
 
-        private async Task<Dictionary<Advertisement, float>> FindDistanceForAdvertisements(float longitude, float latitude, IEnumerable<Advertisement> advertisements)
+        private Dictionary<Advertisement, float> FindDistanceForAdvertisements(float longitude, float latitude, IEnumerable<Advertisement> advertisements)
         {
             // get distance from the seeker's city to matching advertisements' cities
             Coordinate seekerCityCoordinate = new Coordinate { 
@@ -998,7 +1008,12 @@ namespace FirstStep.Services
             {
                 if (!recentCalculatedDistances.ContainsKey(ad.city.ToLower()))
                 {
-                    adCityCoordinate = await Map.GetCoordinates(ad.city.ToLower());
+                    adCityCoordinate = new Coordinate
+                    {
+                        Latitude = ad.latitude, 
+                        Longitude = ad.longitude 
+                    };
+
                     adDistance = Map.GetDistance(seekerCityCoordinate, adCityCoordinate);
 
                     recentCalculatedDistances.Add(ad.city.ToLower(), adDistance);
