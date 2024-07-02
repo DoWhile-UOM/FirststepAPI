@@ -138,6 +138,8 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID)
         {
+            Seeker seeker = await _seekerService.GetById(seekerID);
+
             var advertisements = new List<Advertisement>();
 
             foreach (var adId in adList)
@@ -145,7 +147,7 @@ namespace FirstStep.Services
                 advertisements.Add(await FindById(adId));
             }
 
-            return await CreateSeekerAdvertisementList(advertisements, seekerID, false);
+            return await CreateSeekerAdvertisementList(advertisements, seeker, false);
         }
 
         // fill the advertisement form when updating an advertisement
@@ -261,14 +263,29 @@ namespace FirstStep.Services
 
         public async Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, int noOfResultsPerPage)
         {
-            var matchingAds = await FindMatchingAdvertisements(seekerID);
+            var seeker = await _seekerService.GetById(seekerID);
+
+            // get all active advertisements in seeker's field
+            var advertisements = await FindBySeekerJobFieldID(seekerID);
+
+            if (seeker.skills!.Count <= 0)
+            {
+                // when seeker has no skills, return all advertisements in the seeker's field
+                return await CreateFirstPageResults(advertisements, seekerID, noOfResultsPerPage);
+            }
+
+            Coordinate coordinate = await Map.GetCoordinates(seeker.city!.ToLower());
+
+            var matchingAds = await FindMatchingAdvertisements(seeker, (float)coordinate.Longitude, (float)coordinate.Latitude);
 
             return await CreateFirstPageResults(matchingAds, seekerID, noOfResultsPerPage);
         }
 
         public async Task<AdvertisementFirstPageDto> GetRecommendedAdvertisements(int seekerID, float longitude, float latitude, int noOfResultsPerPage)
         {
-            var matchingAds = await FindMatchingAdvertisements(seekerID, longitude, latitude);
+            var seeker = await _seekerService.GetById(seekerID);
+
+            var matchingAds = await FindMatchingAdvertisements(seeker, longitude, latitude);
 
             return await CreateFirstPageResults(matchingAds, seekerID, noOfResultsPerPage);
         }
@@ -437,7 +454,9 @@ namespace FirstStep.Services
             // get all advertisements (with closed advrtisements)
             var advertisements = await FindAll(false);
 
-            return await CreateSeekerAdvertisementList(advertisements, seekerID, true);
+            Seeker seeker = await _seekerService.GetById(seekerID);
+
+            return await CreateSeekerAdvertisementList(advertisements, seeker, true);
         }
 
         public async Task<IEnumerable<AppliedAdvertisementShortDto>> GetAppliedAdvertisements(int seekerID)
@@ -582,10 +601,12 @@ namespace FirstStep.Services
 
         public async Task<AdvertisementFirstPageDto> CreateFirstPageResults(IEnumerable<Advertisement> dbAds, int seekerID, int noOfresultsPerPage)
         {
+            Seeker seeker = await _seekerService.GetById(seekerID);
+
             AdvertisementFirstPageDto firstPageResults = new AdvertisementFirstPageDto();
 
             // select only number of advertisements per page
-            firstPageResults.FirstPageAdvertisements = await CreateSeekerAdvertisementList(dbAds.Take(noOfresultsPerPage), seekerID, false);
+            firstPageResults.FirstPageAdvertisements = await CreateSeekerAdvertisementList(dbAds.Take(noOfresultsPerPage), seeker, false);
 
             // add all advertisement ids into a list
             firstPageResults.allAdvertisementIds = dbAds.Select(e => e.advertisement_id).ToList();
@@ -594,11 +615,9 @@ namespace FirstStep.Services
         }
 
         // map the advertisements to a list of AdvertisementCardDtos and create advertisement list for the seeker
-        private async Task<IEnumerable<AdvertisementShortDto>> CreateSeekerAdvertisementList(IEnumerable<Advertisement> dbAds, int seekerID, bool isSaveOnly)
+        private async Task<IEnumerable<AdvertisementShortDto>> CreateSeekerAdvertisementList(IEnumerable<Advertisement> dbAds, Seeker seeker, bool isSaveOnly)
         {
             var adCardDtos = new List<AdvertisementShortDto>();
-
-            Seeker seeker = await _seekerService.GetById(seekerID);
 
             // hold the company and and the company logo to increase the performance of searching blob url
             Dictionary<int, (string company_name, string company_logo)> recentAccessedCompanies = new Dictionary<int, (string, string)>();
@@ -853,31 +872,10 @@ namespace FirstStep.Services
             return filteredAdvertisements;
         }
 
-        private async Task<List<Advertisement>> FindMatchingAdvertisements(int seekerID)
+        private async Task<List<Advertisement>> FindMatchingAdvertisements(Seeker seeker, float longitude, float latitude)
         {
-            var seeker = await _seekerService.GetById(seekerID);
-
             // get all active advertisements in seeker's field
-            var advertisements = await FindBySeekerJobFieldID(seekerID);
-
-            if (seeker.skills!.Count <= 0)
-            {
-                // when seeker has no skills, return all advertisements in the seeker's field
-                return advertisements.ToList();
-            }
-
-            // hold advertisements that match with the seeker's skills
-            Dictionary<Advertisement, float> matchingAdvertisements = FindAdvertisementsMatchingWithSkills(seeker, advertisements);
-
-            return matchingAdvertisements.Keys.ToList();
-        }
-
-        private async Task<List<Advertisement>> FindMatchingAdvertisements(int seekerID, float longitude, float latitude)
-        {
-            var seeker = await _seekerService.GetById(seekerID);
-
-            // get all active advertisements in seeker's field
-            var advertisements = await FindBySeekerJobFieldID(seekerID);
+            var advertisements = await FindBySeekerJobFieldID(seeker.user_id);
 
             if (seeker.skills!.Count() <= 0)
             {
