@@ -56,6 +56,8 @@ namespace FirstStep.Services
             // delete all appointments for the advertisement
             advertisement.appointments!.Clear();
 
+            appointment.status = Appointment.Status.Pending.ToString();
+
             // change advertisement status to interview
             advertisement.current_status = Advertisement.Status.interview.ToString();
             advertisement.interview_duration = newAppointmentDto.duration;
@@ -147,6 +149,40 @@ namespace FirstStep.Services
             appointment.status = Appointment.Status.Booked.ToString();
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date)
+        {
+            return await _context.Appointments
+                .Include(a => a.advertisement)
+                .Include(a => a.seeker)
+                .Where(a => a.start_time.Date == date.Date)
+                .Select(a => new dailyInterviewDto
+                {
+                    appointment_id = a.appointment_id,
+                    status = Enum.Parse<Appointment.Status>(a.status, true), // Parse with case-insensitivity
+                    start_time = a.start_time,
+                    end_time = a.start_time.AddMinutes(a.advertisement.interview_duration), 
+                    title = a.advertisement.title,
+                    first_name = a.seeker != null ? a.seeker.first_name : "N/A",
+                    last_name = a.seeker != null ? a.seeker.last_name : "N/A"  
+                }).ToListAsync();
+        }
+
+
+        public async Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus)
+        {
+            var appointment = await FindById(appointment_id);
+            // Check if the appointment can be updated
+            if (appointment == null || appointment.status == Appointment.Status.Missed.ToString() || appointment.status == Appointment.Status.Complete.ToString())
+            {
+                return false;
+            }
+
+            appointment.status = newStatus.ToString();
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<AppointmentAvailableDto> GetAvailabelSlots(int advertisment_id)

@@ -71,20 +71,35 @@ namespace FirstStep.Controllers
             return Ok();
         }
 
-        private ActionResult ReturnStatusCode(Exception e)
+        // Fetch schedules by date
+        [HttpGet]
+        [Route("GetByDate/{date}")]
+        public async Task<ActionResult<List<dailyInterviewDto>>> GetSchedulesByDate(DateTime date)
         {
-            if (e is InvalidDataException)
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, e.Message);
-            }
-            else if (e is NullReferenceException)
-            {
-                return StatusCode(StatusCodes.Status404NotFound, e.Message);
-            }
-            else
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            var schedules = await _appointmentService.GetSchedulesByDate(date);
+            return Ok(schedules);
         }
+
+
+        // Update the status of an interview
+        [HttpPatch]
+        [Route("UpdateStatus/appointment={appointment_id:int}/status={newStatus}")]
+        public async Task<IActionResult> UpdateInterviewStatus(int appointment_id, string newStatus)
+        {
+            // Validate the status value
+            if (!Enum.TryParse<Appointment.Status>(newStatus, true, out var appointmentStatus))
+            {
+                return BadRequest("Invalid status value.");
+            }
+
+            var result = await _appointmentService.UpdateInterviewStatus(appointment_id, appointmentStatus);
+            if (!result)
+            {
+                return BadRequest("Unable to update status or status change not allowed.");
+            }
+
+            return NoContent();
+        }
+
     }
 }
