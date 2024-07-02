@@ -1063,7 +1063,7 @@ namespace FirstStep.Services
             }
 
             // sort by a number of matching skills in acending order
-            matchingAdvertisements = matchingAdvertisements.OrderByDescending(e => e.Value).ToDictionary(e => e.Key, e => e.Value);
+            matchingAdvertisements = matchingAdvertisements.ToDictionary(e => e.Key, e => e.Value);
 
             return matchingAdvertisements;
         }
