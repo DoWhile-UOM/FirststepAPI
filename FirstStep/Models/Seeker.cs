@@ -20,6 +20,10 @@ namespace FirstStep.Models
 
         public string? linkedin { get; set; }
 
+        public string? country { get; set; }
+
+        public string? city { get; set; }
+
 
         [JsonIgnore]
         public virtual JobField? job_Field { get; set; }
