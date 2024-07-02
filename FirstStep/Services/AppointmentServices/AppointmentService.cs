@@ -56,8 +56,6 @@ namespace FirstStep.Services
             // delete all appointments for the advertisement
             advertisement.appointments!.Clear();
 
-            appointment.status = Appointment.Status.Pending.ToString();
-
             // change advertisement status to interview
             advertisement.current_status = Advertisement.Status.interview.ToString();
             advertisement.interview_duration = newAppointmentDto.duration;
@@ -162,7 +160,7 @@ namespace FirstStep.Services
                     appointment_id = a.appointment_id,
                     status = Enum.Parse<Appointment.Status>(a.status, true), // Parse with case-insensitivity
                     start_time = a.start_time,
-                    end_time = a.start_time.AddMinutes(a.advertisement.interview_duration), 
+                    end_time = a.start_time.AddMinutes(a.advertisement!.interview_duration), 
                     title = a.advertisement.title,
                     first_name = a.seeker != null ? a.seeker.first_name : "N/A",
                     last_name = a.seeker != null ? a.seeker.last_name : "N/A"  
@@ -260,6 +258,8 @@ namespace FirstStep.Services
 
             return appointmentAvailable;
         }
+
+
 
 
 

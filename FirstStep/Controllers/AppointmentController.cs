@@ -101,5 +101,21 @@ namespace FirstStep.Controllers
             return NoContent();
         }
 
+        private ActionResult ReturnStatusCode(Exception e)
+        {
+            if (e is InvalidDataException)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.Message);
+            }
+            else if (e is NullReferenceException)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, e.Message);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
     }
 }
