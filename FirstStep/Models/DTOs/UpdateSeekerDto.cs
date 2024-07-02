@@ -28,6 +28,10 @@ namespace FirstStep.Models.DTOs
 
         public int field_id { get; set; }
 
+        public required string country { get; set; }
+
+        public required string city { get; set; }
+
         public List<string>? seekerSkills { get; set; }
 
         public IFormFile? cvFile { get; set; }

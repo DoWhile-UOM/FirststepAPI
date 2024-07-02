@@ -307,6 +307,12 @@ namespace FirstStep.Services
             // map the AddAdvertisementDto to a Advertisement object
             Advertisement newAdvertisement = _mapper.Map<Advertisement>(advertisementDto);
 
+            // get the geometry coordinates of the city
+            Coordinate coordinate = await Map.GetCoordinates(advertisementDto.city.ToLower());
+
+            newAdvertisement.longitude = (float)coordinate.Longitude;
+            newAdvertisement.latitude = (float)coordinate.Latitude;
+
             // add keywords to the advertisement
             newAdvertisement.professionKeywords = await IncludeKeywordsToAdvertisement(advertisementDto.keywords, newAdvertisement.field_id);
 

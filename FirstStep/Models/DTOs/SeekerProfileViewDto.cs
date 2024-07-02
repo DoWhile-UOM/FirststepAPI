@@ -22,6 +22,10 @@
 
         public required int field_id { get; set; }
 
+        public required string country { get; set; }
+
+        public required string city { get; set; }
+
         public int user_id { get; set; }
 
         public required string cVurl { get; set; }
