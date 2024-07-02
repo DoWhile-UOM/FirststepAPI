@@ -184,6 +184,8 @@ namespace FirstStep.Services
             dbSeeker.university = updateDto.university;
             dbSeeker.linkedin = updateDto.linkedin;
             dbSeeker.field_id = updateDto.field_id;
+            dbSeeker.city = updateDto.city;
+            dbSeeker.country = updateDto.country;
 
             dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
 
