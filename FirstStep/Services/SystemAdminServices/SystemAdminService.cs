@@ -2,7 +2,6 @@
 using FirstStep.Helper;
 using FirstStep.Models;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
 
 namespace FirstStep.Services
 {
@@ -10,7 +9,8 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
 
-        public SystemAdminService(DataContext context) {
+        public SystemAdminService(DataContext context)
+        {
             _context = context;
         }
 
@@ -54,7 +54,7 @@ namespace FirstStep.Services
 
         public async Task Update(SystemAdmin systemAdmin)
         {
-            SystemAdmin dbSystemAdmin= await GetById(systemAdmin.user_id);
+            SystemAdmin dbSystemAdmin = await GetById(systemAdmin.user_id);
 
             dbSystemAdmin.first_name = systemAdmin.first_name;
             dbSystemAdmin.last_name = systemAdmin.last_name;

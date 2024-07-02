@@ -15,5 +15,6 @@
         public DateTime posted_date { get; set; }
         public bool is_saved { get; set; }
         public bool is_expired { get; set; }
+        public bool can_apply { get; set; }
     }
 }

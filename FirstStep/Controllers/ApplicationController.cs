@@ -1,4 +1,5 @@
-﻿using FirstStep.Models;
+﻿using FirstStep.Exceptions;
+using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
@@ -116,16 +117,48 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpGet("GetSelectedApplicationsDetails/{advertisementId}")]
+        public async Task<IActionResult> GetSelectedApplicationDetails(int advertisementId)
+        {  
+            try
+            {
+                var applicationSelectedDto = await _service.GetSelectedApplicationsDetails(advertisementId);
+                return Ok(applicationSelectedDto);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
 
 
+        }
 
 
         [HttpPost]
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
         {
-            await _service.SubmitApplication(newApplication);
-            return Ok();
+            try
+            {
+                await _service.SubmitApplication(newApplication);
+                return Ok();
+            }
+            catch (InvalidDataException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (ApplicationAlreadyExistsException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         [HttpPut]
@@ -143,6 +176,8 @@ namespace FirstStep.Controllers
             await _service.Update(reqApplication);
             return Ok($"Successfully Updated Application ID: {reqApplication.application_Id}");
         }
+
+      
 
         [HttpPatch]
         [Route("DelegateTask/jobID={jobID}")]
@@ -165,6 +200,16 @@ namespace FirstStep.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
             }
+        }
+
+
+        //set the application isCalled to true 
+        [HttpPatch]
+        [Route("SetToInterview")]
+        public async Task<IActionResult> SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto)
+        {
+            await _service.SetToInterview(updateApplicationStatusDto);
+            return Ok("Successfully updated isCalled status.");
         }
 
 

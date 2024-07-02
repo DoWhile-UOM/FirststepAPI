@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace FirstStep.Models
 {
+    [Index(nameof(title), nameof(current_status))]
     public class Advertisement
     {   
         [Key]

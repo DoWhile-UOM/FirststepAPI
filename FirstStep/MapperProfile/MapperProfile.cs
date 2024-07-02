@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using FirstStep.Models.ServiceModels;
 
 namespace FirstStep.MapperProfile
 {
@@ -56,7 +57,10 @@ namespace FirstStep.MapperProfile
             CreateMap<AddEmployeeDto, HRAssistant>();
             CreateMap<AddCompanyAdminDto, HRManager>();
             CreateMap<Company, CompanyProfileDetailsDto>();
-            CreateMap<User,UpdateEmployeeDto>();
+            CreateMap<User, ActiveUsers>()
+              .ForMember(dest => dest.user_id, opt => opt.MapFrom(src => src.user_id))
+              .ForMember(dest => dest.user_type, opt => opt.MapFrom(src => src.user_type));
+            CreateMap<User,UserDto>();
 
             CreateMap<Application, ApplicationListDto>()
                 .ForMember(
@@ -85,6 +89,10 @@ namespace FirstStep.MapperProfile
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
 
             CreateMap<Application, ApplicationStatusDto>();
+            CreateMap<Application, ApplicationSelectedDto>();
+            //map application to update application status dto
+            CreateMap<UpdateApplicationStatusDto,Application>();
+
 
             CreateMap<AddAppointmentDto, Appointment>();
         }

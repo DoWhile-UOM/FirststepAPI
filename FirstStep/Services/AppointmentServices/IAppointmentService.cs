@@ -11,10 +11,11 @@ namespace FirstStep.Services
 
         Task BookAppointment(int appointment_id, int seeker_id);
 
-        Task DummyService(int? test);
-
         Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date);
 
         Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus);
+
+        Task<AppointmentAvailableDto> GetAvailabelSlots(int advertisment_id);
+
     }
 }

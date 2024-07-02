@@ -28,5 +28,10 @@
     {
         public ApplicationNotFoundException(string message) : base(message) { }
     }
+
+    public class ApplicationAlreadyExistsException : ApplicationException
+    {
+        public ApplicationAlreadyExistsException(string message) : base(message) { }
+    }
 }
 

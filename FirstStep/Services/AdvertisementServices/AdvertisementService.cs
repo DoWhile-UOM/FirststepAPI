@@ -351,7 +351,7 @@ namespace FirstStep.Services
             {
                 advertisement.expired_date = null;
             }
-            else
+            else if (newStatus == Advertisement.Status.hold.ToString())
             {
                 // set submission deadline to the current date, because need to block application submition anymore
                 advertisement.submission_deadline = DateTime.Now;
@@ -364,7 +364,10 @@ namespace FirstStep.Services
                     // execute task delegation on expired advertisements
                     await _applicationService.InitiateTaskDelegation(advertisement);
                 }
-                catch { }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
 
             await _context.SaveChangesAsync();
@@ -612,6 +615,9 @@ namespace FirstStep.Services
 
                 // check whether the advertisement is expired or not
                 adDto.is_expired = AdvertisementValidation.IsExpired(ad);
+
+                // check whether seeker can apply to the advertisement
+                adDto.can_apply = AdvertisementValidation.CanApply(seeker.applications, ad.advertisement_id);
 
                 company_id = ad.hrManager!.company_id;
 
@@ -873,9 +879,7 @@ namespace FirstStep.Services
             // get all active advertisements in seeker's field
             var advertisements = await FindBySeekerJobFieldID(seekerID);
 
-            Console.WriteLine(seeker.skills);
-
-            if (seeker.skills!.Count() <= 1)
+            if (seeker.skills!.Count() <= 0)
             {
                 // when seeker has no skills, return all advertisements in the seeker's field by lowest distance to highest
                 return await FindNearestAdvertisements(advertisements, longitude, latitude);

@@ -32,19 +32,27 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetUser/{userId:int}")]
-        public async Task<IActionResult> GetUserById(int user_id)
+        [Route("GetUser/userId={userId:int}")]
+        public async Task<IActionResult> GetUserById(int userId)
         {
-            UpdateEmployeeDto? employee = await _userService.GetUserById(user_id);
-            if (employee is null)
+            UserDto? user = await _userService.GetUserById(userId);
+            if (user is null)
             {
                 return NoContent();
             }
-            return Ok(employee);
+            return Ok(user);
+        }
+
+        [HttpGet]
+        [Route("GetLoggingsDetails")]
+        public async Task<ActionResult<LoggingsDto>> GetLoggings()
+        {
+            var loggingsDto = await _userService.GetLoggingsOfUsersAsync();
+            return Ok(loggingsDto);
         }
 
         [HttpPost]
-        [Route("authenticate")]
+        [Route("Authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] LoginRequestDto userObj)
         {
             try
@@ -66,7 +74,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPost]
-        [Route("refresh")]
+        [Route("Refresh")]
         public async Task<IActionResult> Refresh([FromBody] TokenApiDto tokenApiDto)
         {
             try
@@ -86,6 +94,39 @@ namespace FirstStep.Controllers
                 return BadRequest(e.Message);
             }
         }
+        
+        [HttpPost]
+        [Route("RestPasswordRequest/{userEmail}")]
+        public async Task<IActionResult> ResetPassReuest(string userEmail)
+        {
+            try
+            {
+                await _userService.ResetPasswordRequest(userEmail);
+                return Ok("Password Reset Link Sent");
+
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpPost]
+        [Route("RestPassword")]
+        public async Task<IActionResult> ResetPass([FromBody] PasswordResetDto userObj)
+        {
+            try
+            {
+                await _userService.ResetPassword(userObj);
+                return Ok("Password Reset Was Succesful");
+
+
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
 
         [HttpPut]
         [Route("UpdateUser")]
@@ -97,6 +138,22 @@ namespace FirstStep.Controllers
             }
             await _userService.UpdateUser(user);
             return Ok();
+        }
+        
+        private ActionResult ReturnStatusCode(Exception e)
+        {
+            if (e is InvalidDataException)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.Message);
+            }
+            else if (e is NullReferenceException)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, e.Message);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
     }
 }
