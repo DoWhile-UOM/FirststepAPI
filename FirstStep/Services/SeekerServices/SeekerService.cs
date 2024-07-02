@@ -3,6 +3,7 @@ using FirstStep.Data;
 using FirstStep.Helper;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
+using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstStep.Services
@@ -72,6 +73,8 @@ namespace FirstStep.Services
                 profile_picture = profilePictureUrl, // Updated to fetch URL from file service
                 linkedin = seeker.linkedin,
                 field_id = seeker.field_id,
+                country = seeker.country!,
+                city = seeker.city!,
                 seekerSkills = seeker.skills?.Select(s => s.skill_name).ToList()
             };
 
@@ -145,6 +148,10 @@ namespace FirstStep.Services
                 seeker.profile_picture = await _fileService.UploadFile(newSeeker.profilePictureFile);
             }
 
+            Coordinate coordinate = await Map.GetCoordinates(newSeeker.city);
+            seeker.latitude = (float) coordinate.Latitude;
+            seeker.longitude = (float) coordinate.Longitude;
+
             _context.Seekers.Add(seeker);
             await _context.SaveChangesAsync();
         }
@@ -180,6 +187,10 @@ namespace FirstStep.Services
 
             dbSeeker.skills = await IncludeSkillsToSeeker(updateDto.seekerSkills);
 
+            Coordinate coordinate = await Map.GetCoordinates(updateDto.city);
+            dbSeeker.latitude = (float)coordinate.Latitude;
+            dbSeeker.longitude = (float)coordinate.Longitude;
+
             if (updateDto.cvFile != null)
             {
                 // remove previous CV file
@@ -203,6 +214,7 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
+
         private async Task<ICollection<Skill>?> IncludeSkillsToSeeker(ICollection<string>? newSkills)
         {
             var skills = new List<Skill>();
@@ -261,6 +273,8 @@ namespace FirstStep.Services
                 field_id = seeker.field_id,
                 user_id = seeker.user_id,
                 cVurl = cvUrl,
+                country = seeker.country!,
+                city = seeker.city!,
                 seekerSkills = seeker.skills?.Select(s => s.skill_name).ToList()
             };
         }

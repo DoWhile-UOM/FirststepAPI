@@ -26,6 +26,10 @@
 
         public string? description { get; set; }
 
+        public required string country { get; set; }
+
+        public required string city { get; set; }
+
         public virtual List<string>? seekerSkills { get; set; }
 
         public IFormFile? cvFile { get; set; }

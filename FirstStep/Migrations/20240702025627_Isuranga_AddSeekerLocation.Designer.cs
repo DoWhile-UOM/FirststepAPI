@@ -4,6 +4,7 @@ using FirstStep.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Firststep.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240702025627_Isuranga_AddSeekerLocation")]
+    partial class Isuranga_AddSeekerLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,12 +130,6 @@ namespace Firststep.Migrations
 
                     b.Property<int?>("job_number")
                         .HasColumnType("int");
-
-                    b.Property<float>("latitude")
-                        .HasColumnType("real");
-
-                    b.Property<float>("longitude")
-                        .HasColumnType("real");
 
                     b.Property<DateTime>("posted_date")
                         .HasColumnType("datetime2");
@@ -511,14 +508,8 @@ namespace Firststep.Migrations
                     b.Property<int>("field_id")
                         .HasColumnType("int");
 
-                    b.Property<float>("latitude")
-                        .HasColumnType("real");
-
                     b.Property<string>("linkedin")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<float>("longitude")
-                        .HasColumnType("real");
 
                     b.Property<int>("phone_number")
                         .HasColumnType("int");
