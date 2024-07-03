@@ -239,11 +239,11 @@ namespace FirstStep.Services
 
             if (companyRegInfo.verification_status == true)
             {
-                link = "http://localhost:4200/RegCompanyAdmin?id=" + rejectedLink;
+                link = "https://polite-forest-041105700.5.azurestaticapps.net/RegCompanyAdmin?id=" + rejectedLink;
             }
             else
             {
-                link = "http://localhost:4200/RegCheck?id=" + rejectedLink;
+                link = "https://polite-forest-041105700.5.azurestaticapps.net/RegCheck?id=" + rejectedLink;
             }
 
             _emailService.EvaluatedCompanyRegistraionApplicationEmail(unRegCompany.company_email, companyRegInfo.verification_status, companyRegInfo.comment, link, unRegCompany.company_name);
