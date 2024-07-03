@@ -128,14 +128,32 @@ namespace FirstStep.Services
             return await CreateFirstPageResults(dbAds, seekerID, noOfresultsPerPage);
         }
 
-        public async Task<AdvertisementDto> GetById(int id)
+        public async Task<AdvertisementDto> GetById(int id, int seekerID)
         {
+            Seeker seeker = await _seekerService.GetById(seekerID);
+
             var dbAdvertismeent = await FindById(id);
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
             advertisementDto.company_name = dbAdvertismeent.hrManager!.company!.company_name;
             advertisementDto.company_logo_url = await _fileService.GetBlobUrl(dbAdvertismeent.hrManager!.company!.company_logo!);
             advertisementDto.is_expired = AdvertisementValidation.IsExpired(dbAdvertismeent);
+
+            // find matching skills and missing skills
+            advertisementDto.matchingSkills = new List<Skill> { };
+            advertisementDto.missingSkills = new List<Skill> { };
+
+            foreach (var skill in dbAdvertismeent.skills!)
+            {
+                if (seeker.skills!.Contains(skill))
+                {
+                    advertisementDto.matchingSkills.Add(skill);
+                }
+                else
+                {
+                    advertisementDto.missingSkills.Add(skill);
+                }
+            }
 
             return advertisementDto;
         }
