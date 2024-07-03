@@ -47,6 +47,10 @@ namespace FirstStep.Models
 
         public int interview_duration { get; set; }
 
+        public float longitude { get; set; }
+
+        public float latitude { get; set; }
+
 
         [JsonIgnore]
         public virtual HRManager? hrManager { get; set; }
