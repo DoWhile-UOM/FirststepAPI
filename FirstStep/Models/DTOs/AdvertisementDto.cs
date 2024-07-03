@@ -18,6 +18,7 @@
         public string? company_logo_url { get; set; }
         public string? field_name { get; set; }
         public bool is_expired { get; set; }
-        public ICollection<Skill> skills { get; set; }
+        public ICollection<Skill> missingSkills { get; set; }
+        public ICollection<Skill> matchingSkills { get; set; }
     }
 }

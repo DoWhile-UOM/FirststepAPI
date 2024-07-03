@@ -58,7 +58,7 @@ namespace FirstStep.Services
         public async Task SendEmailCompanyRegistration(string email,string company_name, string applicationEvaluationStatusLink)
         {
             // Registration Email
-            applicationEvaluationStatusLink= " https://polite-forest-041105700.5.azurestaticapps.net/RegCheck?id=" + applicationEvaluationStatusLink;// this link will direct company to a page where the company can see its regirataion application evaluation status.
+            applicationEvaluationStatusLink= "https://polite-forest-041105700.5.azurestaticapps.net/RegCheck?id=" + applicationEvaluationStatusLink;// this link will direct company to a page where the company can see its regirataion application evaluation status.
                 
             EmailModel request = new();
             var builder = new BodyBuilder();
