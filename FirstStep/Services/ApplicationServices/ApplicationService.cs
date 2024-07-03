@@ -6,6 +6,9 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace FirstStep.Services
 {
@@ -433,7 +436,8 @@ namespace FirstStep.Services
             }
 
             // Delegate tasks to HR assistants
-            await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
+            //await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
+            await DelegateApplications(hrAssistants.ToList(), applicationsForEvaluation);
         }
 
         private async Task<List<Application>?> GetApplicationsForTaskDelegation(Advertisement advertisement, IEnumerable<Employee> hrAssistants)
@@ -470,6 +474,59 @@ namespace FirstStep.Services
                 applications[(noOfHrAssistants * noOfApplicationsPerAssistant + i)].assigned_hrAssistant_id = hrAssistants[i].user_id;
                 await Update(applications[(noOfHrAssistants * noOfApplicationsPerAssistant + i)]);
             }
+        }
+
+        //new task delegation
+
+        //get the of non evaluated applications per hr assistant
+        private async Task<IEnumerable<Application>> GetAllNotScreenedApplicationsByHrAssistantAsync(int assigned_hrAssistant_id)
+        {
+            return await _context.Applications
+            .Where(a => a.assigned_hrAssistant_id == assigned_hrAssistant_id && a.status == "Screening")
+            .ToListAsync();
+        }
+        
+        public async Task DelegateApplications(List<Employee> hrAssistants, List<Application> applications)
+        {
+           
+            var remainingApplications = applications.Count % hrAssistants.Count;
+            var noOfApplicationsPerAssistant = (applications.Count - remainingApplications) / hrAssistants.Count;
+            var noOfHrAssistants = hrAssistants.Count;
+
+            var hrAssistantNotScreenedApplications = new List<(int id, int notScreenedCount)>();
+
+            for (int i = 0; i < noOfHrAssistants; i++)
+            {
+                for (int j = 0; j < noOfApplicationsPerAssistant; j++)
+                {
+                    applications[(i * noOfApplicationsPerAssistant + j)].assigned_hrAssistant_id = hrAssistants[i].user_id;
+                    await Update(applications[(i * noOfApplicationsPerAssistant + j)]);
+                }
+            }
+
+            //getting a list of yetToScreenAppplications count of each hr_assistant(talent aqusition speacilist)
+            foreach (var hrAssistant in hrAssistants)
+            {
+               if(hrAssistant is null)
+                {
+                    throw new NullReferenceException("No talent aqusition speacialists.");
+                }
+
+               var yetToScreenApplications = await GetAllNotScreenedApplicationsByHrAssistantAsync(hrAssistant.user_id);
+                hrAssistantNotScreenedApplications.Add((hrAssistant.user_id, yetToScreenApplications.Count()));
+
+            }
+            //sorting the hr_assistants by the yetToScreenApplicationcount
+            // Sort the list using List<T>.Sort with a custom comparer
+            hrAssistantNotScreenedApplications.Sort((x, y) => x.notScreenedCount.CompareTo(y.notScreenedCount));
+
+            //assigning applications to the hr_assistants who got to screen least amount of applications
+            for (int i = 0; i < remainingApplications; i++)
+            {
+                applications[(noOfHrAssistants * noOfApplicationsPerAssistant + i)].assigned_hrAssistant_id = hrAssistantNotScreenedApplications[i].id;
+                await Update(applications[(noOfHrAssistants * noOfApplicationsPerAssistant + i)]);
+            }
+
         }
         //tasks delegation ends here
 
@@ -517,7 +574,7 @@ namespace FirstStep.Services
             {
                 revision_id = r.revision_id,
                 comment = r.comment,
-                status = r.status,
+                status = r.status,  
                 created_date = r.date,
                 employee_name = r.employee!.first_name + " " + r.employee!.last_name,
                 employee_role = r.employee!.user_type
