@@ -42,13 +42,5 @@ namespace FirstStep.Services
         public Task<IEnumerable<ApplicationSelectedDto>> GetSelectedApplicationsDetails(int advertisementId);
 
         public Task SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto);
-
-
-
-
-
-
-
-
     }
 }

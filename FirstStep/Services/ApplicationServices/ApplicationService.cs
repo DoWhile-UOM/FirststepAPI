@@ -492,7 +492,6 @@ namespace FirstStep.Services
 
             var applicationStatus = new ApplicationStatusDto
             {
-                //assign GetBlobUrl to dto cv name
                 cv_name = await _fileService.GetBlobUrl(application.CVurl!),
                 submitted_date = application.submitted_date,
                 status = "",
