@@ -44,7 +44,9 @@ namespace FirstStep.MapperProfile
 
             CreateMap<Advertisement, AdvertisementTableRowDto>();
             CreateMap<Advertisement, AdvertisementHRATableRowDto>();
-            
+            CreateMap<Advertisement, AdvertismentTitleDto>();
+
+
             CreateMap<SeekerApplicationDto, Seeker>();
             CreateMap<Company, CompanyProfileDto>();
             CreateMap<Seeker, SeekerApplicationDto>();

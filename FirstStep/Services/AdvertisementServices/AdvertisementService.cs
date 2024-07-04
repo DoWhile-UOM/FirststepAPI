@@ -185,6 +185,26 @@ namespace FirstStep.Services
             return CreateCompanyAdvertisementList(dbAdvertisements, status, employee);
         }
 
+        //GetCompanyAdvertisementTitleList
+        public async Task<IEnumerable<AdvertismentTitleDto>> GetCompanyAdvertisementTitleList(int emp_id)
+        {
+            Employee? employee = await _context.Employees.FindAsync(emp_id);
+
+            if (employee is null)
+            {
+                throw new NullReferenceException("Employee is not found");
+            }
+
+            var dbAdvertisements = await FindByCompanyID(employee.company_id);
+
+            return dbAdvertisements.Select(e => new AdvertismentTitleDto
+            {
+                advertisement_id = e.advertisement_id,
+                advertisement_title = e.title
+            }).ToList();
+        }
+
+
         public async Task<IEnumerable<AdvertisementTableRowDto>> GetCompanyAdvertisementList(int emp_id, string status, string title)
         {
             AdvertisementValidation.CheckStatus(status);

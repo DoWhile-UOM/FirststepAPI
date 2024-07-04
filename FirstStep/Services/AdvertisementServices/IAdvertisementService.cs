@@ -18,6 +18,8 @@ namespace FirstStep.Services
         Task<UpdateAdvertisementDto> GetByIdWithKeywords(int id);
 
         Task<IEnumerable<Advertisement>> GetByCompanyID(int companyID);
+       
+        Task<IEnumerable<AdvertismentTitleDto>> GetCompanyAdvertisementTitleList(int emp_id);
 
         Task<IEnumerable<AdvertisementTableRowDto>> GetCompanyAdvertisementList(int emp_id, string status);
 

@@ -115,6 +115,21 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
+        [Route("GetCompanyAdvertisementTitleList/{emp_id:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertismentTitleDto>>> GetCompanyAdvertisementTitleList(int emp_id)
+        {
+            try
+            {
+                return Ok(await _service.GetCompanyAdvertisementTitleList(emp_id));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+
+        [HttpGet]
         [Route("GetCompanyAdvertisementList/{emp_id:int}/filterby={status}/title={title}")]
         public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetCompanyAdvertisementList(int emp_id, string status, string title)
         {
