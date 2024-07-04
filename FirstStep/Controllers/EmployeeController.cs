@@ -52,6 +52,13 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetAllEmployees(company_Id));
         }
 
+        [HttpGet]
+        [Route("GetEmployeeStats/{company_Id:int}")]
+        public async Task<ActionResult<EmployeeStatDto>> GetEmployeeStats(int company_Id)
+        {
+            var employeeStats = await _service.GetEmployeeStats(company_Id);
+            return Ok(employeeStats);
+        }
 
         [HttpPost]
         [Route("AddNewHRManager")]

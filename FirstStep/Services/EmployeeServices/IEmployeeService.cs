@@ -30,5 +30,6 @@ namespace FirstStep.Services
         public Task Update(int id, UserDto employee);
 
         public Task Delete(int id);
+        public Task<EmployeeStatDto> GetEmployeeStats(int company_Id);
     }
 }
