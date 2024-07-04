@@ -129,16 +129,14 @@ namespace FirstStep.Services
 
         public async Task BookAppointment(int appointment_id, int seeker_id)
         {
-            var appointment = await _context.Appointments.
-                Include(a => a.seeker)
-                .Include(a=>a.seeker!.appointments)
+            var appointment = await _context.Appointments
+                .Include(a => a.seeker)
                 .FirstOrDefaultAsync(a => a.appointment_id == appointment_id);
 
             if (appointment == null)
             {
                 throw new Exception("Appointment not found");
             }
-
 
             // check the appointment is assigned to an advertisement
             if (appointment.advertisement_id == null)
@@ -147,20 +145,24 @@ namespace FirstStep.Services
             }
 
             // check the seeker is exist
-            var seeker = await _context.Seekers.FindAsync(seeker_id);
+            var seeker = await _context.Seekers
+                .Include(a => a.appointments)
+                .FirstOrDefaultAsync(a => a.user_id == seeker_id);
+
             if (seeker == null)
             {
                 throw new Exception("Seeker not found");
             }
-            if(appointment.seeker_id!=null)
+
+            if(appointment.seeker_id != null)
             {
                 throw new Exception("Appointment is already booked");
             }
 
             //check whether seeker is already booked for the appointment
-            if (appointment.seeker!.appointments!.Any(a => a.advertisement_id == appointment.advertisement_id))
+            if (seeker.appointments!.Any(a => a.advertisement_id == appointment.advertisement_id))
             {
-                throw new Exception("Seeker is already booked for the appointment");
+                throw new Exception("Seeker is already booked an appoinment for the advertisement");
             }
 
             appointment.status = Appointment.Status.Booked.ToString();
