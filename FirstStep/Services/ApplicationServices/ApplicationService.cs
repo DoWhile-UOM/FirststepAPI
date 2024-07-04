@@ -482,7 +482,7 @@ namespace FirstStep.Services
         private async Task<IEnumerable<Application>> GetAllNotScreenedApplicationsByHrAssistantAsync(int assigned_hrAssistant_id)
         {
             return await _context.Applications
-            .Where(a => a.assigned_hrAssistant_id == assigned_hrAssistant_id && a.status == "Screening")
+            .Where(a => a.assigned_hrAssistant_id == assigned_hrAssistant_id && a.status == "NotEvaluated")
             .ToListAsync();
         }
         
