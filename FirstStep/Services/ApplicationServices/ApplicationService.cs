@@ -134,20 +134,20 @@ namespace FirstStep.Services
             {
                 //use default cv use in the seeker profile
                 var seeker = await _context.Seekers.FindAsync(newApplicationDto.seeker_id);
-                
+
                 //handle the case where the seeker is not found
                 if (seeker == null)
                 {
                     throw new InvalidDataException("Seeker not found.");
                 }
-                
+
                 newApplication.CVurl = seeker.CVurl;
             }
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();
         }
-        
+
         public async Task Delete(int id)
         {
             Application application = await FindById(id);
@@ -292,9 +292,9 @@ namespace FirstStep.Services
         {
             var application = await FindById(id);
 
-            if (application is null) 
-            { 
-                throw new NullReferenceException("Application not found."); 
+            if (application is null)
+            {
+                throw new NullReferenceException("Application not found.");
             }
 
             // Get the latest revision
@@ -308,7 +308,7 @@ namespace FirstStep.Services
             applicationDto.seeker_id = application.seeker_id;
 
             //applicationDto.cVurl = application.CVurl!; // when this is defualt cv, get from the seeker's profile
-           
+
             // Fetch CV URL and profile picture URL from the file service
             var cvUrl = application.CVurl != null ? await _fileService.GetBlobUrl(application.CVurl) : await _fileService.GetBlobUrl(application.seeker!.CVurl);
             var profilePictureUrl = application.seeker!.profile_picture != null ? await _fileService.GetBlobUrl(application.seeker.profile_picture) : null;
@@ -504,7 +504,7 @@ namespace FirstStep.Services
 
             return applicationStatus;
         }
-        
+
         public async Task<IEnumerable<RevisionHistoryDto>> GetRevisionHistory(int applicationId)
         {
             var revisions = await _context.Revisions
@@ -558,6 +558,11 @@ namespace FirstStep.Services
         {
             var applications = await _context.Applications
                 .Include(a => a.revisions)
+                .Include(a => a.advertisement) // Include Advertisement to join with Appointment
+                .ToListAsync();
+
+            var appointments = await _context.Appointments
+                .Include(a => a.advertisement) // Include Advertisement to join with Application
                 .ToListAsync();
 
             double totalResponseTime = 0;
@@ -587,11 +592,12 @@ namespace FirstStep.Services
                     screeningTimeCount++;
                 }
 
-                // Calculate completion time
-                if (application.submitted_date != null && application.revisions != null && application.revisions.Any())
+                // Calculate completion time based on appointment date
+                var appointment = appointments.FirstOrDefault(a => a.advertisement_id == application.advertisement_id);
+                if (application.submitted_date != null && appointment != null)
                 {
-                    var lastRevisionDate = application.revisions.OrderBy(r => r.date).Last().date;
-                    totalCompletionTime += (lastRevisionDate - application.submitted_date).TotalHours;
+                    var appointmentDate = appointment.start_time;
+                    totalCompletionTime += (appointmentDate - application.submitted_date).TotalHours;
                     completionTimeCount++;
                 }
             }
@@ -603,6 +609,8 @@ namespace FirstStep.Services
                 avgCompletionTime = completionTimeCount > 0 ? (totalCompletionTime / completionTimeCount) / 24 : 0
             };
         }
+
+
     }
 }
 
