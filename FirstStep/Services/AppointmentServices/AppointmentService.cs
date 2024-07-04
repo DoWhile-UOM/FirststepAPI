@@ -129,7 +129,16 @@ namespace FirstStep.Services
 
         public async Task BookAppointment(int appointment_id, int seeker_id)
         {
-            var appointment = await FindById(appointment_id);
+            var appointment = await _context.Appointments.
+                Include(a => a.seeker)
+                .Include(a=>a.seeker!.appointments)
+                .FirstOrDefaultAsync(a => a.appointment_id == appointment_id);
+
+            if (appointment == null)
+            {
+                throw new Exception("Appointment not found");
+            }
+
 
             // check the appointment is assigned to an advertisement
             if (appointment.advertisement_id == null)
@@ -143,8 +152,19 @@ namespace FirstStep.Services
             {
                 throw new Exception("Seeker not found");
             }
+            if(appointment.seeker_id!=null)
+            {
+                throw new Exception("Appointment is already booked");
+            }
+
+            //check whether seeker is already booked for the appointment
+            if (appointment.seeker!.appointments!.Any(a => a.advertisement_id == appointment.advertisement_id))
+            {
+                throw new Exception("Seeker is already booked for the appointment");
+            }
 
             appointment.status = Appointment.Status.Booked.ToString();
+            appointment.seeker_id = seeker_id;
 
             await _context.SaveChangesAsync();
         }
@@ -221,42 +241,38 @@ namespace FirstStep.Services
         }
 
 
-        public async Task<AppointmentAvailableDto> GetBookedAppointmentList(int advertisment_id)
+        public async Task<AppointmentDetailsDto> GetBookedAppointmentList(int advertisment_id)
         {
-            Advertisement? advertisement = await _context.Advertisements
-                .Include(x => x.appointments)
-                .Include(x => x.appointments!.Select(a => a.seeker))
-                .Include(x => x.hrManager!.company)
-                .FirstOrDefaultAsync(x => x.advertisement_id == advertisment_id && x.appointments!.Select(a => a.seeker_id)!=null);
+            AppointmentDetailsDto appointmentDetails = new AppointmentDetailsDto();
 
-            if (advertisement == null)
+            //get the appointments for the advertisement id
+            var appointments = await _context.Appointments
+                .Include("seeker")
+                .Where(a => a.advertisement_id == advertisment_id && a.seeker_id!=null && a.status==Appointment.Status.Booked.ToString())
+                .ToListAsync();
+
+            appointmentDetails.BookedAppointments = _mapper.Map<IEnumerable<AppointmentDto>>(appointments);
+
+            var freeApplication=await _context.Applications
+                .Include("seeker")
+                .Where(a => a.advertisement_id == advertisment_id && a.is_called==true)
+                .ToListAsync();
+
+            List <AppointmentDto> freeAppointmnets=new List<AppointmentDto>();
+
+            foreach (var application in freeApplication)
             {
-                throw new Exception("Advertisement not found");
+                if(appointments.Any(a=>a.seeker_id==application.seeker_id))
+                {
+                    continue;
+                }
+                freeAppointmnets.Add(_mapper.Map<AppointmentDto>(application));
             }
 
-            if (advertisement.current_status != Advertisement.Status.interview.ToString())
-            {
-                throw new Exception("Advertisement is not in the interview, therefore can't proceed.");
-            }
+            appointmentDetails.FreeAppointments = freeAppointmnets;
 
-            if (advertisement.appointments == null)
-            {
-                throw new Exception("No appointments found");
-            }
 
-            AppointmentAvailableDto appointmentAvailable = new AppointmentAvailableDto();
-
-            appointmentAvailable.slot = advertisement.appointments!.Select(x => new AppointmentAvailabelTimeDto
-            {
-                appointment_id = x.appointment_id,
-                start_time = x.start_time
-            }).ToList();
-
-            appointmentAvailable.title = advertisement.title;
-            appointmentAvailable.interview_duration = advertisement.interview_duration;
-            appointmentAvailable.company_name = advertisement.hrManager!.company!.company_name;
-
-            return appointmentAvailable;
+            return appointmentDetails;
         }
 
 

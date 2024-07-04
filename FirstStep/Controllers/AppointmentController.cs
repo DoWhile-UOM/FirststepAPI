@@ -37,7 +37,7 @@ namespace FirstStep.Controllers
         {
             try
             {
-                return Ok(await _appointmentService.GetAvailabelSlots(advertismentId));
+                return Ok(await _appointmentService.GetBookedAppointmentList(advertismentId));
             }
             catch (Exception e)
             {
@@ -53,8 +53,6 @@ namespace FirstStep.Controllers
             return Ok();
         }
 
-        [HttpPut]
-
         [HttpPatch]//Remove this cotroller only
         [Route("AssignToAdvertisement/appointment={appointment_id:int}/advertisement={advertisement_id:int}")]
         public async Task<IActionResult> AssignToAdvertisement(int appointment_id, int advertisement_id)
@@ -64,7 +62,7 @@ namespace FirstStep.Controllers
         }
 
         [HttpPatch]
-        [Route("BookAppointment/appointment={appointment_id:int}/seeker={seeker_id:int}")]
+        [Route("BookAppointment/{appointment_id:int}/{seeker_id:int}")]
         public async Task<IActionResult> BookAppointment(int appointment_id, int seeker_id)
         {
             await _appointmentService.BookAppointment(appointment_id, seeker_id);

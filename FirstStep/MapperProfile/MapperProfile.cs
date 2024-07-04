@@ -95,6 +95,16 @@ namespace FirstStep.MapperProfile
 
 
             CreateMap<AddAppointmentDto, Appointment>();
+
+            CreateMap<Appointment, AppointmentDto>()
+                .ForMember(
+                    des => des.seeker_name,
+                    opt => opt.MapFrom(src => src.seeker!.first_name + ' ' + src.seeker!.last_name));
+
+            CreateMap<Application, AppointmentDto>()
+                .ForMember(
+                des => des.seeker_name,
+                opt => opt.MapFrom(src => src.seeker!.first_name + ' ' + src.seeker!.last_name));
         }
     }
 }
