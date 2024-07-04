@@ -552,5 +552,58 @@ namespace FirstStep.Services
                 return "Rejected";
             }
         }
+
+        //Get Average times 
+        public async Task<AverageTimeDto> GetAverageTime()
+        {
+            var applications = await _context.Applications
+                .Include(a => a.revisions)
+                .ToListAsync();
+
+            double totalResponseTime = 0;
+            double totalScreeningTime = 0;
+            double totalCompletionTime = 0;
+
+            int responseTimeCount = 0;
+            int screeningTimeCount = 0;
+            int completionTimeCount = 0;
+
+            foreach (var application in applications)
+            {
+                // Calculate response time
+                if (application.submitted_date != null && application.revisions != null && application.revisions.Any())
+                {
+                    var firstRevisionDate = application.revisions.OrderBy(r => r.date).First().date;
+                    totalResponseTime += (firstRevisionDate - application.submitted_date).TotalHours;
+                    responseTimeCount++;
+                }
+
+                // Calculate screening time
+                if (application.revisions != null && application.revisions.Count > 1)
+                {
+                    var firstRevisionDate = application.revisions.OrderBy(r => r.date).First().date;
+                    var lastRevisionDate = application.revisions.OrderBy(r => r.date).Last().date;
+                    totalScreeningTime += (lastRevisionDate - firstRevisionDate).TotalHours;
+                    screeningTimeCount++;
+                }
+
+                // Calculate completion time
+                if (application.submitted_date != null && application.revisions != null && application.revisions.Any())
+                {
+                    var lastRevisionDate = application.revisions.OrderBy(r => r.date).Last().date;
+                    totalCompletionTime += (lastRevisionDate - application.submitted_date).TotalHours;
+                    completionTimeCount++;
+                }
+            }
+
+            return new AverageTimeDto
+            {
+                avgResponseTime = responseTimeCount > 0 ? totalResponseTime / responseTimeCount : 0,
+                avgScreeningTime = screeningTimeCount > 0 ? totalScreeningTime / screeningTimeCount : 0,
+                avgCompletionTime = completionTimeCount > 0 ? totalCompletionTime / completionTimeCount : 0
+            };
+        }
     }
 }
+
+

@@ -98,6 +98,14 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetAverageTime")]
+        public async Task<ActionResult<AverageTimeDto>> GetAverageTime()
+        {
+            var averageTimes = await _service.GetAverageTime();
+            return Ok(averageTimes);
+        }
+
         [HttpPost]
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
