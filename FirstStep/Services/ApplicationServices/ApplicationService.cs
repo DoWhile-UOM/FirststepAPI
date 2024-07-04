@@ -598,9 +598,9 @@ namespace FirstStep.Services
 
             return new AverageTimeDto
             {
-                avgResponseTime = responseTimeCount > 0 ? totalResponseTime / responseTimeCount : 0,
-                avgScreeningTime = screeningTimeCount > 0 ? totalScreeningTime / screeningTimeCount : 0,
-                avgCompletionTime = completionTimeCount > 0 ? totalCompletionTime / completionTimeCount : 0
+                avgResponseTime = responseTimeCount > 0 ? (totalResponseTime / responseTimeCount) / 24 : 0,
+                avgScreeningTime = screeningTimeCount > 0 ? (totalScreeningTime / screeningTimeCount) / 24 : 0,
+                avgCompletionTime = completionTimeCount > 0 ? (totalCompletionTime / completionTimeCount) / 24 : 0
             };
         }
     }
