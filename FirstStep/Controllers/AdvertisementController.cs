@@ -2,6 +2,7 @@
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Metadata.Ecma335;
 
 namespace FirstStep.Controllers
 {
@@ -115,21 +116,6 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetCompanyAdvertisementTitleList/{emp_id:int}")]
-        public async Task<ActionResult<IEnumerable<AdvertismentTitleDto>>> GetCompanyAdvertisementTitleList(int emp_id)
-        {
-            try
-            {
-                return Ok(await _service.GetCompanyAdvertisementTitleList(emp_id));
-            }
-            catch (Exception e)
-            {
-                return ReturnStatusCode(e);
-            }
-        }
-
-
-        [HttpGet]
         [Route("GetCompanyAdvertisementList/{emp_id:int}/filterby={status}/title={title}")]
         public async Task<ActionResult<IEnumerable<AdvertisementTableRowDto>>> GetCompanyAdvertisementList(int emp_id, string status, string title)
         {
@@ -184,6 +170,22 @@ namespace FirstStep.Controllers
                 return ReturnStatusCode(e);
             }
         }
+
+
+        [HttpGet]
+        [Route("GetCompanyAdvertisementTitleList/{companyID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertismentTitleDto>>> GetCompanyAdvertisementTitleList(int companyID)
+        {
+            try
+            {
+                return Ok(await _service.GetCompanyAdvertisementTitleList(companyID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
 
         [HttpPost]
         [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}/pageLength={pageLength:int}")]
