@@ -4,6 +4,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.Design;
 
 namespace FirstStep.Controllers
 {
@@ -99,10 +100,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAverageTime")]
-        public async Task<ActionResult<AverageTimeDto>> GetAverageTime()
+        [Route("GetAverageTime/{companyId:int}")]
+        public async Task<ActionResult<AverageTimeDto>> GetAverageTime(int companyId)
         {
-            var averageTimes = await _service.GetAverageTime();
+            var averageTimes = await _service.GetAverageTime(companyId);
             return Ok(averageTimes);
         }
 

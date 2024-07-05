@@ -38,6 +38,6 @@ namespace FirstStep.Services
         public Task<ApplicationStatusDto> GetApplicationStatus(int advertisementId, int seekerId);
 
         public string GetApplicationStatus(Application application);
-        public Task<AverageTimeDto> GetAverageTime();
+        public Task<AverageTimeDto> GetAverageTime(int companyId);
     }
 }

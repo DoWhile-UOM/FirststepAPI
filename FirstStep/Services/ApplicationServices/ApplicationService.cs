@@ -554,15 +554,19 @@ namespace FirstStep.Services
         }
 
         //Get Average times 
-        public async Task<AverageTimeDto> GetAverageTime()
+        public async Task<AverageTimeDto> GetAverageTime(int companyId)
         {
             var applications = await _context.Applications
                 .Include(a => a.revisions)
-                .Include(a => a.advertisement) // Include Advertisement to join with Appointment
+                .Include(a => a.advertisement)
+                .ThenInclude(ad => ad.hrManager)
+                .Where(a => a.advertisement.hrManager.company_id == companyId)
                 .ToListAsync();
 
             var appointments = await _context.Appointments
-                .Include(a => a.advertisement) // Include Advertisement to join with Application
+                .Include(a => a.advertisement)
+                .ThenInclude(ad => ad.hrManager)
+                .Where(a => a.advertisement.hrManager.company_id == companyId)
                 .ToListAsync();
 
             double totalResponseTime = 0;
