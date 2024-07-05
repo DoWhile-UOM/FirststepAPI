@@ -6,6 +6,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.Design;
 
 namespace FirstStep.Services
 {
@@ -551,6 +552,39 @@ namespace FirstStep.Services
             {
                 return "Rejected";
             }
+        }
+
+        //  ApplicationStatusCountDto to get status and application count for each status using company id
+        public async Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId)
+        {
+            // Get applications where the associated advertisement has the desired statuses and matches the company ID
+            var applications = await _context.Applications
+                .Include(a => a.advertisement)
+                .Where(a => a.advertisement!.hrManager!.company_id == companyId)
+                .ToListAsync();
+
+            var applicationStatusCount = new List<ApplicationStatusCountDto>();
+
+            //list of advertisement status to filter by
+            var advertisementStatuses = new List<string> {
+                Advertisement.Status.active.ToString(), 
+                Advertisement.Status.hold.ToString(),
+                Advertisement.Status.interview.ToString(),
+                Advertisement.Status.closed.ToString(),
+            };
+
+            //count the number of applications for each advertisment status
+            foreach (var status in advertisementStatuses)
+            {
+                var count = applications.Where(a => a.advertisement!.current_status == status).Count();
+
+                applicationStatusCount.Add(new ApplicationStatusCountDto
+                {
+                    status = status,
+                    count = count
+                });
+            }
+            return applicationStatusCount;
         }
     }
 }

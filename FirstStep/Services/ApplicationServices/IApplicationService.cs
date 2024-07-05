@@ -38,5 +38,8 @@ namespace FirstStep.Services
         public Task<ApplicationStatusDto> GetApplicationStatus(int advertisementId, int seekerId);
 
         public string GetApplicationStatus(Application application);
+
+        //ApplicationStatusCountDto to get status and application count for each status using company id
+        public Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId);
     }
 }

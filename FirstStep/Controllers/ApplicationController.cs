@@ -98,6 +98,14 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetApplicationStatusCount/{companyId}")]
+        public async Task<ActionResult<IEnumerable<ApplicationStatusCountDto>>> GetApplicationStatusCount(int companyId)
+
+        {
+            return Ok(await _service.GetApplicationStatusCount(companyId));
+        }
+
         [HttpPost]
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
