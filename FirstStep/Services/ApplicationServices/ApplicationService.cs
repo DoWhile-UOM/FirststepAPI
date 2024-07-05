@@ -135,20 +135,20 @@ namespace FirstStep.Services
             {
                 //use default cv use in the seeker profile
                 var seeker = await _context.Seekers.FindAsync(newApplicationDto.seeker_id);
-                
+
                 //handle the case where the seeker is not found
                 if (seeker == null)
                 {
                     throw new InvalidDataException("Seeker not found.");
                 }
-                
+
                 newApplication.CVurl = seeker.CVurl;
             }
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();
         }
-        
+
         public async Task Delete(int id)
         {
             Application application = await FindById(id);
@@ -293,9 +293,9 @@ namespace FirstStep.Services
         {
             var application = await FindById(id);
 
-            if (application is null) 
-            { 
-                throw new NullReferenceException("Application not found."); 
+            if (application is null)
+            {
+                throw new NullReferenceException("Application not found.");
             }
 
             // Get the latest revision
@@ -309,7 +309,7 @@ namespace FirstStep.Services
             applicationDto.seeker_id = application.seeker_id;
 
             //applicationDto.cVurl = application.CVurl!; // when this is defualt cv, get from the seeker's profile
-           
+
             // Fetch CV URL and profile picture URL from the file service
             var cvUrl = application.CVurl != null ? await _fileService.GetBlobUrl(application.CVurl) : await _fileService.GetBlobUrl(application.seeker!.CVurl);
             var profilePictureUrl = application.seeker!.profile_picture != null ? await _fileService.GetBlobUrl(application.seeker.profile_picture) : null;
@@ -505,7 +505,7 @@ namespace FirstStep.Services
 
             return applicationStatus;
         }
-        
+
         public async Task<IEnumerable<RevisionHistoryDto>> GetRevisionHistory(int applicationId)
         {
             var revisions = await _context.Revisions
@@ -555,28 +555,64 @@ namespace FirstStep.Services
         }
 
         //  ApplicationStatusCountDto to get status and application count for each status using company id
+        /*  public async Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId)
+          {
+              // Get applications where the associated advertisement has the desired statuses and matches the company ID
+              var applications = await _context.Applications
+                  .Include(a => a.advertisement)
+                  .Where(a => a.advertisement!.hrManager!.company_id == companyId)
+                  .ToListAsync();
+
+              var applicationStatusCount = new List<ApplicationStatusCountDto>();
+
+              //list of advertisement status to filter by
+              var advertisementStatuses = new List<string> {
+                  Advertisement.Status.active.ToString(), 
+                  Advertisement.Status.hold.ToString(),
+                  Advertisement.Status.interview.ToString(),
+                  Advertisement.Status.closed.ToString(),
+              };
+
+              //count the number of applications for each advertisment status
+              foreach (var status in advertisementStatuses)
+              {
+                 var count = applications.Where(a => a.advertisement!.current_status == status).Count();
+                  applicationStatusCount.Add(new ApplicationStatusCountDto
+                  {
+                      status = status,
+                      count = count
+                  });
+              }
+              return applicationStatusCount;
+          }*/
+
         public async Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId)
         {
-            // Get applications where the associated advertisement has the desired statuses and matches the company ID
-            var applications = await _context.Applications
-                .Include(a => a.advertisement)
-                .Where(a => a.advertisement!.hrManager!.company_id == companyId)
+            // Get advertisements under the specified company ID
+            var advertisements = await _context.Advertisements
+                .Include(ad => ad.applications)
+                .Where(ad => ad.hrManager!.company_id == companyId)
                 .ToListAsync();
 
             var applicationStatusCount = new List<ApplicationStatusCountDto>();
 
-            //list of advertisement status to filter by
-            var advertisementStatuses = new List<string> {
-                Advertisement.Status.active.ToString(), 
+            // List of advertisement statuses to filter by
+            var advertisementStatuses = new List<string>
+            {
+                Advertisement.Status.active.ToString(),
                 Advertisement.Status.hold.ToString(),
                 Advertisement.Status.interview.ToString(),
                 Advertisement.Status.closed.ToString(),
             };
 
-            //count the number of applications for each advertisment status
+
+            // Count applications for each advertisement status
             foreach (var status in advertisementStatuses)
             {
-                var count = applications.Where(a => a.advertisement!.current_status == status).Count();
+                var count = advertisements
+                    .Where(ad => ad.current_status == status)
+                    .SelectMany(ad => ad.applications!)
+                    .Count();
 
                 applicationStatusCount.Add(new ApplicationStatusCountDto
                 {
@@ -585,6 +621,8 @@ namespace FirstStep.Services
                 });
             }
             return applicationStatusCount;
+
+
         }
     }
 }
