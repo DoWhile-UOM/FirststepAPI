@@ -4,6 +4,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.Design;
 
 namespace FirstStep.Controllers
 {
@@ -97,7 +98,7 @@ namespace FirstStep.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-
+    
         [HttpGet]
         [Route("GetApplicationStatusCount/{companyId}")]
         public async Task<ActionResult<IEnumerable<ApplicationStatusCountDto>>> GetApplicationStatusCount(int companyId)
@@ -105,6 +106,25 @@ namespace FirstStep.Controllers
         {
             return Ok(await _service.GetApplicationStatusCount(companyId));
         }
+
+        [HttpGet]
+        [Route("GetApplicationCount/{advertisementId}")]
+        public async Task<ActionResult<IEnumerable<ApplicationDateCountDto>>> GetApplicationCount(int advertisementId)
+        {
+            try
+            {
+                var result = await _service.GetApplicationCount(advertisementId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+
+
+
 
         [HttpPost]
         [Route("AddApplication")]

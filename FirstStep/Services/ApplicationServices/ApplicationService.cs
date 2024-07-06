@@ -554,37 +554,6 @@ namespace FirstStep.Services
             }
         }
 
-        //  ApplicationStatusCountDto to get status and application count for each status using company id
-        /*  public async Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId)
-          {
-              // Get applications where the associated advertisement has the desired statuses and matches the company ID
-              var applications = await _context.Applications
-                  .Include(a => a.advertisement)
-                  .Where(a => a.advertisement!.hrManager!.company_id == companyId)
-                  .ToListAsync();
-
-              var applicationStatusCount = new List<ApplicationStatusCountDto>();
-
-              //list of advertisement status to filter by
-              var advertisementStatuses = new List<string> {
-                  Advertisement.Status.active.ToString(), 
-                  Advertisement.Status.hold.ToString(),
-                  Advertisement.Status.interview.ToString(),
-                  Advertisement.Status.closed.ToString(),
-              };
-
-              //count the number of applications for each advertisment status
-              foreach (var status in advertisementStatuses)
-              {
-                 var count = applications.Where(a => a.advertisement!.current_status == status).Count();
-                  applicationStatusCount.Add(new ApplicationStatusCountDto
-                  {
-                      status = status,
-                      count = count
-                  });
-              }
-              return applicationStatusCount;
-          }*/
 
         public async Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId)
         {
@@ -624,5 +593,34 @@ namespace FirstStep.Services
 
 
         }
+
+        public async Task<IEnumerable<ApplicationDateCountDto>> GetApplicationCount(int advertismentId)
+        {
+            // Get the start date of the week by subtracting 7 days from the current date and set time to midnight
+            var startDate = DateTime.Now.AddDays(-7).Date;
+            // Get the end date as the current date and set time to the end of the day
+            var endDate = DateTime.Now.Date.AddDays(1).AddTicks(-1);
+
+            // Check if advertisement exists
+            var advertisement = await _context.Advertisements.FindAsync(advertismentId);
+            if (advertisement == null)
+            {
+                throw new NullReferenceException("Advertisement not found.");
+            }
+
+            // Get the applications of the advertisement within the last 7 days and group them by the date
+            var applications = await _context.Applications
+                .Where(a => a.advertisement_id == advertismentId && a.submitted_date != null && a.submitted_date >= startDate && a.submitted_date <= endDate)
+                .GroupBy(a => a.submitted_date.Date)
+                .Select(g => new ApplicationDateCountDto
+                {
+                    date = g.Key,
+                    count = g.Count()
+                })
+                .ToListAsync();
+
+            return applications;
+        }
+
     }
 }

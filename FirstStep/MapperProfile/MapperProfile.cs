@@ -92,6 +92,7 @@ namespace FirstStep.MapperProfile
 
             CreateMap<Application, ApplicationStatusDto>();
             CreateMap<Application, ApplicationStatusCountDto>();
+            CreateMap<Application, ApplicationDateCountDto>();
 
             CreateMap<AddAppointmentDto, Appointment>();
         }
