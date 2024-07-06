@@ -610,7 +610,7 @@ namespace FirstStep.Services
 
             // Get the applications of the advertisement within the last 7 days and group them by the date
             var applications = await _context.Applications
-                .Where(a => a.advertisement_id == advertismentId && a.submitted_date != null && a.submitted_date >= startDate && a.submitted_date <= endDate)
+                .Where(a => a.advertisement_id == advertismentId  && a.submitted_date >= startDate && a.submitted_date <= endDate)
                 .GroupBy(a => a.submitted_date.Date)
                 .Select(g => new ApplicationDateCountDto
                 {
