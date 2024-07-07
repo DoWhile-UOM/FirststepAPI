@@ -45,15 +45,23 @@ namespace FirstStep.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetByDate/{date}")]
+        public async Task<ActionResult<List<dailyInterviewDto>>> GetSchedulesByDate(DateTime date)
+        {
+            var schedules = await _appointmentService.GetSchedulesByDate(date);
+            return Ok(schedules);
+        }
+
         [HttpPost]
         [Route("CreateAppointments")]
-        public async Task<IActionResult> CreateAppointments(AddAppointmentDto newAppointment)//Create Appointment Slot(Company Available Time)
+        public async Task<IActionResult> CreateAppointments(AddAppointmentDto newAppointment)
         {
             await _appointmentService.CreateAppointment(newAppointment);
             return Ok();
         }
 
-        [HttpPatch]//Remove this cotroller only
+        [HttpPatch]
         [Route("AssignToAdvertisement/appointment={appointment_id:int}/advertisement={advertisement_id:int}")]
         public async Task<IActionResult> AssignToAdvertisement(int appointment_id, int advertisement_id)
         {
@@ -69,17 +77,6 @@ namespace FirstStep.Controllers
             return Ok();
         }
 
-        // Fetch schedules by date
-        [HttpGet]
-        [Route("GetByDate/{date}")]
-        public async Task<ActionResult<List<dailyInterviewDto>>> GetSchedulesByDate(DateTime date)
-        {
-            var schedules = await _appointmentService.GetSchedulesByDate(date);
-            return Ok(schedules);
-        }
-
-
-        // Update the status of an interview
         [HttpPatch]
         [Route("UpdateStatus/appointment={appointment_id:int}/status={newStatus}")]
         public async Task<IActionResult> UpdateInterviewStatus(int appointment_id, string newStatus)
@@ -114,6 +111,5 @@ namespace FirstStep.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
-
     }
 }

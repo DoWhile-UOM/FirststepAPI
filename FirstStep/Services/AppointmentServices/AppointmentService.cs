@@ -73,35 +73,7 @@ namespace FirstStep.Services
                 await _context.Appointments.AddAsync(newAppointment);
             }
 
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateAppointment(UpdateAppointmentDto slot)
-        {
-            /* check the company is exist
-            var company = await _context.Companies.FindAsync(slot.company_id);
-            if (company == null)
-            {
-                throw new Exception("Company not found");
-            }
-
-            // check the advertisement is exist
-            var advertisement = await _context.Advertisements.FindAsync(slot.advertisement_id);
-            if (advertisement == null)
-            {
-                throw new Exception("Advertisement not found");
-            }
-            if (advertisement.current_status != Advertisement.Status.interview.ToString())
-            {
-                throw new Exception("Advertisement is not in the interview, therefore can't Update an appointment.");
-            }*/
-
-            var appointment = await _context.Appointments.FindAsync(slot.appointment_id);
-
-            //appointment.start_time = slot.start_time;
-            //appointment.end_time = slot.end_time;
-
-            //_context.Appointments.Add(appointment);
+            // send email to the seeker to book any advertisement with the message
 
             await _context.SaveChangesAsync();
         }
@@ -189,12 +161,13 @@ namespace FirstStep.Services
                 }).ToListAsync();
         }
 
-
         public async Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus)
         {
             var appointment = await FindById(appointment_id);
             // Check if the appointment can be updated
-            if (appointment == null || appointment.status == Appointment.Status.Missed.ToString() || appointment.status == Appointment.Status.Complete.ToString())
+            if (appointment == null || 
+                appointment.status == Appointment.Status.Missed.ToString() || 
+                appointment.status == Appointment.Status.Complete.ToString())
             {
                 return false;
             }
@@ -242,7 +215,6 @@ namespace FirstStep.Services
             return appointmentAvailable;
         }
 
-
         public async Task<AppointmentDetailsDto> GetBookedAppointmentList(int advertisment_id)
         {
             AppointmentDetailsDto appointmentDetails = new AppointmentDetailsDto();
@@ -250,36 +222,51 @@ namespace FirstStep.Services
             //get the appointments for the advertisement id
             var appointments = await _context.Appointments
                 .Include("seeker")
-                .Where(a => a.advertisement_id == advertisment_id && a.seeker_id!=null && a.status==Appointment.Status.Booked.ToString())
+                .Where(a => a.advertisement_id == advertisment_id && a.seeker_id != null && a.status == Appointment.Status.Booked.ToString())
                 .ToListAsync();
 
             appointmentDetails.BookedAppointments = _mapper.Map<IEnumerable<AppointmentDto>>(appointments);
 
             var freeApplication=await _context.Applications
                 .Include("seeker")
-                .Where(a => a.advertisement_id == advertisment_id && a.is_called==true)
+                .Where(a => a.advertisement_id == advertisment_id && a.is_called == true)
                 .ToListAsync();
 
-            List <AppointmentDto> freeAppointmnets=new List<AppointmentDto>();
+            List <AppointmentDto> freeAppointmnets = new List<AppointmentDto>();
 
             foreach (var application in freeApplication)
             {
-                if(appointments.Any(a=>a.seeker_id==application.seeker_id))
+                if (appointments.Any(a => a.seeker_id == application.seeker_id))
                 {
                     continue;
                 }
+
                 freeAppointmnets.Add(_mapper.Map<AppointmentDto>(application));
             }
 
             appointmentDetails.FreeAppointments = freeAppointmnets;
 
-
             return appointmentDetails;
         }
 
+        public async Task CompleteInterviewSchedule(int advertisement_id)
+        {
+            // get all the booked appointments for the advertisement
+            // email to each seeker about the interview schedule
 
+            // delete all the empty appointments for the advertisement
+            await DeleteEmptyAppointments(advertisement_id);
+        }
 
+        private async Task DeleteEmptyAppointments(int advertisement_id)
+        {
+            var appointments = await _context.Appointments
+                .Where(a => a.advertisement_id == advertisement_id && a.seeker_id == null)
+                .ToListAsync();
 
+            _context.Appointments.RemoveRange(appointments);
 
+            await _context.SaveChangesAsync();
+        }
     }
 }
