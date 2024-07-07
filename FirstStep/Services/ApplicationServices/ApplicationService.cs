@@ -6,6 +6,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.Design;
 
 namespace FirstStep.Services
 {
@@ -613,9 +614,74 @@ namespace FirstStep.Services
                 avgCompletionTime = completionTimeCount > 0 ? (totalCompletionTime / completionTimeCount) / 24 : 0
             };
         }
+        
+
+        public async Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId)
+        {
+            // Get advertisements under the specified company ID
+            var advertisements = await _context.Advertisements
+                .Include(ad => ad.applications)
+                .Where(ad => ad.hrManager!.company_id == companyId)
+                .ToListAsync();
+
+            var applicationStatusCount = new List<ApplicationStatusCountDto>();
+
+            // List of advertisement statuses to filter by
+            var advertisementStatuses = new List<string>
+            {
+                Advertisement.Status.active.ToString(),
+                Advertisement.Status.hold.ToString(),
+                Advertisement.Status.interview.ToString(),
+                Advertisement.Status.closed.ToString(),
+            };
 
 
-    }
+            // Count applications for each advertisement status
+            foreach (var status in advertisementStatuses)
+            {
+                var count = advertisements
+                    .Where(ad => ad.current_status == status)
+                    .SelectMany(ad => ad.applications!)
+                    .Count();
+
+                applicationStatusCount.Add(new ApplicationStatusCountDto
+                {
+                    status = status,
+                    count = count
+                });
+            }
+            return applicationStatusCount;
+
+
+        }
+
+        public async Task<IEnumerable<ApplicationDateCountDto>> GetApplicationCount(int advertismentId)
+        {
+            // Get the start date of the week by subtracting 7 days from the current date and set time to midnight
+            var startDate = DateTime.Now.AddDays(-7).Date;
+            // Get the end date as the current date and set time to the end of the day
+            var endDate = DateTime.Now.Date.AddDays(1).AddTicks(-1);
+
+            // Check if advertisement exists
+            var advertisement = await _context.Advertisements.FindAsync(advertismentId);
+            if (advertisement == null)
+            {
+                throw new NullReferenceException("Advertisement not found.");
+            }
+
+            // Get the applications of the advertisement within the last 7 days and group them by the date
+            var applications = await _context.Applications
+                .Where(a => a.advertisement_id == advertismentId  && a.submitted_date >= startDate && a.submitted_date <= endDate)
+                .GroupBy(a => a.submitted_date.Date)
+                .Select(g => new ApplicationDateCountDto
+                {
+                    date = g.Key,
+                    count = g.Count()
+                })
+                .ToListAsync();
+
+            return applications;
+        }
 }
-
-
+    
+}
