@@ -1143,6 +1143,9 @@ namespace FirstStep.Services
         {
             var advertisements = await FindByCompanyID(companyID);
 
+            //remove the expired advertisements
+            advertisements = advertisements.Where(ad => !AdvertisementValidation.IsExpired(ad)).ToList();
+
             var advertisementTitleList = advertisements.Select(ad => new AdvertismentTitleDto
             {
                 advertisement_id = ad.advertisement_id,

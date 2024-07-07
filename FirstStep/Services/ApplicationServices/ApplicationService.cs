@@ -657,8 +657,8 @@ namespace FirstStep.Services
 
         public async Task<IEnumerable<ApplicationDateCountDto>> GetApplicationCount(int advertismentId)
         {
-            // Get the start date of the week by subtracting 7 days from the current date and set time to midnight
-            var startDate = DateTime.Now.AddDays(-7).Date;
+            // Get the start date of the week by subtracting 60 days from the current date and set time to midnight
+            var startDate = DateTime.Now.AddDays(-30).Date;
             // Get the end date as the current date and set time to the end of the day
             var endDate = DateTime.Now.Date.AddDays(1).AddTicks(-1);
 
