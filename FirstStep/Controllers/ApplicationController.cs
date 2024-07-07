@@ -79,14 +79,32 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetBySeekerId(id));
         }
 
-        //get appplication status by advertisment id and seeker id
-        [HttpGet("status")]
+        [HttpGet]
+        [Route("GetApplicationStatus/{advertisementId:int}/{seekerId:int}")]
         public async Task<IActionResult> GetApplicationStatus(int advertisementId, int seekerId)
         {
             try
             {
                 var status = await _service.GetApplicationStatus(advertisementId, seekerId);
                 return Ok(status);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("GetSelectedApplicationsDetails/{advertisementId:int}")]
+        public async Task<ActionResult<ApplicationSelectedDto>> GetSelectedApplicationDetails(int advertisementId)
+        {  
+            try
+            {
+                return Ok(await _service.GetSelectedApplicationsDetails(advertisementId));
             }
             catch (NullReferenceException ex)
             {
@@ -181,6 +199,14 @@ namespace FirstStep.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
             }
+        }
+
+        [HttpPatch]
+        [Route("SetToInterview")]
+        public async Task<IActionResult> SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto)
+        {
+            await _service.SetToInterview(updateApplicationStatusDto);
+            return Ok("Successfully updated isCalled status.");
         }
 
         [HttpPatch]

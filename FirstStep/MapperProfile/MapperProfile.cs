@@ -89,8 +89,22 @@ namespace FirstStep.MapperProfile
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
 
             CreateMap<Application, ApplicationStatusDto>();
+            CreateMap<Application, ApplicationSelectedDto>();
+            //map application to update application status dto
+            CreateMap<UpdateApplicationStatusDto,Application>();
+
 
             CreateMap<AddAppointmentDto, Appointment>();
+
+            CreateMap<Appointment, AppointmentDto>()
+                .ForMember(
+                    des => des.seeker_name,
+                    opt => opt.MapFrom(src => src.seeker!.first_name + ' ' + src.seeker!.last_name));
+
+            CreateMap<Application, AppointmentDto>()
+                .ForMember(
+                des => des.seeker_name,
+                opt => opt.MapFrom(src => src.seeker!.first_name + ' ' + src.seeker!.last_name));
         }
     }
 }

@@ -38,5 +38,9 @@ namespace FirstStep.Services
         public Task<ApplicationStatusDto> GetApplicationStatus(int advertisementId, int seekerId);
 
         public string GetApplicationStatus(Application application);
+
+        public Task<IEnumerable<ApplicationSelectedDto>> GetSelectedApplicationsDetails(int advertisementId);
+
+        public Task SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto);
     }
 }
