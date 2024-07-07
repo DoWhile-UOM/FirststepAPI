@@ -207,6 +207,9 @@ namespace FirstStep.Services
             return CreateCompanyAdvertisementList(dbAdvertisements, status, employee);
         }
 
+ 
+
+
         public async Task<IEnumerable<AdvertisementTableRowDto>> GetCompanyAdvertisementList(int emp_id, string status, string title)
         {
             AdvertisementValidation.CheckStatus(status);
@@ -1150,6 +1153,22 @@ namespace FirstStep.Services
             var advertisement = await FindById(advertisementId);
 
             return AdvertisementValidation.IsExpired(advertisement);
+        }
+    
+        public async Task<IEnumerable<AdvertismentTitleDto>> GetCompanyAdvertisementTitleList(int companyID)
+        {
+            var advertisements = await FindByCompanyID(companyID);
+
+            //remove the expired advertisements
+            advertisements = advertisements.Where(ad => !AdvertisementValidation.IsExpired(ad)).ToList();
+
+            var advertisementTitleList = advertisements.Select(ad => new AdvertismentTitleDto
+            {
+                advertisement_id = ad.advertisement_id,
+                advertisement_title = ad.title
+            });
+
+            return advertisementTitleList;
         }
     }
 }

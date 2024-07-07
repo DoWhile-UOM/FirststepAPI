@@ -6,6 +6,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.Design;
 
 namespace FirstStep.Services
 {
@@ -552,6 +553,133 @@ namespace FirstStep.Services
             }
         }
 
+        //Get Average times 
+        public async Task<AverageTimeDto> GetAverageTime(int companyId)
+        {
+            var applications = await _context.Applications
+                .Include(a => a.revisions)
+                .Include(a => a.advertisement)
+                .Include(a => a.advertisement!.hrManager)
+                .Where(a => a.advertisement!.hrManager!.company_id == companyId)
+                .ToListAsync();
+
+            var appointments = await _context.Appointments
+                .Include(a => a.advertisement)
+                .Include(a => a.advertisement!.hrManager)
+                .Where(a => a.advertisement!.hrManager!.company_id == companyId)
+                .ToListAsync();
+
+            double totalResponseTime = 0;
+            double totalScreeningTime = 0;
+            double totalCompletionTime = 0;
+
+            int responseTimeCount = 0;
+            int screeningTimeCount = 0;
+            int completionTimeCount = 0;
+
+            foreach (var application in applications)
+            {
+                // Calculate response time
+                if (application.revisions != null && application.revisions.Any())
+                {
+                    var firstRevisionDate = application.revisions.OrderBy(r => r.date).First().date;
+                    totalResponseTime += (firstRevisionDate - application.submitted_date).TotalHours;
+                    responseTimeCount++;
+                }
+
+                // Calculate screening time
+                if (application.revisions != null && application.revisions.Count > 1)
+                {
+                    var firstRevisionDate = application.revisions.OrderBy(r => r.date).First().date;
+                    var lastRevisionDate = application.revisions.OrderBy(r => r.date).Last().date;
+                    totalScreeningTime += (lastRevisionDate - firstRevisionDate).TotalHours;
+                    screeningTimeCount++;
+                }
+
+                // Calculate completion time based on appointment date
+                var appointment = appointments.FirstOrDefault(a => a.advertisement_id == application.advertisement_id);
+
+                if (appointment != null)
+                {
+                    var appointmentDate = appointment.start_time;
+                    totalCompletionTime += (appointmentDate - application.submitted_date).TotalHours;
+                    completionTimeCount++;
+                }
+            }
+
+            return new AverageTimeDto
+            {
+                avgResponseTime = responseTimeCount > 0 ? (totalResponseTime / responseTimeCount) / 24 : 0,
+                avgScreeningTime = screeningTimeCount > 0 ? (totalScreeningTime / screeningTimeCount) / 24 : 0,
+                avgCompletionTime = completionTimeCount > 0 ? (totalCompletionTime / completionTimeCount) / 24 : 0
+            };
+        }
+
+        public async Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId)
+        {
+            // Get advertisements under the specified company ID
+            var advertisements = await _context.Advertisements
+                .Include(ad => ad.applications)
+                .Where(ad => ad.hrManager!.company_id == companyId)
+                .ToListAsync();
+
+            var applicationStatusCount = new List<ApplicationStatusCountDto>();
+
+            // List of advertisement statuses to filter by
+            var advertisementStatuses = new List<string>
+            {
+                Advertisement.Status.active.ToString(),
+                Advertisement.Status.hold.ToString(),
+                Advertisement.Status.interview.ToString(),
+                Advertisement.Status.closed.ToString(),
+            };
+
+
+            // Count applications for each advertisement status
+            foreach (var status in advertisementStatuses)
+            {
+                var count = advertisements
+                    .Where(ad => ad.current_status == status)
+                    .SelectMany(ad => ad.applications!)
+                    .Count();
+
+                applicationStatusCount.Add(new ApplicationStatusCountDto
+                {
+                    status = status,
+                    count = count
+                });
+            }
+
+            return applicationStatusCount;
+        }
+
+        public async Task<IEnumerable<ApplicationDateCountDto>> GetApplicationCount(int advertismentId)
+        {
+            // Get the start date of the week by subtracting 60 days from the current date and set time to midnight
+            var startDate = DateTime.Now.AddDays(-30).Date;
+            // Get the end date as the current date and set time to the end of the day
+            var endDate = DateTime.Now.Date.AddDays(1).AddTicks(-1);
+
+            // Check if advertisement exists
+            var advertisement = await _context.Advertisements.FindAsync(advertismentId);
+            if (advertisement == null)
+            {
+                throw new NullReferenceException("Advertisement not found.");
+            }
+
+            // Get the applications of the advertisement within the last 7 days and group them by the date
+            var applications = await _context.Applications
+                .Where(a => a.advertisement_id == advertismentId  && a.submitted_date >= startDate && a.submitted_date <= endDate)
+                .GroupBy(a => a.submitted_date.Date)
+                .Select(g => new ApplicationDateCountDto
+                {
+                    date = g.Key,
+                    count = g.Count()
+                })
+                .ToListAsync();
+
+            return applications;
+        }
 
         public async Task<IEnumerable<ApplicationSelectedDto>> GetSelectedApplicationsDetails(int advertisementId)
         {
@@ -595,8 +723,7 @@ namespace FirstStep.Services
 
             return applicationSelectedDtos;
         }
-
-
+        
         //set the application isCalled to true by the application id using UpdateApplicationStatusDto
         public async Task SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto)
         {
@@ -613,8 +740,5 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
-
-
-
     }
 }
