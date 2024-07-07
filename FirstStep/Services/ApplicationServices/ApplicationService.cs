@@ -554,6 +554,67 @@ namespace FirstStep.Services
             }
         }
 
+        //Get Average times 
+        public async Task<AverageTimeDto> GetAverageTime(int companyId)
+        {
+            var applications = await _context.Applications
+                .Include(a => a.revisions)
+                .Include(a => a.advertisement)
+                .ThenInclude(ad => ad.hrManager)
+                .Where(a => a.advertisement.hrManager.company_id == companyId)
+                .ToListAsync();
+
+            var appointments = await _context.Appointments
+                .Include(a => a.advertisement)
+                .ThenInclude(ad => ad.hrManager)
+                .Where(a => a.advertisement.hrManager.company_id == companyId)
+                .ToListAsync();
+
+            double totalResponseTime = 0;
+            double totalScreeningTime = 0;
+            double totalCompletionTime = 0;
+
+            int responseTimeCount = 0;
+            int screeningTimeCount = 0;
+            int completionTimeCount = 0;
+
+            foreach (var application in applications)
+            {
+                // Calculate response time
+                if (application.submitted_date != null && application.revisions != null && application.revisions.Any())
+                {
+                    var firstRevisionDate = application.revisions.OrderBy(r => r.date).First().date;
+                    totalResponseTime += (firstRevisionDate - application.submitted_date).TotalHours;
+                    responseTimeCount++;
+                }
+
+                // Calculate screening time
+                if (application.revisions != null && application.revisions.Count > 1)
+                {
+                    var firstRevisionDate = application.revisions.OrderBy(r => r.date).First().date;
+                    var lastRevisionDate = application.revisions.OrderBy(r => r.date).Last().date;
+                    totalScreeningTime += (lastRevisionDate - firstRevisionDate).TotalHours;
+                    screeningTimeCount++;
+                }
+
+                // Calculate completion time based on appointment date
+                var appointment = appointments.FirstOrDefault(a => a.advertisement_id == application.advertisement_id);
+                if (application.submitted_date != null && appointment != null)
+                {
+                    var appointmentDate = appointment.start_time;
+                    totalCompletionTime += (appointmentDate - application.submitted_date).TotalHours;
+                    completionTimeCount++;
+                }
+            }
+
+            return new AverageTimeDto
+            {
+                avgResponseTime = responseTimeCount > 0 ? (totalResponseTime / responseTimeCount) / 24 : 0,
+                avgScreeningTime = screeningTimeCount > 0 ? (totalScreeningTime / screeningTimeCount) / 24 : 0,
+                avgCompletionTime = completionTimeCount > 0 ? (totalCompletionTime / completionTimeCount) / 24 : 0
+            };
+        }
+        
 
         public async Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId)
         {
@@ -621,6 +682,6 @@ namespace FirstStep.Services
 
             return applications;
         }
-
-    }
+}
+    
 }
