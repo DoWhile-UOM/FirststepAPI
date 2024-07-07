@@ -2,6 +2,7 @@
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Metadata.Ecma335;
 
 namespace FirstStep.Controllers
 {
@@ -163,6 +164,20 @@ namespace FirstStep.Controllers
             try
             {
                 return Ok(await _service.GetAppliedAdvertisements(seekerID));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetCompanyAdvertisementTitleList/{companyID:int}")]
+        public async Task<ActionResult<IEnumerable<AdvertismentTitleDto>>> GetCompanyAdvertisementTitleList(int companyID)
+        {
+            try
+            {
+                return Ok(await _service.GetCompanyAdvertisementTitleList(companyID));
             }
             catch (Exception e)
             {

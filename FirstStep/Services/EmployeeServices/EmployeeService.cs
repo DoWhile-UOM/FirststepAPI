@@ -246,5 +246,34 @@ namespace FirstStep.Services
                 throw new Exception("Company is not verified");
             }
         }
+
+        public async Task<EmployeeStatDto> GetEmployeeStats(int company_Id)
+        {
+            var hraAssistants = await GetAllHRAssistants(company_Id);
+            var hrManagers = await GetAllHRManagers(company_Id);
+
+            var hraEvaluations = new List<HRAEvaluationDto>();
+
+            foreach (var hra in hraAssistants)
+            {
+                var assignedApplicationsWithRevisionsCount = await _context.Applications
+                    .Include(a => a.revisions)
+                    .Where(a => a.assigned_hrAssistant_id == hra.user_id && a.revisions!.Any(r => r.employee_id == hra.user_id))
+                    .CountAsync();
+
+                hraEvaluations.Add(new HRAEvaluationDto
+                {
+                    hraName = $"{hra.first_name} {hra.last_name}",
+                    assignedApplicationsWithRevisionsCount = assignedApplicationsWithRevisionsCount
+                });
+            }
+
+            return new EmployeeStatDto
+            {
+                hraCount = hraAssistants.Count(),
+                hrmCount = hrManagers.Count(),
+                hraEvaluations = hraEvaluations
+            };
+        }
     }
 }

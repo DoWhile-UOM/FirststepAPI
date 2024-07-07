@@ -44,7 +44,9 @@ namespace FirstStep.MapperProfile
 
             CreateMap<Advertisement, AdvertisementTableRowDto>();
             CreateMap<Advertisement, AdvertisementHRATableRowDto>();
-            
+            CreateMap<Advertisement, AdvertismentTitleDto>();
+
+
             CreateMap<SeekerApplicationDto, Seeker>();
             CreateMap<Company, CompanyProfileDto>();
             CreateMap<Seeker, SeekerApplicationDto>();
@@ -89,11 +91,11 @@ namespace FirstStep.MapperProfile
                     opt => opt.MapFrom(src => src.job_Field!.field_name));
 
             CreateMap<Application, ApplicationStatusDto>();
+            CreateMap<Application, ApplicationStatusCountDto>();
+            CreateMap<Application, ApplicationDateCountDto>();
             CreateMap<Application, ApplicationSelectedDto>();
-            //map application to update application status dto
             CreateMap<UpdateApplicationStatusDto,Application>();
-
-
+            
             CreateMap<AddAppointmentDto, Appointment>();
 
             CreateMap<Appointment, AppointmentDto>()
