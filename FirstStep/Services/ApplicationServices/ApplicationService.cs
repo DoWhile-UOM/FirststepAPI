@@ -6,6 +6,7 @@ using FirstStep.Models.DTOs;
 using FirstStep.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.Design;
 
 namespace FirstStep.Services
 {
@@ -134,20 +135,20 @@ namespace FirstStep.Services
             {
                 //use default cv use in the seeker profile
                 var seeker = await _context.Seekers.FindAsync(newApplicationDto.seeker_id);
-                
+
                 //handle the case where the seeker is not found
                 if (seeker == null)
                 {
                     throw new InvalidDataException("Seeker not found.");
                 }
-                
+
                 newApplication.CVurl = seeker.CVurl;
             }
 
             _context.Applications.Add(newApplication);
             await _context.SaveChangesAsync();
         }
-        
+
         public async Task Delete(int id)
         {
             Application application = await FindById(id);
@@ -292,9 +293,9 @@ namespace FirstStep.Services
         {
             var application = await FindById(id);
 
-            if (application is null) 
-            { 
-                throw new NullReferenceException("Application not found."); 
+            if (application is null)
+            {
+                throw new NullReferenceException("Application not found.");
             }
 
             // Get the latest revision
@@ -308,7 +309,7 @@ namespace FirstStep.Services
             applicationDto.seeker_id = application.seeker_id;
 
             //applicationDto.cVurl = application.CVurl!; // when this is defualt cv, get from the seeker's profile
-           
+
             // Fetch CV URL and profile picture URL from the file service
             var cvUrl = application.CVurl != null ? await _fileService.GetBlobUrl(application.CVurl) : await _fileService.GetBlobUrl(application.seeker!.CVurl);
             var profilePictureUrl = application.seeker!.profile_picture != null ? await _fileService.GetBlobUrl(application.seeker.profile_picture) : null;
@@ -504,7 +505,7 @@ namespace FirstStep.Services
 
             return applicationStatus;
         }
-        
+
         public async Task<IEnumerable<RevisionHistoryDto>> GetRevisionHistory(int applicationId)
         {
             var revisions = await _context.Revisions
@@ -552,5 +553,74 @@ namespace FirstStep.Services
                 return "Rejected";
             }
         }
+
+
+        public async Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId)
+        {
+            // Get advertisements under the specified company ID
+            var advertisements = await _context.Advertisements
+                .Include(ad => ad.applications)
+                .Where(ad => ad.hrManager!.company_id == companyId)
+                .ToListAsync();
+
+            var applicationStatusCount = new List<ApplicationStatusCountDto>();
+
+            // List of advertisement statuses to filter by
+            var advertisementStatuses = new List<string>
+            {
+                Advertisement.Status.active.ToString(),
+                Advertisement.Status.hold.ToString(),
+                Advertisement.Status.interview.ToString(),
+                Advertisement.Status.closed.ToString(),
+            };
+
+
+            // Count applications for each advertisement status
+            foreach (var status in advertisementStatuses)
+            {
+                var count = advertisements
+                    .Where(ad => ad.current_status == status)
+                    .SelectMany(ad => ad.applications!)
+                    .Count();
+
+                applicationStatusCount.Add(new ApplicationStatusCountDto
+                {
+                    status = status,
+                    count = count
+                });
+            }
+            return applicationStatusCount;
+
+
+        }
+
+        public async Task<IEnumerable<ApplicationDateCountDto>> GetApplicationCount(int advertismentId)
+        {
+            // Get the start date of the week by subtracting 7 days from the current date and set time to midnight
+            var startDate = DateTime.Now.AddDays(-7).Date;
+            // Get the end date as the current date and set time to the end of the day
+            var endDate = DateTime.Now.Date.AddDays(1).AddTicks(-1);
+
+            // Check if advertisement exists
+            var advertisement = await _context.Advertisements.FindAsync(advertismentId);
+            if (advertisement == null)
+            {
+                throw new NullReferenceException("Advertisement not found.");
+            }
+
+            // Get the applications of the advertisement within the last 7 days and group them by the date
+            var applications = await _context.Applications
+                .Where(a => a.advertisement_id == advertismentId  && a.submitted_date >= startDate && a.submitted_date <= endDate)
+                .GroupBy(a => a.submitted_date.Date)
+                .Select(g => new ApplicationDateCountDto
+                {
+                    date = g.Key,
+                    count = g.Count()
+                })
+                .ToListAsync();
+
+            return applications;
+        }
+
     }
 }
