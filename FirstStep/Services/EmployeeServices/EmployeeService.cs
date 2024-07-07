@@ -258,7 +258,7 @@ namespace FirstStep.Services
             {
                 var assignedApplicationsWithRevisionsCount = await _context.Applications
                     .Include(a => a.revisions)
-                    .Where(a => a.assigned_hrAssistant_id == hra.user_id && a.revisions.Any(r => r.employee_id == hra.user_id))
+                    .Where(a => a.assigned_hrAssistant_id == hra.user_id && a.revisions!.Any(r => r.employee_id == hra.user_id))
                     .CountAsync();
 
                 hraEvaluations.Add(new HRAEvaluationDto

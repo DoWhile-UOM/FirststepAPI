@@ -1137,7 +1137,6 @@ namespace FirstStep.Services
 
             return AdvertisementValidation.IsExpired(advertisement);
         }
-
     
         public async Task<IEnumerable<AdvertismentTitleDto>> GetCompanyAdvertisementTitleList(int companyID)
         {

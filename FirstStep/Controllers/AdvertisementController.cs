@@ -171,7 +171,6 @@ namespace FirstStep.Controllers
             }
         }
 
-
         [HttpGet]
         [Route("GetCompanyAdvertisementTitleList/{companyID:int}")]
         public async Task<ActionResult<IEnumerable<AdvertismentTitleDto>>> GetCompanyAdvertisementTitleList(int companyID)
@@ -185,7 +184,6 @@ namespace FirstStep.Controllers
                 return ReturnStatusCode(e);
             }
         }
-
 
         [HttpPost]
         [Route("SearchAdvertisementsBasic/seekerID={seekerID:int}/pageLength={pageLength:int}")]

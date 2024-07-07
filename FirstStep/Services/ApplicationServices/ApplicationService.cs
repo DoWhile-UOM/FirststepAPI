@@ -560,14 +560,14 @@ namespace FirstStep.Services
             var applications = await _context.Applications
                 .Include(a => a.revisions)
                 .Include(a => a.advertisement)
-                .ThenInclude(ad => ad.hrManager)
-                .Where(a => a.advertisement.hrManager.company_id == companyId)
+                .Include(a => a.advertisement!.hrManager)
+                .Where(a => a.advertisement!.hrManager!.company_id == companyId)
                 .ToListAsync();
 
             var appointments = await _context.Appointments
                 .Include(a => a.advertisement)
-                .ThenInclude(ad => ad.hrManager)
-                .Where(a => a.advertisement.hrManager.company_id == companyId)
+                .Include(a => a.advertisement!.hrManager)
+                .Where(a => a.advertisement!.hrManager!.company_id == companyId)
                 .ToListAsync();
 
             double totalResponseTime = 0;
@@ -581,7 +581,7 @@ namespace FirstStep.Services
             foreach (var application in applications)
             {
                 // Calculate response time
-                if (application.submitted_date != null && application.revisions != null && application.revisions.Any())
+                if (application.revisions != null && application.revisions.Any())
                 {
                     var firstRevisionDate = application.revisions.OrderBy(r => r.date).First().date;
                     totalResponseTime += (firstRevisionDate - application.submitted_date).TotalHours;
@@ -599,7 +599,8 @@ namespace FirstStep.Services
 
                 // Calculate completion time based on appointment date
                 var appointment = appointments.FirstOrDefault(a => a.advertisement_id == application.advertisement_id);
-                if (application.submitted_date != null && appointment != null)
+
+                if (appointment != null)
                 {
                     var appointmentDate = appointment.start_time;
                     totalCompletionTime += (appointmentDate - application.submitted_date).TotalHours;
@@ -614,7 +615,6 @@ namespace FirstStep.Services
                 avgCompletionTime = completionTimeCount > 0 ? (totalCompletionTime / completionTimeCount) / 24 : 0
             };
         }
-        
 
         public async Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId)
         {
@@ -650,9 +650,8 @@ namespace FirstStep.Services
                     count = count
                 });
             }
+
             return applicationStatusCount;
-
-
         }
 
         public async Task<IEnumerable<ApplicationDateCountDto>> GetApplicationCount(int advertismentId)
@@ -682,6 +681,5 @@ namespace FirstStep.Services
 
             return applications;
         }
-}
-    
+    }
 }

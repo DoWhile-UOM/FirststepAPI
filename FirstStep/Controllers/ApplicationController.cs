@@ -4,7 +4,6 @@ using FirstStep.Models.DTOs;
 using FirstStep.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.Design;
 
 namespace FirstStep.Controllers
 {
@@ -80,8 +79,8 @@ namespace FirstStep.Controllers
             return Ok(await _service.GetBySeekerId(id));
         }
 
-        //get appplication status by advertisment id and seeker id
-        [HttpGet("status")]
+        [HttpGet]
+        [Route("GetApplicationStatus/{advertisementId:int}/{seekerId:int}")]
         public async Task<IActionResult> GetApplicationStatus(int advertisementId, int seekerId)
         {
             try
@@ -121,10 +120,6 @@ namespace FirstStep.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-
-
-
-
 
         [HttpGet]
         [Route("GetAverageTime/{companyId:int}")]
