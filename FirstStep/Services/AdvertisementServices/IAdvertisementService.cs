@@ -13,7 +13,7 @@ namespace FirstStep.Services
 
         Task<IEnumerable<AdvertisementShortDto>> GetById(IEnumerable<int> adList, int seekerID);
 
-        Task<AdvertisementDto> GetById(int id);
+        Task<AdvertisementDto> GetById(int id, int seekerID);
 
         Task<UpdateAdvertisementDto> GetByIdWithKeywords(int id);
 

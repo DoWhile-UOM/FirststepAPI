@@ -44,5 +44,9 @@ namespace FirstStep.Services
         public Task<IEnumerable<ApplicationStatusCountDto>> GetApplicationStatusCount(int companyId);
 
         public Task<IEnumerable<ApplicationDateCountDto>> GetApplicationCount(int advertismentId);
+
+        public Task<IEnumerable<ApplicationSelectedDto>> GetSelectedApplicationsDetails(int advertisementId);
+
+        public Task SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto);
     }
 }

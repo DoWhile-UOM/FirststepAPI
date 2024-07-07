@@ -93,8 +93,20 @@ namespace FirstStep.MapperProfile
             CreateMap<Application, ApplicationStatusDto>();
             CreateMap<Application, ApplicationStatusCountDto>();
             CreateMap<Application, ApplicationDateCountDto>();
-
+            CreateMap<Application, ApplicationSelectedDto>();
+            CreateMap<UpdateApplicationStatusDto,Application>();
+            
             CreateMap<AddAppointmentDto, Appointment>();
+
+            CreateMap<Appointment, AppointmentDto>()
+                .ForMember(
+                    des => des.seeker_name,
+                    opt => opt.MapFrom(src => src.seeker!.first_name + ' ' + src.seeker!.last_name));
+
+            CreateMap<Application, AppointmentDto>()
+                .ForMember(
+                des => des.seeker_name,
+                opt => opt.MapFrom(src => src.seeker!.first_name + ' ' + src.seeker!.last_name));
         }
     }
 }

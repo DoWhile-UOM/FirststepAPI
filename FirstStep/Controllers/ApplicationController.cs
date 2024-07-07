@@ -129,6 +129,24 @@ namespace FirstStep.Controllers
             return Ok(averageTimes);
         }
 
+        [HttpGet]
+        [Route("GetSelectedApplicationsDetails/{advertisementId:int}")]
+        public async Task<ActionResult<ApplicationSelectedDto>> GetSelectedApplicationDetails(int advertisementId)
+        {  
+            try
+            {
+                return Ok(await _service.GetSelectedApplicationsDetails(advertisementId));
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
         [HttpPost]
         [Route("AddApplication")]
         public async Task<IActionResult> AddApplication([FromForm] AddApplicationDto newApplication)
@@ -212,6 +230,14 @@ namespace FirstStep.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}"); // HTTP 500 Internal Server Error
             }
+        }
+
+        [HttpPatch]
+        [Route("SetToInterview")]
+        public async Task<IActionResult> SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto)
+        {
+            await _service.SetToInterview(updateApplicationStatusDto);
+            return Ok("Successfully updated isCalled status.");
         }
 
         [HttpPatch]

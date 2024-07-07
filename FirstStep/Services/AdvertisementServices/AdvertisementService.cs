@@ -45,22 +45,24 @@ namespace FirstStep.Services
             if (isActivatedOnly)
             {
                 return await _context.Advertisements
-                    .Include("professionKeywords")
-                    .Include("job_Field")
-                    .Include("hrManager")
-                    .Include("skills")
-                    .Include("savedSeekers")
+                    .Include(ad => ad.professionKeywords)
+                    .Include(ad => ad.job_Field)
+                    .Include(ad => ad.hrManager)
+                    .Include(ad => ad.skills)
+                    .Include(ad => ad.savedSeekers)
+                    .Include(ad => ad.hrManager!.company)
                     .Where(x => x.current_status == Advertisement.Status.active.ToString())
                     .ToListAsync();
             }
             else
             {
                 return await _context.Advertisements
-                    .Include("professionKeywords")
-                    .Include("job_Field")
-                    .Include("hrManager")
-                    .Include("skills")
-                    .Include("savedSeekers")
+                    .Include(ad => ad.professionKeywords)
+                    .Include(ad => ad.job_Field)
+                    .Include(ad => ad.hrManager)
+                    .Include(ad => ad.skills)
+                    .Include(ad => ad.savedSeekers)
+                    .Include(ad => ad.hrManager!.company)
                     .ToListAsync();
             }
         }
@@ -69,12 +71,13 @@ namespace FirstStep.Services
         {
             Advertisement? advertisement =
                 await _context.Advertisements
-                .Include("professionKeywords")
-                .Include("job_Field")
-                .Include("applications")
-                .Include("hrManager")
-                .Include("skills")
-                .Include("savedSeekers")
+                .Include(ad => ad.professionKeywords)
+                .Include(ad => ad.job_Field)
+                .Include(ad => ad.applications)
+                .Include(ad => ad.hrManager)
+                .Include(ad => ad.skills)
+                .Include(ad => ad.savedSeekers)
+                .Include(ad => ad.hrManager!.company)
                 .FirstOrDefaultAsync(x => x.advertisement_id == id);
 
             if (advertisement is null)
@@ -88,12 +91,13 @@ namespace FirstStep.Services
         private async Task<IEnumerable<Advertisement>> FindByCompanyID(int companyID)
         {
             var advertisementList = await _context.Advertisements
-                .Include("professionKeywords")
-                .Include("job_Field")
-                .Include("hrManager")
-                .Include("applications")
-                .Include("skills")
-                .Include("savedSeekers")
+                .Include(ad => ad.professionKeywords)
+                .Include(ad => ad.job_Field)
+                .Include(ad => ad.applications)
+                .Include(ad => ad.hrManager)
+                .Include(ad => ad.skills)
+                .Include(ad => ad.savedSeekers)
+                .Include(ad => ad.hrManager!.company)
                 .Where(x => x.hrManager!.company_id == companyID)
                 .ToListAsync();
 
@@ -124,14 +128,32 @@ namespace FirstStep.Services
             return await CreateFirstPageResults(dbAds, seekerID, noOfresultsPerPage);
         }
 
-        public async Task<AdvertisementDto> GetById(int id)
+        public async Task<AdvertisementDto> GetById(int id, int seekerID)
         {
+            Seeker seeker = await _seekerService.GetById(seekerID);
+
             var dbAdvertismeent = await FindById(id);
             var advertisementDto = _mapper.Map<AdvertisementDto>(dbAdvertismeent);
 
-            advertisementDto.company_name = _context.Companies.Find(dbAdvertismeent.hrManager!.company_id)!.company_name;
+            advertisementDto.company_name = dbAdvertismeent.hrManager!.company!.company_name;
             advertisementDto.company_logo_url = await _fileService.GetBlobUrl(dbAdvertismeent.hrManager!.company!.company_logo!);
             advertisementDto.is_expired = AdvertisementValidation.IsExpired(dbAdvertismeent);
+
+            // find matching skills and missing skills
+            advertisementDto.matchingSkills = new List<Skill> { };
+            advertisementDto.missingSkills = new List<Skill> { };
+
+            foreach (var skill in dbAdvertismeent.skills!)
+            {
+                if (seeker.skills!.Contains(skill))
+                {
+                    advertisementDto.matchingSkills.Add(skill);
+                }
+                else
+                {
+                    advertisementDto.missingSkills.Add(skill);
+                }
+            }
 
             return advertisementDto;
         }
@@ -503,11 +525,8 @@ namespace FirstStep.Services
 
                 if (!recentAccessedCompanies.ContainsKey(company_id))
                 {
-                    Company? company = await _context.Companies.FindAsync(company_id);
-                    if (company == null) continue;
-
-                    appliedAdvertisement.company_logo_url = await _fileService.GetBlobUrl(company.company_logo!);
-                    appliedAdvertisement.company_name = company.company_name;
+                    appliedAdvertisement.company_logo_url = await _fileService.GetBlobUrl(dbAdvertisement.hrManager!.company!.company_logo!);
+                    appliedAdvertisement.company_name = dbAdvertisement.hrManager!.company!.company_name;
 
                     recentAccessedCompanies.Add(company_id, (appliedAdvertisement.company_name, appliedAdvertisement.company_logo_url));
                 }
@@ -654,11 +673,8 @@ namespace FirstStep.Services
 
                 if (!recentAccessedCompanies.ContainsKey(company_id))
                 {
-                    Company? company = await _context.Companies.FindAsync(company_id);
-                    if (company == null) continue;
-
-                    adDto.company_logo_url = await _fileService.GetBlobUrl(company.company_logo!);
-                    adDto.company_name = company.company_name;
+                    adDto.company_logo_url = await _fileService.GetBlobUrl(ad.hrManager!.company!.company_logo!);
+                    adDto.company_name = ad.hrManager!.company!.company_name;
 
                     recentAccessedCompanies.Add(company_id, (adDto.company_name, adDto.company_logo_url));
                 }
@@ -755,10 +771,11 @@ namespace FirstStep.Services
 
             // get all active advertisements with filtering by country and field
             List<Advertisement> advertisements = await _context.Advertisements
-                .Include("professionKeywords")
-                .Include("job_Field")
-                .Include("hrManager")
-                .Include("savedSeekers")
+                .Include(ad => ad.professionKeywords)
+                .Include(ad => ad.job_Field)
+                .Include(ad => ad.hrManager)
+                .Include(ad => ad.savedSeekers)
+                .Include(ad => ad.hrManager!.company)
                 .Where(ad =>
                     ad.current_status == Advertisement.Status.active.ToString() &&
                     ad.country == requestAdsDto.country &&

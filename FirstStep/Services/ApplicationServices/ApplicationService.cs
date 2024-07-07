@@ -493,7 +493,6 @@ namespace FirstStep.Services
 
             var applicationStatus = new ApplicationStatusDto
             {
-                //assign GetBlobUrl to dto cv name
                 cv_name = await _fileService.GetBlobUrl(application.CVurl!),
                 submitted_date = application.submitted_date,
                 status = "",
@@ -680,6 +679,66 @@ namespace FirstStep.Services
                 .ToListAsync();
 
             return applications;
+        }
+
+        public async Task<IEnumerable<ApplicationSelectedDto>> GetSelectedApplicationsDetails(int advertisementId)
+        {
+            //check the advertisment in hold state
+            var advertisement = await _context.Advertisements
+                .Include(a => a.applications)
+                .Where(a => a.advertisement_id == advertisementId)
+                .FirstOrDefaultAsync();
+
+            if (advertisement == null)
+            {
+                throw new NullReferenceException("Advertisement not found.");
+            }
+
+            if (advertisement.current_status != Advertisement.Status.hold.ToString())
+            {
+                throw new InvalidDataException("Advertisement is not in hold state.");
+            }
+
+            //get the applications in accepted state
+            var applications = advertisement.applications!.Where(a => a.status == Application.ApplicationStatus.Accepted.ToString());
+
+            List<ApplicationSelectedDto> applicationSelectedDtos = new List<ApplicationSelectedDto>();
+
+            foreach (var application in applications)
+            {
+                var applicationSelectedDto = _mapper.Map<ApplicationSelectedDto>(application);
+                //application id
+                applicationSelectedDto.application_id = application.application_Id;
+                applicationSelectedDto.application_status = application.is_called;
+                var seeker = await _context.Seekers.FindAsync(application.seeker_id);
+                applicationSelectedDto.seeker_name = application.seeker!.first_name + " " + application.seeker!.last_name;
+                //get the last revision employee name 
+                var lastRevision = await _revisionService.GetLastRevision(application.application_Id);
+                if (lastRevision != null)
+                {
+                    applicationSelectedDto.last_revision_employee_name = lastRevision.employee!.first_name + " " + lastRevision.employee!.last_name;
+                }
+                applicationSelectedDtos.Add(applicationSelectedDto);
+            }
+
+            return applicationSelectedDtos;
+        }
+        
+        //set the application isCalled to true by the application id using UpdateApplicationStatusDto
+        public async Task SetToInterview(UpdateApplicationStatusDto updateApplicationStatusDto)
+        {
+            var application = await _context.Applications
+                .Where(a => a.application_Id == updateApplicationStatusDto.application_id)
+                .FirstOrDefaultAsync();
+
+            if (application == null)
+            {
+                throw new NullReferenceException("Application not found.");
+            }
+
+            application.is_called = updateApplicationStatusDto.is_called;
+
+            await _context.SaveChangesAsync();
         }
     }
 }

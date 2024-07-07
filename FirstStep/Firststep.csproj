@@ -11,7 +11,9 @@
 
   <ItemGroup>
     <Compile Remove="Models\DTOs\ApplicationCountDto.cs" />
+    <Compile Remove="Models\DTOs\ConfirmInterviewDto.cs" />
     <Compile Remove="Models\DTOs\StatusStepsDto.cs" />
+    <Compile Remove="Models\DTOs\UpdateAppllicationStatusForInterview.cs" />
   </ItemGroup>
 
   <ItemGroup>

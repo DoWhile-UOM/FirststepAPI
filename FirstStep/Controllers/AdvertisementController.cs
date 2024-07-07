@@ -74,12 +74,12 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetAdvertisementById/{jobID:int}")]
-        public async Task<ActionResult<AdvertisementDto>> GetAdvertisementById(int jobID)
+        [Route("GetAdvertisementById/{jobID:int}/{seekerID:int}")]
+        public async Task<ActionResult<AdvertisementDto>> GetAdvertisementById(int jobID, int seekerID)
         {
             try
             {
-                return Ok(await _service.GetById(jobID));
+                return Ok(await _service.GetById(jobID, seekerID));
             }
             catch (Exception e)
             {
