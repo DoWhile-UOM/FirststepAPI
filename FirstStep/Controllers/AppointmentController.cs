@@ -53,6 +53,20 @@ namespace FirstStep.Controllers
             return Ok(schedules);
         }
 
+        [HttpGet]
+        [Route("GetInterviewStat")]
+        public async Task<IActionResult> GetInterviewStat(int companyId)
+        {
+            try
+            {
+                return Ok(await _appointmentService.GetInterviewStat(companyId));
+            }
+            catch (Exception e)
+            {
+                return ReturnStatusCode(e);
+            }
+        }
+
         [HttpPost]
         [Route("CreateAppointments")]
         public async Task<IActionResult> CreateAppointments(AddAppointmentDto newAppointment)

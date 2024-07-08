@@ -18,5 +18,7 @@ namespace FirstStep.Services
         Task<AppointmentAvailableDto> GetAvailabelSlots(int advertisment_id);
 
         Task<AppointmentDetailsDto> GetBookedAppointmentList(int advertisment_id);
+
+        Task<InterviewStatDto> GetInterviewStat(int companyId);
     }
 }

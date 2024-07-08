@@ -270,5 +270,32 @@ namespace FirstStep.Services
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<InterviewStatDto> GetInterviewStat(int companyId)
+        {
+            var past14Days = DateTime.Now.AddDays(-14);
+
+            var interviewCounts = await _context.Appointments
+                .Where(a => a.start_time >= past14Days && a.company_id == companyId)
+                .GroupBy(a => a.start_time.Date)
+                .Select(g => new DailyInterviewCount
+                {
+                    Date = g.Key,
+                    Booked = g.Count(a => a.status == Appointment.Status.Booked.ToString()),
+                    Completed = g.Count(a => a.status == Appointment.Status.Complete.ToString()),
+                    Missed = g.Count(a => a.status == Appointment.Status.Missed.ToString())
+                }).ToListAsync();
+
+            var totalApplications = await _context.Applications.CountAsync(a => a.advertisement.hrManager.company_id == companyId);
+            var totalSelected = await _context.Applications.CountAsync(a => a.advertisement.hrManager.company_id == companyId && a.is_called);
+
+            var interviewStatDto = new InterviewStatDto
+            {
+                InterviewCountPerDay = interviewCounts,
+                IsCalledPercentage = (totalApplications > 0) ? ((double)totalSelected / totalApplications) * 100 : 0
+            };
+
+            return interviewStatDto;
+        }
     }
 }
