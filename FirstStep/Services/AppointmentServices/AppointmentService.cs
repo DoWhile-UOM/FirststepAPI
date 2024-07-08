@@ -144,31 +144,23 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<dailyInterviewDto>> GetSchedulesByDateAndCompany(DateTime date, int companyId, string userRole, int userId)
+        public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date, int companyId)
         {
-            IQueryable<Appointment> query = _context.Appointments
-                .Include(a => a.advertisement)
-                .Include(a => a.seeker)
-                .Where(a => a.start_time.Date == date.Date && a.company_id == companyId);
-
-            if (userRole == "HR Manager")
-            {
-                query = query.Where(a => a.advertisement!.hrManager_id == userId);
-            }
-
-            return await query
-                .Select(a => new dailyInterviewDto
-                {
-                    appointment_id = a.appointment_id,
-                    status = Enum.Parse<Appointment.Status>(a.status, true),
-                    start_time = a.start_time,
-                    end_time = a.start_time.AddMinutes(a.advertisement!.interview_duration),
-                    title = a.advertisement.title,
-                    first_name = a.seeker != null ? a.seeker.first_name : "N/A",
-                    last_name = a.seeker != null ? a.seeker.last_name : "N/A",
-                    seeker_id = a.seeker_id
-                })
-                .ToListAsync();
+            return await _context.Appointments
+            .Include(a => a.advertisement)
+            .Include(a => a.seeker)
+            .Where(a => a.start_time.Date == date.Date && a.company_id == companyId && a.status != Appointment.Status.Pending.ToString())
+            .Select(a => new dailyInterviewDto
+        {
+            appointment_id = a.appointment_id,
+            status = Enum.Parse<Appointment.Status>(a.status, true), // Parse with case-insensitivity
+            start_time = a.start_time,
+            end_time = a.start_time.AddMinutes(a.advertisement!.interview_duration),
+            title = a.advertisement.title,
+            first_name = a.seeker != null ? a.seeker.first_name : "N/A",
+            last_name = a.seeker != null ? a.seeker.last_name : "N/A",
+            seeker_id = a.seeker_id // Include seeker_id
+        }).ToListAsync();
         }
 
         public async Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus)
