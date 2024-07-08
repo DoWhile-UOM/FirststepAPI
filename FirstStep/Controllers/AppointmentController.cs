@@ -1,8 +1,10 @@
 ﻿using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FirstStep.Controllers
 {
@@ -47,9 +49,13 @@ namespace FirstStep.Controllers
 
         [HttpGet]
         [Route("GetSchedulesByDateAndCompany/{date}/Company/{companyId}")]
-        public async Task<ActionResult<List<dailyInterviewDto>>> GetSchedulesByDate(DateTime date, int companyId)
+        [Authorize]
+        public async Task<ActionResult<List<dailyInterviewDto>>> GetSchedulesByDateAndCompany(DateTime date, int companyId)
         {
-            var schedules = await _appointmentService.GetSchedulesByDate(date,companyId);
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+
+            var schedules = await _appointmentService.GetSchedulesByDateAndCompany(date, companyId, userRole, userId);
             return Ok(schedules);
         }
 
