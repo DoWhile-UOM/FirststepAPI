@@ -46,10 +46,10 @@ namespace FirstStep.Controllers
         }
 
         [HttpGet]
-        [Route("GetByDate/{date}")]
-        public async Task<ActionResult<List<dailyInterviewDto>>> GetSchedulesByDate(DateTime date)
+        [Route("GetSchedulesByDateAndCompany/{date}/Company/{companyId}")]
+        public async Task<ActionResult<List<dailyInterviewDto>>> GetSchedulesByDate(DateTime date, int companyId)
         {
-            var schedules = await _appointmentService.GetSchedulesByDate(date);
+            var schedules = await _appointmentService.GetSchedulesByDate(date,companyId);
             return Ok(schedules);
         }
 
