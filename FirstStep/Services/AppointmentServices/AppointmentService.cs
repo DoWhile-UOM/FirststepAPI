@@ -3,6 +3,7 @@ using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.Design;
 
 namespace FirstStep.Services
 {
@@ -143,22 +144,23 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date)
+        public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date, int companyId)
         {
             return await _context.Appointments
-                .Include(a => a.advertisement)
-                .Include(a => a.seeker)
-                .Where(a => a.start_time.Date == date.Date)
-                .Select(a => new dailyInterviewDto
-                {
-                    appointment_id = a.appointment_id,
-                    status = Enum.Parse<Appointment.Status>(a.status, true), // Parse with case-insensitivity
-                    start_time = a.start_time,
-                    end_time = a.start_time.AddMinutes(a.advertisement!.interview_duration), 
-                    title = a.advertisement.title,
-                    first_name = a.seeker != null ? a.seeker.first_name : "N/A",
-                    last_name = a.seeker != null ? a.seeker.last_name : "N/A"  
-                }).ToListAsync();
+            .Include(a => a.advertisement)
+            .Include(a => a.seeker)
+            .Where(a => a.start_time.Date == date.Date && a.company_id == companyId && a.status != Appointment.Status.Pending.ToString())
+            .Select(a => new dailyInterviewDto
+        {
+            appointment_id = a.appointment_id,
+            status = Enum.Parse<Appointment.Status>(a.status, true), // Parse with case-insensitivity
+            start_time = a.start_time,
+            end_time = a.start_time.AddMinutes(a.advertisement!.interview_duration),
+            title = a.advertisement.title,
+            first_name = a.seeker != null ? a.seeker.first_name : "N/A",
+            last_name = a.seeker != null ? a.seeker.last_name : "N/A",
+            seeker_id = a.seeker_id // Include seeker_id
+        }).ToListAsync();
         }
 
         public async Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus)
@@ -267,6 +269,33 @@ namespace FirstStep.Services
             _context.Appointments.RemoveRange(appointments);
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<InterviewStatDto> GetInterviewStat(int companyId)
+        {
+            var past14Days = DateTime.Now.AddDays(-14);
+
+            var interviewCounts = await _context.Appointments
+                .Where(a => a.start_time >= past14Days && a.company_id == companyId)
+                .GroupBy(a => a.start_time.Date)
+                .Select(g => new DailyInterviewCount
+                {
+                    Date = g.Key,
+                    Booked = g.Count(a => a.status == Appointment.Status.Booked.ToString()),
+                    Completed = g.Count(a => a.status == Appointment.Status.Complete.ToString()),
+                    Missed = g.Count(a => a.status == Appointment.Status.Missed.ToString())
+                }).ToListAsync();
+
+            var totalApplications = await _context.Applications.CountAsync(a => a.advertisement.hrManager.company_id == companyId);
+            var totalSelected = await _context.Applications.CountAsync(a => a.advertisement.hrManager.company_id == companyId && a.is_called);
+
+            var interviewStatDto = new InterviewStatDto
+            {
+                InterviewCountPerDay = interviewCounts,
+                IsCalledPercentage = (totalApplications > 0) ? ((double)totalSelected / totalApplications) * 100 : 0
+            };
+
+            return interviewStatDto;
         }
     }
 }
