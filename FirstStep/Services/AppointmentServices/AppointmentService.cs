@@ -286,8 +286,8 @@ namespace FirstStep.Services
                     Missed = g.Count(a => a.status == Appointment.Status.Missed.ToString())
                 }).ToListAsync();
 
-            var totalApplications = await _context.Applications.CountAsync(a => a.advertisement.hrManager.company_id == companyId);
-            var totalSelected = await _context.Applications.CountAsync(a => a.advertisement.hrManager.company_id == companyId && a.is_called);
+            var totalApplications = await _context.Applications.CountAsync(a => a.advertisement!.hrManager!.company_id == companyId);
+            var totalSelected = await _context.Applications.CountAsync(a => a.advertisement!.hrManager!.company_id == companyId && a.is_called);
 
             var interviewStatDto = new InterviewStatDto
             {
