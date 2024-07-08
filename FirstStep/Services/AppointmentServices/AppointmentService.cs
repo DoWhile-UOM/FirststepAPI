@@ -144,48 +144,25 @@ namespace FirstStep.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date, int companyId, int userId, string userRole)
+        public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date, int companyId)
         {
-            // Logic to fetch schedules based on role
-            if (userRole == "ca")
-            {
-                // CA can access all interview schedules of the company
-                return await _context.Appointments
-                    .Where(a => a.company_id == companyId && a.start_time.Date == date.Date)
-                    .Select(a => new dailyInterviewDto
-                    {
-                        appointment_id = a.appointment_id,
-                        status = (Appointment.Status)Enum.Parse(typeof(Appointment.Status), a.status, true),
-                        start_time = a.start_time,
-                        end_time = a.start_time.AddMinutes(a.advertisement.interview_duration),
-                        title = a.advertisement.title,
-                        first_name = a.seeker.first_name,
-                        last_name = a.seeker.last_name,
-                        seeker_id = a.seeker_id
-                    }).ToListAsync();
-            }
-            else if (userRole == "hrm")
-            {
-                // HRM can access interview schedules of the advertisements created by them
-                return await _context.Appointments
-                    .Where(a => a.company_id == companyId && a.start_time.Date == date.Date && a.advertisement.hrManager_id == userId)
-                    .Select(a => new dailyInterviewDto
-                    {
-                        appointment_id = a.appointment_id,
-                        status = (Appointment.Status)Enum.Parse(typeof(Appointment.Status), a.status, true),
-                        start_time = a.start_time,
-                        end_time = a.start_time.AddMinutes(a.advertisement.interview_duration),
-                        title = a.advertisement.title,
-                        first_name = a.seeker.first_name,
-                        last_name = a.seeker.last_name,
-                        seeker_id = a.seeker_id
-                    }).ToListAsync();
-            }
-            else
-            {
-                throw new UnauthorizedAccessException("User role not authorized to access schedules.");
-            }
+            return await _context.Appointments
+            .Include(a => a.advertisement)
+            .Include(a => a.seeker)
+            .Where(a => a.start_time.Date == date.Date && a.company_id == companyId && a.status != Appointment.Status.Pending.ToString())
+            .Select(a => new dailyInterviewDto
+        {
+            appointment_id = a.appointment_id,
+            status = Enum.Parse<Appointment.Status>(a.status, true), // Parse with case-insensitivity
+            start_time = a.start_time,
+            end_time = a.start_time.AddMinutes(a.advertisement!.interview_duration),
+            title = a.advertisement.title,
+            first_name = a.seeker != null ? a.seeker.first_name : "N/A",
+            last_name = a.seeker != null ? a.seeker.last_name : "N/A",
+            seeker_id = a.seeker_id // Include seeker_id
+        }).ToListAsync();
         }
+
         public async Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus)
         {
             var appointment = await FindById(appointment_id);

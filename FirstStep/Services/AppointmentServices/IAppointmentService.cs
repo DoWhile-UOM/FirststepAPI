@@ -11,7 +11,7 @@ namespace FirstStep.Services
 
         Task BookAppointment(int appointment_id, int seeker_id);
 
-        Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date, int companyId, int userId, string userRole);
+        Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date, int companyId);
 
         Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus);
 
