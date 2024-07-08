@@ -17,6 +17,8 @@
         public required string last_name { get; set; }
 
         public int? seeker_id { get; set; }
+
+        public int hrManager_id { get; set; }
     }  
 
 }
