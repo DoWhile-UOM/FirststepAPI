@@ -188,7 +188,8 @@ namespace FirstStep.Services
         public async Task SendEmailInterviewBook(string email, string advertismentTitle, string company_name, int userid,int advertismentid,string comment)
         {
             // Registration Email
-            var bookingLink = $"https://polite-forest-041105700.5.azurestaticapps.net/seeker/interviewslot?id={advertismentid}&uid={userid}";
+            string baselink = "https://polite-forest-041105700.5.azurestaticapps.net";
+            var bookingLink = $"{baselink}/seeker/interviewslot?id={advertismentid}&uid={userid}";
             
             if(comment == null)
             {
