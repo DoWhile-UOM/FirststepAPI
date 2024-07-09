@@ -2,6 +2,7 @@
 using FirstStep.Services;
 using FirstStep.Models.DTOs;
 using FirstStep.Models.ServiceModels;
+using FirstStep.Models;
 
 namespace FirstStep.Controllers
 {
@@ -26,6 +27,15 @@ namespace FirstStep.Controllers
                 "Email Sent" => Ok(response),
                 _ => BadRequest(response),
             };
+        }
+
+        [HttpGet]
+        [Route("TestEmail")]
+        public async Task<IActionResult> RequestOTP()
+        {
+            await _emailService.SendEmailInterviewBookConfirm("ashanmatheesha@gmail.com", "Software Developer","Bistec Global","2023-07-20","1.00 PM");
+            //Task SendEmailInterviewBook(string email, string advertismentTitle, string company_name, int userid, int advertismentid);
+            return Ok("Email Sent");
         }
 
         [HttpPost]

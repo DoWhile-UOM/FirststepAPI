@@ -134,5 +134,52 @@
                 </div>
             </body>
             </html>";
+
+        public static string SeekerInterviewSlotBooking =
+            @"<!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset=""utf-8"" />
+                <title>Schedule Your Interview</title>
+            </head>
+            <body>
+                <div style=""font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;"">
+                    <h2 style=""color: #333;"">Schedule Your Interview</h2>
+
+
+                    <div style=""background-color: #f4f4f4; padding: 10px; border-radius: 5px;"">
+                        <h3 style=""color: #333;"">Dear Applicant</h3>
+                        <p>We are pleased to invite you to an interview for the [Job Position] position at {Company Name}. Please use the link below to book a time slot that works best for you.</p>
+                        <p>Please <a href={booking_link} style=""color: #007bff; text-decoration: none;"">click here</a> to schedule your interview.</p>
+                        <p style=""font-weight: bold;"">{comments}</p>
+                    </div>
+                    <p style=""color: #333; margin-top: 20px;"">Thank you for choosing FirstStep.</p>
+                </div>
+            </body>
+            </html>";
+
+        public static string InterviewBookConfirm =
+            @"<!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset=""utf-8"" />
+                <title>Interview Confirmation</title>
+            </head>
+            <body>
+                <div style=""font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;"">
+                    <h2 style=""color: #333;"">Interview Confirmation</h2>
+
+
+                    <div style=""background-color: #f4f4f4; padding: 10px; border-radius: 5px;"">
+                        <h3 style=""color: #333;"">Dear Applicant</h3>
+                        <p>We are pleased to confirm your interview for the [Job Position] position at {Company Name}. Here are the details of your scheduled interview:</p>
+                        <p><strong>Date:</strong> [Interview Date]</p>
+                        <p><strong>Time:</strong> [Interview Time]</p>
+                        <p>If you have any questions or need to reschedule, please do not hesitate to contact the Company.</p>
+                    </div>
+                    <p style=""color: #333; margin-top: 20px;"">Thank you for choosing FirstStep.</p>
+                </div>
+            </body>
+            </html>";
     }
 }

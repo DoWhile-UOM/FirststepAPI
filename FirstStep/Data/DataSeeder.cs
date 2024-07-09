@@ -18,10 +18,8 @@ namespace FirstStep.Data
 
             // random job titles
             string[] jobTitles = {
-                "AI Engineer", "Data Scientist", "AI Developer", "AI Data Scientist", "AI Product Manager", "AI Research Scientist", "DevOps Engineer", "Python Web Developer", "Senior Data Scientist",
-                "Python DevOps Engineer", "Python Automation Engineer", "Deep Learning Engineer", "Python Scripting Specialist", "Applied Machine Learning Researcher", "NLP (Natural Language Processing) Engineer",
-                "Quantitative Data Scientist", "Marketing Data Analyst", "Big Data Analyst", "Full Stack Engineer", "Business Data Analyst", "Python Backend Developer", "Machine Learning Scientist", "Computer Vision Engineer"
-			};
+                "Software Engineer", "Senior Software Engineer", "Dynamics 365 and C# Developer", "Quality Assurance Engineer", "QA Analyst", "Solution Architect", "DevOps Engineer", "Frontend Developer", "Backend Developer"
+            };
 
             // random countries and cities
             Dictionary<string, string[]> countries = new Dictionary<string, string[]>()
@@ -32,7 +30,7 @@ namespace FirstStep.Data
                 { "Australia", new string[] {"Sydney", "Melbourne", "Brisbane", "Perth" } },
             };
 
-            string[] cities = { "Colombo", "Kandy", "Matara", "Kalutara", "Gampaha", "Moratuwa", "Galle", "Matale"};
+            string[] cities = { "Colombo", "Kandy", "Matara", "Kalutara", "Gampaha", "Moratuwa", "Galle"};
 
             // random employment types
             string[] employmentTypes = { "Full-time", "Part-time", "Contract", "Internship", "Temporary", "Volunteer" };
@@ -44,19 +42,20 @@ namespace FirstStep.Data
             string[] experiences = { "Internship", "Entry Level", "Associate", "Mid Level", "Senior Level", "Experienced" };
 
             // random job keywords
-            string[] keywords = { "ai", "machine learning", "data science", "devop", "big data", "deep learning", "computer vision", "python", "software engineer", "ai engineer" };
+            string[] keywords = { "software engineer", "web developer", "full stack developer", "software developer" };
 
-            // random skills
-            string[] skills = { "machine learning", "flask", "fastapi", "python", "machine learning", "classification", "machine learning models", "data science", "cicd", "azure", "aws" };
+            //string[] keywords = { "ai", "machine learning", "data science", "devop", "big data", "deep learning", "computer vision", "python", "software engineer", "ai engineer" };
+            string[] skills = { "C#", "ASP.NET", "Unit Testing", "Agile", "Continuous Integration", "RESTful APIs" };
 
             // random salary
             float[] salaries = { 6500f, 2500f, 2550f, 1500f };
 
             // random hr managers
-            int[] hrmanager = { 1075, 4137 };
+            int[] hrmanager = { 2, 7 };
 
             // sample description
-            string description = @"<h2>
+            string description = @"
+				<h2>
 					<strong>
 						Overview
 					</strong>
@@ -64,83 +63,70 @@ namespace FirstStep.Data
 				<p style=""letter-spacing: 0.214286px;"">
 					As a Machine Learning Engineer, you’ll play a crucial role in designing, developing, and implementing machine learning models and algorithms. Your work will directly impact our organization’s products and services, driving innovation and improving user experiences.
 				</p>
-				<p>
-					<br>
-					</br>
-					<h2>
-						<strong>
-							Qualifications
-						</strong>
-					</h2>
-					<ul>
-						<li style="""">
-							<span style=""letter-spacing: 0.214286px;"">
-								A strong background in machine learning, deep learning, and statistical modeling.
-							</span>
-						</li>
-						<li style="""">
-							<span style=""letter-spacing: 0.214286px;"">
-								Proficiency in programming languages such as Python, R, or Julia.
-							</span>
-						</li>
-						<li style="""">
-							<span style=""letter-spacing: 0.214286px;"">
-								Experience with popular machine learning libraries (e.g., TensorFlow, PyTorch, scikit-learn).
-							</span>
-						</li>
-						<li style="""">
-							<span style=""letter-spacing: 0.214286px;"">
-								Knowledge of data preprocessing, feature engineering, and model evaluation techniques.
-							</span>
-						</li>
-						<li style="""">
-							<span style=""letter-spacing: 0.214286px;"">
-								Strong problem-solving skills and the ability to collaborate with cross-functional teams.
-							</span>
-						</li>
-					</ul>
-					<p>
-						<br>
-						</br>
-						<h2>
-							<strong>
-								Responsibilities
-							</strong>
-						</h2>
-						<ul>
-							<li style="""">
-								<span style=""letter-spacing: 0.214286px;"">
-									Developing and implementing machine learning models for various applications (e.g., natural language processing, computer vision, recommendation systems).
-								</span>
-							</li>
-							<li style="""">
-								<span style=""letter-spacing: 0.214286px;"">
-									Collecting, cleaning, and analyzing large datasets to extract meaningful insights.
-								</span>
-							</li>
-							<li style="""">
-								<span style=""letter-spacing: 0.214286px;"">
-									Collaborating with data scientists, software engineers, and product managers to define project goals and requirements.
-								</span>
-							</li>
-							<li style="""">
-								<span style=""letter-spacing: 0.214286px;"">
-									Optimizing and fine-tuning models for performance and scalability.
-								</span>
-							</li>
-							<li style="""">
-								<span style=""letter-spacing: 0.214286px;"">
-									Staying up-to-date with the latest advancements in machine learning and AI.
-								</span>
-							</li>
-						</ul>
-						<p>
-							<br>
-							</br>
-						</p>
-					</p>
-				</p>
-				";
+				<h2>
+					<strong>
+						Qualifications
+					</strong>
+				</h2>
+				<ul>
+					<li style="""">
+						<span style=""letter-spacing: 0.214286px;"">
+							A strong background in machine learning, deep learning, and statistical modeling.
+						</span>
+					</li>
+					<li style="""">
+						<span style=""letter-spacing: 0.214286px;"">
+							Proficiency in programming languages such as Python, R, or Julia.
+						</span>
+					</li>
+					<li style="""">
+						<span style=""letter-spacing: 0.214286px;"">
+							Experience with popular machine learning libraries (e.g., TensorFlow, PyTorch, scikit-learn).
+						</span>
+					</li>
+					<li style="""">
+						<span style=""letter-spacing: 0.214286px;"">
+							Knowledge of data preprocessing, feature engineering, and model evaluation techniques.
+						</span>
+					</li>
+					<li style="""">
+						<span style=""letter-spacing: 0.214286px;"">
+							Strong problem-solving skills and the ability to collaborate with cross-functional teams.
+						</span>
+					</li>
+				</ul>	
+				<h2>
+					<strong>
+						Responsibilities
+					</strong>
+				</h2>
+				<ul>
+					<li style="""">
+						<span style=""letter-spacing: 0.214286px;"">
+							Developing and implementing machine learning models for various applications (e.g., natural language processing, computer vision, recommendation systems).
+						</span>
+					</li>
+					<li style="""">
+						<span style=""letter-spacing: 0.214286px;"">
+							Collecting, cleaning, and analyzing large datasets to extract meaningful insights.
+						</span>
+					</li>
+					<li style="""">
+						<span style=""letter-spacing: 0.214286px;"">
+							Collaborating with data scientists, software engineers, and product managers to define project goals and requirements.
+						</span>
+					</li>
+					<li style="""">
+						<span style=""letter-spacing: 0.214286px;"">
+							Optimizing and fine-tuning models for performance and scalability.
+						</span>
+					</li>
+					<li style="""">
+						<span style=""letter-spacing: 0.214286px;"">
+							Staying up-to-date with the latest advancements in machine learning and AI.
+						</span>
+					</li>
+				</ul>";
 
 			Random random = new Random();
 
@@ -191,7 +177,7 @@ namespace FirstStep.Data
                     experience = experiences[random.Next(experiences.Length)],
                     salary = salaries[i % salaries.Length],
                     currency_unit = "USD",
-                    submission_deadline = System.DateTime.Now.AddDays(90),
+                    submission_deadline = DateTime.Now.AddDays(90),
                     job_description = description,
                     hrManager_id = hrmanager[random.Next(hrmanager.Length)],
                     field_id = 1,

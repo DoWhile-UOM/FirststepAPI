@@ -10,11 +10,13 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
-        public AppointmentService(DataContext dataContext, IMapper mapper) 
+        public AppointmentService(IEmailService emailService,DataContext dataContext, IMapper mapper) 
         {
             _context = dataContext;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         private async Task<Appointment> FindById(int appointmentId)
@@ -74,6 +76,15 @@ namespace FirstStep.Services
             }
 
             // send email to the seeker to book any advertisement with the message
+            var selectedApplicant = await _context.Applications
+                .Include("seeker")
+                .Where(a => a.advertisement_id == newAppointmentDto.advertisement_id && a.is_called == true && a.status == Application.ApplicationStatus.Accepted.ToString())
+                .ToListAsync();
+
+            foreach (var applicant in selectedApplicant)
+            {
+                await _emailService.SendEmailInterviewBook(applicant.seeker!.email, advertisement.title, company.company_name, applicant.seeker.user_id, advertisement.advertisement_id, newAppointmentDto.comment);
+            }
 
             await _context.SaveChangesAsync();
         }
@@ -103,6 +114,8 @@ namespace FirstStep.Services
         {
             var appointment = await _context.Appointments
                 .Include(a => a.seeker)
+                .Include(a=>a.advertisement)
+                .Include(a => a.advertisement!.hrManager!.company)
                 .FirstOrDefaultAsync(a => a.appointment_id == appointment_id);
 
             if (appointment == null)
@@ -140,26 +153,36 @@ namespace FirstStep.Services
             appointment.status = Appointment.Status.Booked.ToString();
             appointment.seeker_id = seeker_id;
 
+            string date = appointment.start_time.Date.ToString("yyyy-MM-dd");
+            string time = appointment.start_time.TimeOfDay.ToString(@"hh\:mm");
+
+            string advertismentTitle= appointment.advertisement!.title;
+            string companyName =appointment.advertisement!.hrManager!.company!.company_name;
+
+            await _emailService.SendEmailInterviewBookConfirm(seeker.email, advertismentTitle, companyName, date,time);
+
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date)
+        public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date, int companyId)
         {
             return await _context.Appointments
                 .Include(a => a.advertisement)
                 .Include(a => a.seeker)
-                .Where(a => a.start_time.Date == date.Date)
+                .Where(a => a.start_time.Date == date.Date && a.company_id == companyId && a.status != Appointment.Status.Pending.ToString())
                 .Select(a => new dailyInterviewDto
                 {
                     appointment_id = a.appointment_id,
-                    status = Enum.Parse<Appointment.Status>(a.status, true), // Parse with case-insensitivity
+                    status = Enum.Parse<Appointment.Status>(a.status, true),
                     start_time = a.start_time,
-                    end_time = a.start_time.AddMinutes(a.advertisement!.interview_duration), 
-                    title = a.advertisement.title,
+                    end_time = a.advertisement != null ? a.start_time.AddMinutes(a.advertisement.interview_duration) : default(DateTime),
+                    title = a.advertisement != null ? a.advertisement.title : "N/A",
                     first_name = a.seeker != null ? a.seeker.first_name : "N/A",
-                    last_name = a.seeker != null ? a.seeker.last_name : "N/A"  
+                    last_name = a.seeker != null ? a.seeker.last_name : "N/A",
+                    seeker_id = a.seeker_id 
                 }).ToListAsync();
         }
+
 
         public async Task<bool> UpdateInterviewStatus(int appointment_id, Appointment.Status newStatus)
         {
@@ -202,7 +225,7 @@ namespace FirstStep.Services
 
             AppointmentAvailableDto appointmentAvailable = new AppointmentAvailableDto();
 
-            appointmentAvailable.slot = advertisement.appointments!.Select(x => new AppointmentAvailabelTimeDto
+            appointmentAvailable.slot = advertisement.appointments!.Where(a=>a.seeker_id==null && a.status==Appointment.Status.Pending.ToString()).Select(x => new AppointmentAvailabelTimeDto
             {
                 appointment_id = x.appointment_id,
                 start_time = x.start_time
@@ -219,7 +242,6 @@ namespace FirstStep.Services
         {
             AppointmentDetailsDto appointmentDetails = new AppointmentDetailsDto();
 
-            //get the appointments for the advertisement id
             var appointments = await _context.Appointments
                 .Include("seeker")
                 .Where(a => a.advertisement_id == advertisment_id && a.seeker_id != null && a.status == Appointment.Status.Booked.ToString())
@@ -251,10 +273,6 @@ namespace FirstStep.Services
 
         public async Task CompleteInterviewSchedule(int advertisement_id)
         {
-            // get all the booked appointments for the advertisement
-            // email to each seeker about the interview schedule
-
-            // delete all the empty appointments for the advertisement
             await DeleteEmptyAppointments(advertisement_id);
         }
 
@@ -267,6 +285,33 @@ namespace FirstStep.Services
             _context.Appointments.RemoveRange(appointments);
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<InterviewStatDto> GetInterviewStat(int companyId)
+        {
+            var past14Days = DateTime.Now.AddDays(-14);
+
+            var interviewCounts = await _context.Appointments
+                .Where(a => a.start_time >= past14Days && a.company_id == companyId)
+                .GroupBy(a => a.start_time.Date)
+                .Select(g => new DailyInterviewCount
+                {
+                    Date = g.Key,
+                    Booked = g.Count(a => a.status == Appointment.Status.Booked.ToString()),
+                    Completed = g.Count(a => a.status == Appointment.Status.Complete.ToString()),
+                    Missed = g.Count(a => a.status == Appointment.Status.Missed.ToString())
+                }).ToListAsync();
+
+            var totalApplications = await _context.Applications.CountAsync(a => a.advertisement!.hrManager!.company_id == companyId);
+            var totalSelected = await _context.Applications.CountAsync(a => a.advertisement!.hrManager!.company_id == companyId && a.is_called);
+
+            var interviewStatDto = new InterviewStatDto
+            {
+                InterviewCountPerDay = interviewCounts,
+                IsCalledPercentage = (totalApplications > 0) ? ((double)totalSelected / totalApplications) * 100 : 0
+            };
+
+            return interviewStatDto;
         }
     }
 }

@@ -278,7 +278,7 @@ namespace FirstStep.Services
         private async Task<List<ActiveUsers>> GetActiveUsersAsync()
         {
             var activeUsers = await _context.Users
-                .Where(user => user.last_login_date <= DateTime.Now.AddDays(-30))
+                .Where(user => user.last_login_date >= DateTime.Now.AddDays(-30))
                 .ToListAsync();
 
             return _mapper.Map<List<ActiveUsers>>(activeUsers);
@@ -287,7 +287,7 @@ namespace FirstStep.Services
         private async Task<List<ActiveUsers>> GetInactiveUsersAsync()
         {
             var inactiveUsers = await _context.Users
-                .Where(user => user.last_login_date > DateTime.Now.AddDays(-90))
+                .Where(user => user.last_login_date <  DateTime.Now.AddDays(-30))
                 .ToListAsync();
 
             return _mapper.Map<List<ActiveUsers>>(inactiveUsers);
