@@ -416,7 +416,8 @@ namespace FirstStep.Services
                 }
 
                 // Delegate tasks to HR assistants
-                await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
+               // await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
+                await DelegateApplications(hrAssistants.ToList(), applicationsForEvaluation);
             }
             else
             {
@@ -437,7 +438,7 @@ namespace FirstStep.Services
 
             // Delegate tasks to HR assistants
             //await DelegateTask(hrAssistants.ToList(), applicationsForEvaluation);
-            await DelegateApplications(hrAssistants.ToList(), applicationsForEvaluation);
+           await DelegateApplications(hrAssistants.ToList(), applicationsForEvaluation);
         }
 
         private async Task<List<Application>?> GetApplicationsForTaskDelegation(Advertisement advertisement, IEnumerable<Employee> hrAssistants)
@@ -509,7 +510,7 @@ namespace FirstStep.Services
             {
                if(hrAssistant is null)
                 {
-                    throw new NullReferenceException("No talent aqusition speacialists.");
+                    continue ;
                 }
 
                var yetToScreenApplications = await GetAllNotScreenedApplicationsByHrAssistantAsync(hrAssistant.user_id);
