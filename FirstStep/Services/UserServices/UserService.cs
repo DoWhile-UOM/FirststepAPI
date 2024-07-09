@@ -82,7 +82,8 @@ namespace FirstStep.Services
 
 
             //Call Email service to send reset password email
-            var result = await _emailService.CARegIsSuccessfull(user.email, token, "test");
+            //var result = await _emailService.CARegIsSuccessfull(user.email, token, "test");
+            await _emailService.SendPasswordReset(user.email, token);
             Console.WriteLine(token);
 
             return new AuthenticationResult { IsSuccessful = true};
@@ -97,6 +98,7 @@ namespace FirstStep.Services
 
         public async Task<AuthenticationResult> ResetPassword(PasswordResetDto userObj)
         {
+
             if (userObj.token == null)
             {
                 throw new Exception("Token is null.");
