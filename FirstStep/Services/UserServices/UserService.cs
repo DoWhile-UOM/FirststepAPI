@@ -19,7 +19,7 @@ namespace FirstStep.Services
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
         
-        private readonly Dictionary<string, int> _passwordResetTokens = new Dictionary<string, int>();
+        private static readonly Dictionary<string, int> _passwordResetTokens = new Dictionary<string, int>();
         private static readonly Random random = new Random();
 
         public UserService(DataContext context, IMapper mapper, IEmailService emailService)
@@ -84,7 +84,7 @@ namespace FirstStep.Services
             //Call Email service to send reset password email
             //var result = await _emailService.CARegIsSuccessfull(user.email, token, "test");
             await _emailService.SendPasswordReset(user.email, token);
-            Console.WriteLine(token);
+            Console.WriteLine(token+" "+user.user_id);
 
             return new AuthenticationResult { IsSuccessful = true};
         }
