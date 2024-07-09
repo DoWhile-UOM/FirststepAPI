@@ -33,7 +33,7 @@ namespace FirstStep.Controllers
         [Route("TestEmail")]
         public async Task<IActionResult> RequestOTP()
         {
-            await _emailService.SendEmailInterviewBook("ashanmatheesha@gmail.com", "Software Developer","Bistec Global",3,1051,"Test Comment");
+            await _emailService.SendEmailInterviewBookConfirm("ashanmatheesha@gmail.com", "Software Developer","Bistec Global","2023-07-20","1.00 PM");
             //Task SendEmailInterviewBook(string email, string advertismentTitle, string company_name, int userid, int advertismentid);
             return Ok("Email Sent");
         }

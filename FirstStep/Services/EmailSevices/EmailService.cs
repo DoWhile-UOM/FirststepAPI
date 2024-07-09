@@ -214,6 +214,26 @@ namespace FirstStep.Services
             await SendEmail(request);
         }
 
+        public async Task SendEmailInterviewBookConfirm(string email, string advertismentTitle, string company_name, string date, string time)
+        {
+
+
+
+            EmailModel request = new();
+            var builder = new BodyBuilder();
+
+            builder.HtmlBody = EmailTemplates.InterviewBookConfirm;
+            request.To = email;
+            request.Subject = "Schedule Your Interview";
+            builder.HtmlBody = builder.HtmlBody.Replace("[Job Position]", advertismentTitle);
+            builder.HtmlBody = builder.HtmlBody.Replace("{Company Name}", company_name);
+            builder.HtmlBody = builder.HtmlBody.Replace("[Interview Date]", date);
+            builder.HtmlBody = builder.HtmlBody.Replace("[Interview Time]", time);
+            request.Body = builder.HtmlBody;
+
+            await SendEmail(request);
+        }
+
         public async Task<string> CARegIsSuccessfull(string email, string firstName, string lastName)
         {
             EmailModel emailBody = new();

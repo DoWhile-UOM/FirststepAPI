@@ -3,6 +3,8 @@ using FirstStep.Data;
 using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
+using System;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace FirstStep.Services
 {
@@ -120,6 +122,8 @@ namespace FirstStep.Services
         {
             var appointment = await _context.Appointments
                 .Include(a => a.seeker)
+                .Include(a=>a.advertisement)
+                .Include(a => a.advertisement!.hrManager!.company)
                 .FirstOrDefaultAsync(a => a.appointment_id == appointment_id);
 
             if (appointment == null)
@@ -157,7 +161,19 @@ namespace FirstStep.Services
             appointment.status = Appointment.Status.Booked.ToString();
             appointment.seeker_id = seeker_id;
 
-            await _context.SaveChangesAsync();
+            /*--------Email Sending Code Start--------*/
+
+            string date = appointment.start_time.Date.ToString("yyyy-MM-dd");
+            string time = appointment.start_time.TimeOfDay.ToString(@"hh\:mm");
+
+            string advertismentTitle= appointment.advertisement!.title;
+            string companyName =appointment.advertisement!.hrManager!.company!.company_name;
+
+            await _emailService.SendEmailInterviewBookConfirm(seeker.email, advertismentTitle, companyName, date,time); //Send interview book Email
+
+            /*--------Email Sending Code End--------*/
+
+            //await _context.SaveChangesAsync();
         }
 
         public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date)
