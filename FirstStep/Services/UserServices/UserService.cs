@@ -126,11 +126,13 @@ namespace FirstStep.Services
                 _passwordResetTokens.Remove(userObj.token);
 
                 await _context.SaveChangesAsync();
+                _passwordResetTokens.Clear();
 
                 return new AuthenticationResult { IsSuccessful = true };
             }
             else
             {
+                _passwordResetTokens.Clear();
                 throw new Exception("Invalid Token.");
             }
         }
