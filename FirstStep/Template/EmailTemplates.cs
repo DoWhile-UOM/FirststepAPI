@@ -134,5 +134,27 @@
                 </div>
             </body>
             </html>";
+
+        public static string SeekerInterviewSlotBooking =
+            @"<!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset=""utf-8"" />
+                <title>Schedule Your Interview</title>
+            </head>
+            <body>
+                <div style=""font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;"">
+                    <h2 style=""color: #333;"">Schedule Your Interview</h2>
+
+
+                    <div style=""background-color: #f4f4f4; padding: 10px; border-radius: 5px;"">
+                        <h3 style=""color: #333;"">Dear Applicant</h3>
+                        <p>We are pleased to invite you to an interview for the [Job Position] position at {Company Name}. Please use the link below to book a time slot that works best for you.</p>
+                        <p>Please <a href={booking_link} style=""color: #007bff; text-decoration: none;"">click here</a> to schedule your interview.</p>
+                    </div>
+                    <p style=""color: #333; margin-top: 20px;"">Thank you for choosing FirstStep.</p>
+                </div>
+            </body>
+            </html>";
     }
 }

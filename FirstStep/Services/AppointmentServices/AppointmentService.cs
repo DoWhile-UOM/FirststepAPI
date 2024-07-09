@@ -10,11 +10,13 @@ namespace FirstStep.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
-        public AppointmentService(DataContext dataContext, IMapper mapper) 
+        public AppointmentService(IEmailService emailService,DataContext dataContext, IMapper mapper) 
         {
             _context = dataContext;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         private async Task<Appointment> FindById(int appointmentId)
@@ -75,7 +77,22 @@ namespace FirstStep.Services
 
             // send email to the seeker to book any advertisement with the message
 
+            /*--------Email Sending Code Start--------*/
+            var selectedApplicant = await _context.Applications
+                .Include("seeker")
+                .Where(a => a.advertisement_id == newAppointmentDto.advertisement_id && a.is_called == true && a.status==Application.ApplicationStatus.Accepted.ToString())
+                .ToListAsync();
+
+            foreach (var applicant in selectedApplicant)
+            {
+                await _emailService.SendEmailInterviewBook(applicant.seeker!.email, advertisement.title, company.company_name, applicant.seeker.user_id, advertisement.advertisement_id); //Send interview book Email
+                //public async Task SendEmailInterviewBook(string email, string advertismentTitle, string company_name, int userid,int advertismentid)
+            }
+
+            /*--------Email Sending Code End--------*/
+
             await _context.SaveChangesAsync();
+
         }
 
         public async Task AssignToAdvertisement(int appointment_id, int advertisement_id)
