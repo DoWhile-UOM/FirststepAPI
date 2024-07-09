@@ -188,9 +188,8 @@ namespace FirstStep.Services
         public async Task SendEmailInterviewBook(string email, string advertismentTitle, string company_name, int userid,int advertismentid,string comment)
         {
             // Registration Email
-            //baselink = "https://polite-forest-041105700.5.azurestaticapps.net/seeker/interviewslot?id=" + applicationEvaluationStatusLink;// this link will direct company to a page where the company can see its regirataion application evaluation status.
-            string baselink = "http://localhost:4200";
-            var bookingLink = $"{baselink}/seeker/interviewslot?id={advertismentid}&uid={userid}";
+            var bookingLink = $"https://polite-forest-041105700.5.azurestaticapps.net/seeker/interviewslot?id={advertismentid}&uid={userid}";
+            
             if(comment == null)
             {
                 comment = "";
@@ -199,6 +198,7 @@ namespace FirstStep.Services
             {
                 comment = "Special note: " + comment;
             }
+
             EmailModel request = new();
             var builder = new BodyBuilder();
 
@@ -208,7 +208,7 @@ namespace FirstStep.Services
             builder.HtmlBody = builder.HtmlBody.Replace("[Job Position]", advertismentTitle);
             builder.HtmlBody = builder.HtmlBody.Replace("{Company Name}", company_name);
             builder.HtmlBody = builder.HtmlBody.Replace("{comments}", comment);
-            builder.HtmlBody = builder.HtmlBody.Replace("{booking_link}", bookingLink); // here this applicationEvaluationStautsLink will direct company to a page where the company can see its regirataion application evaluation status.
+            builder.HtmlBody = builder.HtmlBody.Replace("{booking_link}", bookingLink);
             request.Body = builder.HtmlBody;
 
             await SendEmail(request);
@@ -216,9 +216,6 @@ namespace FirstStep.Services
 
         public async Task SendEmailInterviewBookConfirm(string email, string advertismentTitle, string company_name, string date, string time)
         {
-
-
-
             EmailModel request = new();
             var builder = new BodyBuilder();
 
