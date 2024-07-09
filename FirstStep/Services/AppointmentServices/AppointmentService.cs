@@ -85,7 +85,7 @@ namespace FirstStep.Services
 
             foreach (var applicant in selectedApplicant)
             {
-                await _emailService.SendEmailInterviewBook(applicant.seeker!.email, advertisement.title, company.company_name, applicant.seeker.user_id, advertisement.advertisement_id); //Send interview book Email
+                await _emailService.SendEmailInterviewBook(applicant.seeker!.email, advertisement.title, company.company_name, applicant.seeker.user_id, advertisement.advertisement_id, newAppointmentDto.comment); //Send interview book Email
                 //public async Task SendEmailInterviewBook(string email, string advertismentTitle, string company_name, int userid,int advertismentid)
             }
 
