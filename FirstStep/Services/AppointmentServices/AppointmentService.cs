@@ -173,7 +173,7 @@ namespace FirstStep.Services
 
             /*--------Email Sending Code End--------*/
 
-            //await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task<List<dailyInterviewDto>> GetSchedulesByDate(DateTime date)
