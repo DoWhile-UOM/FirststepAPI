@@ -219,7 +219,8 @@ namespace FirstStep.Services
 
             AppointmentAvailableDto appointmentAvailable = new AppointmentAvailableDto();
 
-            appointmentAvailable.slot = advertisement.appointments!.Select(x => new AppointmentAvailabelTimeDto
+
+            appointmentAvailable.slot = advertisement.appointments!.Where(a=>a.seeker_id==null && a.status==Appointment.Status.Pending.ToString()).Select(x => new AppointmentAvailabelTimeDto
             {
                 appointment_id = x.appointment_id,
                 start_time = x.start_time
