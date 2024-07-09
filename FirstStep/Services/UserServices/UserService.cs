@@ -104,8 +104,11 @@ namespace FirstStep.Services
                 throw new Exception("Token is null.");
             }
 
-            if (_passwordResetTokens.TryGetValue(userObj.token, out var userId))
+            // check whether the token is valid
+            if (_passwordResetTokens.ContainsKey(userObj.token))
             {
+                int userId = _passwordResetTokens[userObj.token];
+
                 var user = await _context.Users.FirstOrDefaultAsync(x => x.user_id == userId);
 
                 if (user == null)
