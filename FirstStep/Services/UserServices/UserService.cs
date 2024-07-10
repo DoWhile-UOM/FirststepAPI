@@ -19,7 +19,7 @@ namespace FirstStep.Services
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
         
-        private readonly Dictionary<string, int> _passwordResetTokens = new Dictionary<string, int>();
+        private static readonly Dictionary<string, int> _passwordResetTokens = new Dictionary<string, int>();
         private static readonly Random random = new Random();
 
         public UserService(DataContext context, IMapper mapper, IEmailService emailService)
@@ -82,8 +82,9 @@ namespace FirstStep.Services
 
 
             //Call Email service to send reset password email
-            var result = await _emailService.CARegIsSuccessfull(user.email, token, "test");
-            Console.WriteLine(token);
+            //var result = await _emailService.CARegIsSuccessfull(user.email, token, "test");
+            await _emailService.SendPasswordReset(user.email, token);
+            Console.WriteLine(token+" "+user.user_id);
 
             return new AuthenticationResult { IsSuccessful = true};
         }
@@ -97,13 +98,17 @@ namespace FirstStep.Services
 
         public async Task<AuthenticationResult> ResetPassword(PasswordResetDto userObj)
         {
+
             if (userObj.token == null)
             {
                 throw new Exception("Token is null.");
             }
 
-            if (_passwordResetTokens.TryGetValue(userObj.token, out var userId))
+            // check whether the token is valid
+            if (_passwordResetTokens.ContainsKey(userObj.token))
             {
+                int userId = _passwordResetTokens[userObj.token];
+
                 var user = await _context.Users.FirstOrDefaultAsync(x => x.user_id == userId);
 
                 if (user == null)
@@ -121,11 +126,13 @@ namespace FirstStep.Services
                 _passwordResetTokens.Remove(userObj.token);
 
                 await _context.SaveChangesAsync();
+                _passwordResetTokens.Clear();
 
                 return new AuthenticationResult { IsSuccessful = true };
             }
             else
             {
+                _passwordResetTokens.Clear();
                 throw new Exception("Invalid Token.");
             }
         }
