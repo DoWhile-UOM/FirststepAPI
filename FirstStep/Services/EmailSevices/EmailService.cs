@@ -1,5 +1,6 @@
 ﻿using Azure;
 using Azure.Communication.Email;
+using FirstStep.Models;
 using FirstStep.Models.DTOs;
 using FirstStep.Models.ServiceModels;
 using FirstStep.Template;
@@ -222,11 +223,29 @@ namespace FirstStep.Services
 
             builder.HtmlBody = EmailTemplates.InterviewBookConfirm;
             request.To = email;
-            request.Subject = "Schedule Your Interview";
+            request.Subject = "Interview Confirmation";
             builder.HtmlBody = builder.HtmlBody.Replace("[Job Position]", advertismentTitle);
             builder.HtmlBody = builder.HtmlBody.Replace("{Company Name}", company_name);
             builder.HtmlBody = builder.HtmlBody.Replace("[Interview Date]", date);
             builder.HtmlBody = builder.HtmlBody.Replace("[Interview Time]", time);
+            request.Body = builder.HtmlBody;
+
+            await SendEmail(request);
+        }
+
+        public async Task SendPasswordReset(string email, string token)
+        {
+            // Registration Email
+            string baselink = "https://polite-forest-041105700.5.azurestaticapps.net";
+            var bookingLink = $"{baselink}/ResetPassword?id={token}";
+
+            EmailModel request = new();
+            var builder = new BodyBuilder();
+
+            builder.HtmlBody = EmailTemplates.SendPassWordResetLink;
+            request.To = email;
+            request.Subject = "Password Reset Request";
+            builder.HtmlBody = builder.HtmlBody.Replace("{booking_link}", bookingLink);
             request.Body = builder.HtmlBody;
 
             await SendEmail(request);
