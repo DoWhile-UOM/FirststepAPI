@@ -24,6 +24,7 @@ namespace FirstStep.Services
         Task SendEmailInterviewBookConfirm(string email, string advertismentTitle, string company_name, string date, string time);
 
         Task SendPasswordReset(string email, string token);
+
         Task<string> CARegIsSuccessfull(string email, string firstName, string lastName);
     }
 }
