@@ -51,7 +51,7 @@ namespace FirstStep.Data
             float[] salaries = { 6500f, 2500f, 2550f, 1500f };
 
             // random hr managers
-            int[] hrmanager = { 2, 7 };
+            int[] hrmanager = { 20, 7, 8 };
 
             // sample description
             string description = @"
