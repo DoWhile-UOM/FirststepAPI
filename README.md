@@ -98,3 +98,4 @@ Ensure you have the necessary Azure resources and update the `appsettings.json` 
 ## License
 
 This project is licensed under the MIT License.
+Developed by Team-Do while UOM
